@@ -17,5 +17,6 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 ### Steps
 
 1. Validation sets
-2. Regression (one hot encoding)
-3. Classification 
+2. Develop evaluation function
+3. Regression (one hot encoding)
+4. Classification 
