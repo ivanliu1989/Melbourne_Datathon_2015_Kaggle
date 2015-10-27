@@ -146,13 +146,85 @@ feat.eng <- function(d){
     MARGIN$MARGIN <- NET_PROFIT$NET_PROFIT/MARGIN$MARGIN
     
     # MERGE AND RETURN Member base
-    submit <- merge(d, TRANSACTION_COUNT, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID', 'STATUS_ID', 'INPLAY_BET'))
+    mbr.event <- dt[!duplicated(paste0(dt$ACCOUNT_ID, dt$EVENT_ID)),c('ACCOUNT_ID', 'EVENT_ID')]
+    mbr.event <- merge(mbr.event, TRANSACTION_COUNT[TRANSACTION_COUNT$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, TRANSACTION_COUNT[TRANSACTION_COUNT$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, TRANSACTION_COUNT_L[TRANSACTION_COUNT_L$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, TRANSACTION_COUNT_L[TRANSACTION_COUNT_L$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, TRANSACTION_COUNT_C[TRANSACTION_COUNT_C$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, TRANSACTION_COUNT_C[TRANSACTION_COUNT_C$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
     
+    mbr.event <- merge(mbr.event, AVG_BET_SIZE[AVG_BET_SIZE$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, AVG_BET_SIZE[AVG_BET_SIZE$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, AVG_BET_SIZE_L[AVG_BET_SIZE_L$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, AVG_BET_SIZE_L[AVG_BET_SIZE_L$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, AVG_BET_SIZE_C[AVG_BET_SIZE_C$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, AVG_BET_SIZE_C[AVG_BET_SIZE_C$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
     
-    # 10. CANCEL RATIO
+    mbr.event <- merge(mbr.event, MAX_BET_SIZE[MAX_BET_SIZE$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MAX_BET_SIZE[MAX_BET_SIZE$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MAX_BET_SIZE_L[MAX_BET_SIZE_L$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MAX_BET_SIZE_L[MAX_BET_SIZE_L$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MAX_BET_SIZE_C[MAX_BET_SIZE_C$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MAX_BET_SIZE_C[MAX_BET_SIZE_C$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
     
-    # 11. INPLAY RATIO
+    mbr.event <- merge(mbr.event, MIN_BET_SIZE[MIN_BET_SIZE$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MIN_BET_SIZE[MIN_BET_SIZE$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MIN_BET_SIZE_L[MIN_BET_SIZE_L$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MIN_BET_SIZE_L[MIN_BET_SIZE_L$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MIN_BET_SIZE_C[MIN_BET_SIZE_C$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MIN_BET_SIZE_C[MIN_BET_SIZE_C$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
     
+    mbr.event <- merge(mbr.event, STDEV_BET_SIZE[STDEV_BET_SIZE$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, STDEV_BET_SIZE[STDEV_BET_SIZE$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, STDEV_BET_SIZE_L[STDEV_BET_SIZE_L$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, STDEV_BET_SIZE_L[STDEV_BET_SIZE_L$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, STDEV_BET_SIZE_C[STDEV_BET_SIZE_C$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, STDEV_BET_SIZE_C[STDEV_BET_SIZE_C$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    
+    mbr.event <- merge(mbr.event, AVG_PLACED_TAKEN_TIME[AVG_PLACED_TAKEN_TIME$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, AVG_PLACED_TAKEN_TIME[AVG_PLACED_TAKEN_TIME$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    
+    mbr.event <- merge(mbr.event, STDEV_PLACED_TAKEN_TIME[STDEV_PLACED_TAKEN_TIME$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, STDEV_PLACED_TAKEN_TIME[STDEV_PLACED_TAKEN_TIME$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    
+    mbr.event <- merge(mbr.event, AVG_TAKEN_HOUR[AVG_TAKEN_HOUR$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, AVG_TAKEN_HOUR[AVG_TAKEN_HOUR$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    
+    mbr.event <- merge(mbr.event, PREV_WIN_RATE[PREV_WIN_RATE$INPLAY_BET == 'Y', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+    mbr.event <- merge(mbr.event, PREV_WIN_RATE[PREV_WIN_RATE$INPLAY_BET == 'N', c(1,4,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+    
+    mbr.event <- merge(mbr.event, NET_PROFIT[NET_PROFIT$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, NET_PROFIT[NET_PROFIT$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    
+    mbr.event <- merge(mbr.event, MARGIN[MARGIN$INPLAY_BET == 'Y', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, MARGIN[MARGIN$INPLAY_BET == 'N', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    
+    names(mbr.event) <- c('ACCOUNT_ID','EVENT_ID','TRANSACTION_COUNT_INPLAY','TRANSACTION_COUNT_OUTPLAY','TRANSACTION_COUNT_INPLAY_L','TRANSACTION_COUNT_OUTPLAY_L','TRANSACTION_COUNT_INPLAY_C','TRANSACTION_COUNT_OUTPLAY_C',
+                          'AVG_BET_SIZE_INPLAY','AVG_BET_SIZE_OUTPLAY','AVG_BET_SIZE_INPLAY_L','AVG_BET_SIZE_OUTPLAY_L','AVG_BET_SIZE_INPLAY_C','AVG_BET_SIZE_OUTPLAY_C',
+                          'MAX_BET_SIZE_INPLAY','MAX_BET_SIZE_OUTPLAY','MAX_BET_SIZE_INPLAY_L','MAX_BET_SIZE_OUTPLAY_L','MAX_BET_SIZE_INPLAY_C','MAX_BET_SIZE_OUTPLAY_C',
+                          'MIN_BET_SIZE_INPLAY','MIN_BET_SIZE_OUTPLAY','MIN_BET_SIZE_INPLAY_L','MIN_BET_SIZE_OUTPLAY_L','MIN_BET_SIZE_INPLAY_C','MIN_BET_SIZE_OUTPLAY_C',
+                          'STDEV_BET_SIZE_INPLAY','STDEV_BET_SIZE_OUTPLAY','STDEV_BET_SIZE_INPLAY_L','STDEV_BET_SIZE_OUTPLAY_L','STDEV_BET_SIZE_INPLAY_C','STDEV_BET_SIZE_OUTPLAY_C',
+                          'AVG_PLACED_TAKEN_TIME_INPLAY','AVG_PLACED_TAKEN_TIME_OUTPLAY',
+                          'STDEV_PLACED_TAKEN_TIME_INPLAY','STDEV_PLACED_TAKEN_TIME_OUTPLAY',
+                          'AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY',
+                          'PREV_WIN_RATE_INPLAY','PREV_WIN_RATE_OUTPLAY','PREV_WIN_RATE',
+                          'NET_PROFIT_INPLAY','NET_PROFIT_OUTPLAY',
+                          'MARGIN_INPLAY','MARGIN_OUTPLAY'
+                          )
+    mbr.event[, -c(1,2,33:41)][is.na(mbr.event[, -c(1,2,33:41)])] <- 0
+    mbr.event[, c(33:36)][is.na(mbr.event[, c(33:36)])] <- 0
+    mbr.event[, c(39:41)][is.na(mbr.event[, c(39:41)])] <- 0.5
+    mbr.event$AVG_TAKEN_HOUR_INPLAY <- floor(mbr.event$AVG_TAKEN_HOUR_INPLAY)
+    mbr.event$AVG_TAKEN_HOUR_OUTPLAY <- floor(mbr.event$AVG_TAKEN_HOUR_OUTPLAY)
+    
+    # 10. CANCEL_RATIO
+    mbr.event$CANCEL_RATIO_INPLAY <- mbr.event$TRANSACTION_COUNT_INPLAY_C/(mbr.event$TRANSACTION_COUNT_INPLAY_C+mbr.event$TRANSACTION_COUNT_INPLAY+mbr.event$TRANSACTION_COUNT_INPLAY_L)
+    mbr.event$CANCEL_RATIO_OUTPLAY <- mbr.event$TRANSACTION_COUNT_OUTPLAY_C/(mbr.event$TRANSACTION_COUNT_OUTPLAY_C+mbr.event$TRANSACTION_COUNT_OUTPLAY+mbr.event$TRANSACTION_COUNT_OUTPLAY_L)
+        
+    # 11. INPLAY_RATIO
+    mbr.event$INPLAY_RATIO <- mbr.event$TRANSACTION_COUNT_INPLAY/(mbr.event$TRANSACTION_COUNT_INPLAY + mbr.event$TRANSACTION_COUNT_OUTPLAY)
+    mbr.event[,c(46:48)][is.na(mbr.event[,c(46:48)])] <- 0
     
     #META DATA
     # 1. RFM
@@ -161,6 +233,8 @@ feat.eng <- function(d){
     
     
 }
+
+save(mbr.event, file='data/mbr_event_data.RData')
 
 d2 <- read.csv('data/semi_and_final_features.csv', stringsAsFactors=FALSE,na.strings = "")
 submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
