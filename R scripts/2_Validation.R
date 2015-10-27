@@ -9,12 +9,12 @@ library(caret)
 # Config
 mbr.event$flag_class <- as.factor(mbr.event$flag_class)
 
-fitControl <- trainControl(method = "cv",
-                           number = 5,
+fitControl <- trainControl(method = "repeatedcv",
+                           number = 10,
                            classProbs = TRUE,
                            summaryFunction = twoClassSummary)
-# Grid <-  expand.grid(n.trees = 150, interaction.depth = 6, shrinkage = 0.02)
-Grid <-  expand.grid(mtry=6)
+# Grid <-  expand.grid(n.trees = 180, interaction.depth = 6, shrinkage = 0.02)
+Grid <-  expand.grid(mtry=7)
 
 # Training
 set.seed(825)
