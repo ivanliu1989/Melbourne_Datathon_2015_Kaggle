@@ -13,3 +13,9 @@ The objective is to determine if betting is just guessing, or if past performanc
 We are treating this as a binary classification problem - did the account make a profit or not. The evaluation metric is the AUC.
 
 An AUC of 0.5 is random guessing and 1 is a prefect solution.
+
+### Steps
+
+1. Validation sets
+2. Regression (one hot encoding)
+3. Classification 
