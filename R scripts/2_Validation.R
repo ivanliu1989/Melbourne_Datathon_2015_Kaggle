@@ -17,14 +17,7 @@ fitControl <- trainControl(method = "repeatedcv",
 Grid <-  expand.grid(mtry=7)
 
 # Training
-set.seed(825)
-fit <- train(flag_class ~ ., data=mbr.event[,-c(1,2,49)], # classification
-                   method = "rf",
-                   trControl = fitControl,
-                   tuneGrid = Grid,
-                   # preProcess = c('center', 'scale'),
-                   metric ='ROC',
-                   verbose = T)
+set.seed(825)fit
 
 
 # Plot
