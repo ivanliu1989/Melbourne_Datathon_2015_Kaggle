@@ -40,27 +40,23 @@ fitImp[1]
 p <- predict(fit, newdata=validation, type = 'prob')
 validation$INVEST <- validation$TRANSACTION_COUNT_INPLAY * validation$AVG_BET_SIZE_INPLAY + validation$TRANSACTION_COUNT_OUTPLAY * validation$AVG_BET_SIZE_OUTPLAY
 validation$Y <- p$Y
-validation$PRED_PROFIT_LOSS <- (validation$Y - 0.5) * validation$INVEST
+validation$PRED_PROFIT_LOSS <- (validation$Y - 0.5) * validation$INVEST * 2
 pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=validation, sum, na.rm=F)
 pred_fin$PRED_PROFIT_LOSS_2 <- ifelse(pred_fin$PRED_PROFIT_LOSS > 0, 1, ifelse(pred_fin$PRED_PROFIT_LOSS < 0, 0, 0.5))
 
 ### Validation
-validation$flag_class <- as.factor(validation$flag_class)
+# validation$flag_class <- as.factor(validation$flag_class)
 val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=validation, sum, na.rm=F)
-
-val_fin2 <- val_fin
-val_fin2$flag_regr <- ifelse(val_fin2$flag_regr > 0, 1, ifelse(val_fin2$flag_regr < 0, 0, 0.5))
-
-val_fin <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE)
+val_fin$PRED_PROFIT_LOSS_3 <- ifelse(val_fin$flag_regr > 0, 1, ifelse(val_fin$flag_regr < 0, 0, 0.5))
 
 
 #########################
 ### Model Performance ###
 #########################
-v <- merge(val_fin2,pred_fin,all.x = TRUE,all.y = FALSE)
+v <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
 
 # With a roc object:
-rocobj <- roc(v$flag_regr, v$PRED_PROFIT_LOSS_2)
+rocobj <- roc(v$flag_regr, v$PRED_PROFIT_LOSS)
 # Full AUC:
 auc(rocobj) # 0.8434 | 0.7256
 # Partial AUC:
@@ -72,16 +68,18 @@ plot(rocobj)
 ############
 ### test ###
 ############
-p <- predict(fit, newdata=test_dt, type = 'prob')
-test_dt$INVEST <- test_dt$TRANSACTION_COUNT_INPLAY * test_dt$AVG_BET_SIZE_INPLAY + test_dt$TRANSACTION_COUNT_OUTPLAY * test_dt$AVG_BET_SIZE_OUTPLAY
-test_dt$Y <- p$Y
-test_dt$PRED_PROFIT_LOSS <- (test_dt$Y - 0.5) * test_dt$INVEST
-pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=test_dt, sum, na.rm=T)
+p <- predict(fit, newdata=test, type = 'prob')
+test$INVEST <- test$TRANSACTION_COUNT_INPLAY * test$AVG_BET_SIZE_INPLAY + test$TRANSACTION_COUNT_OUTPLAY * test$AVG_BET_SIZE_OUTPLAY
+test$Y <- p$Y
+test$PRED_PROFIT_LOSS <- (test$Y - 0.5) * test$INVEST * 2
+
+pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=test, sum, na.rm=T)
 
 ### Submission
 submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
 names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')
 submit <- merge(submit,pred_fin,all.x = TRUE,all.y = FALSE)
+table(is.na(submit$PRED_PROFIT_LOSS))
 submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
