@@ -46,6 +46,10 @@ pred_fin <- aggregate(PROFIT_LOSS ~ ACCOUNT_ID, data=validation, sum, na.rm=T)
 ### Validation
 validation$flag_class <- as.factor(validation$flag_class)
 val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=validation, sum, na.rm=T)
+
+val_fin2 <- val_fin
+val_fin2$flag_regr <- ifelse(val_fin2$flag_regr > 0, 1, ifelse(val_fin2$flag_regr < 0, 0, 0.5))
+
 val_fin <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE)
 
 
@@ -53,7 +57,7 @@ val_fin <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE)
 ### Model Performance ###
 #########################
 # With a roc object:
-rocobj <- roc(val_fin$flag_regr, pred_fin$PROFIT_LOSS)
+rocobj <- roc(val_fin2$flag_regr, pred_fin$PROFIT_LOSS)
 # Full AUC:
 auc(rocobj) # 0.8434
 # Partial AUC:
