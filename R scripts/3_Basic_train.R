@@ -2,9 +2,12 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(caret);library(pROC)
-load('data/train_validation_test');ls()
+load('data/train_validation_test.RData');ls()
 
-### Training Model
+
+######################
+### Training Model ###
+######################
 # Config
 train$flag_class <- as.factor(train$flag_class)
 
@@ -29,21 +32,26 @@ fit <- train(flag_class ~ ., data=train[,-c(1,2,49)], # classification
 fitImp <- varImp(fit, scale = T)
 fitImp[1]
 
+
+##################
+### Validation ###
+##################
 ### Predict
 p <- predict(fit, newdata=validation, type = 'prob')
-
-INVEST <- validation$TRANSACTION_COUNT_INPLAY * validation$AVG_BET_SIZE_INPLAY + validation$TRANSACTION_COUNT_OUTPLAY * validation$AVG_BET_SIZE_OUTPLAY
-Y <- p$Y
-pred <- cbind(validation[,c(1,2)], INVEST, Y, validation[,c(49,50)])
-pred$PROFIT_LOSS <- (pred$Y - 0.5) * pred$INVEST
-
-pred_fin <- aggregate(PROFIT_LOSS ~ ACCOUNT_ID + EVENT_ID, data=pred, sum, na.rm=T)
-pred_fin$Y <- ifelse(pred_fin$PROFIT_LOSS>=0, 'Y', 'N')
+validation$INVEST <- validation$TRANSACTION_COUNT_INPLAY * validation$AVG_BET_SIZE_INPLAY + validation$TRANSACTION_COUNT_OUTPLAY * validation$AVG_BET_SIZE_OUTPLAY
+validation$Y <- p$Y
+validation$PRED_PROFIT_LOSS <- (validation$Y - 0.5) * validation$INVEST
+pred_fin <- aggregate(PROFIT_LOSS ~ ACCOUNT_ID, data=validation, sum, na.rm=T)
 
 ### Validation
 validation$flag_class <- as.factor(validation$flag_class)
-val_fin <- aggregate(flag_regr ~ ACCOUNT_ID + EVENT_ID, data=validation, sum, na.rm=T)
+val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=validation, sum, na.rm=T)
+val_fin <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE)
 
+
+#########################
+### Model Performance ###
+#########################
 # With a roc object:
 rocobj <- roc(val_fin$flag_regr, pred_fin$PROFIT_LOSS)
 # Full AUC:
@@ -53,9 +61,10 @@ auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TR
 # Plot
 plot(rocobj)
 
-save(fit, file='model/randomForest_test.RData')
 
-### test
+############
+### test ###
+############
 p <- predict(fit, newdata=test_dt, type = 'prob')
 test_dt$INVEST <- test_dt$TRANSACTION_COUNT_INPLAY * test_dt$AVG_BET_SIZE_INPLAY + test_dt$TRANSACTION_COUNT_OUTPLAY * test_dt$AVG_BET_SIZE_OUTPLAY
 test_dt$Y <- p$Y
@@ -72,8 +81,3 @@ submit$PRED_PROFIT_LOSS <- NULL
 
 write.csv(submit,'pred/submission_20151028_1.csv',quote = FALSE,row.names = FALSE)
 save(fit, file='../rf.RData')
-
-# Imputation
-load('data/mbr_event_data.RData')
-test_dt[is.na(test_dt$AVG_TAKEN_HOUR_INPLAY),'AVG_TAKEN_HOUR_INPLAY'] <- median(mbr.event$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
-test_dt[is.na(test_dt$AVG_TAKEN_HOUR_OUTPLAY),'AVG_TAKEN_HOUR_OUTPLAY'] <- median(mbr.event$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
