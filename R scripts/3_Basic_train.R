@@ -9,16 +9,16 @@ load('data/train_validation.RData');ls()
 train$flag_class <- as.factor(train$flag_class)
 
 fitControl <- trainControl(method = "cv",
-                           number = 2,
+                           number = 10,
                            classProbs = TRUE,
                            summaryFunction = twoClassSummary)
-# Grid <-  expand.grid(n.trees = 180, interaction.depth = 6, shrinkage = 0.02)
-Grid <-  expand.grid(mtry=6)
+Grid <-  expand.grid(n.trees = 180, interaction.depth = 6, shrinkage = 0.02)
+# Grid <-  expand.grid(mtry=8)
 
 # Training
 set.seed(825)
 fit <- train(flag_class ~ ., data=train[,-c(1,2,49)], # classification
-             method = "rf",
+             method = "gbm",
              trControl = fitControl,
              tuneGrid = Grid,
              # preProcess = c('center', 'scale'),
