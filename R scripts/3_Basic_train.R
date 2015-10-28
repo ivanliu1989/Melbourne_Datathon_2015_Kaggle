@@ -15,7 +15,6 @@ fitControl <- trainControl(method = "none",
                            number = 2,
                            classProbs = TRUE,
                            summaryFunction = twoClassSummary)
-# Grid <-  expand.grid(n.trees = 180, interaction.depth = 6, shrinkage = 0.02)
 Grid <-  expand.grid(mtry=8)
 
 # Training
@@ -27,6 +26,30 @@ fit <- train(flag_class ~ ., data=total[,-c(1,2,49)], # classification
              # preProcess = c('center', 'scale'),
              metric ='ROC',
              verbose = T)
+
+
+# Config 2
+fitControl2 <- trainControl(method = "adaptive_cv",
+                            number = 10,
+                            repeats = 5,
+                            ## Estimate class probabilities
+                            classProbs = TRUE,
+                            ## Evaluate performance using 
+                            ## the following function
+                            summaryFunction = twoClassSummary,
+                            ## Adaptive resampling information:
+                            adaptive = list(min = 10,
+                                            alpha = 0.05,
+                                            method = "BT", #gls for Linear
+                                            complete = TRUE))
+
+set.seed(825)
+svmFit2 <- train(flag_class ~ ., data=total[,-c(1,2,49)],
+                 method = "rf", #svmRadial
+                 trControl = fitControl2,
+                 # preProc = c("center", "scale"),
+                 tuneLength = 8,
+                 metric = "ROC")
 
 # Variable Imp
 fitImp <- varImp(fit, scale = T)
