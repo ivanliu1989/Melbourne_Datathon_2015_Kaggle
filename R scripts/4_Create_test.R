@@ -12,45 +12,74 @@ head(test)
 
 ### Add Features to Test
 names(test) <- c('ACCOUNT_ID', names(test)[-1])
-# test_dt <- test[!duplicated(test[,c(1,2)]),c(1,2)]
-t <- test[!duplicated(test[,c(1,2)]),c(1,2)]
+test$TOT_BET_SIZE <- test$TRANSACTION_COUNT * test$AVG_BET_SIZE
+test$STDEV_BET_SIZE_N <- test$AVG_BET_SIZE + test$STDEV_BET_SIZE
+head(test)
+
+# TRANSACTION_COUNT
+TRANSACTION_COUNT <- aggregate(TRANSACTION_COUNT ~ ACCOUNT_ID + EVENT_ID + STATUS_ID + INPLAY_BET ,data=test, sum, na.rm=T) 
+# AVG_BET_SIZE
+TOT_BET_SIZE <- aggregate(TOT_BET_SIZE ~ ACCOUNT_ID + EVENT_ID + STATUS_ID + INPLAY_BET ,data=test, sum, na.rm=T)  #?
+TOT_BET_SIZE$AVG_BET_SIZE <- TOT_BET_SIZE$TOT_BET_SIZE / TRANSACTION_COUNT$TRANSACTION_COUNT #?
+AVG_BET_SIZE <- TOT_BET_SIZE[, -5]
+# MAX_BET_SIZE
+MAX_BET_SIZE <- aggregate(MAX_BET_SIZE ~ ACCOUNT_ID + EVENT_ID + STATUS_ID + INPLAY_BET ,data=test, max, na.rm=T) 
+# MIN_BET_SIZE
+MIN_BET_SIZE <- aggregate(MIN_BET_SIZE ~ ACCOUNT_ID + EVENT_ID + STATUS_ID + INPLAY_BET ,data=test, min, na.rm=T) 
+# STDEV_BET_SIZE
+test <- merge(test, AVG_BET_SIZE, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID', 'STATUS_ID', 'INPLAY_BET'))
+test$VAR <- ((test$AVG_BET_SIZE.y - test$STDEV_BET_SIZE_N)**2) * test$TRANSACTION_COUNT
+VAR <- aggregate(VAR ~ ACCOUNT_ID + EVENT_ID + STATUS_ID + INPLAY_BET ,data=test, sum)
+VAR$VAR <- VAR$VAR / TRANSACTION_COUNT$TRANSACTION_COUNT
+VAR$STDEV_BET_SIZE <- VAR$VAR ** 0.5
+VAR$VAR <- NULL
+# Final Bonus Feature
+test_clean <- test[!duplicated(test[,c(1:4)]),c(1:4)]
+test_clean <- merge(test_clean, TRANSACTION_COUNT, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID', 'STATUS_ID', 'INPLAY_BET'))
+test_clean <- merge(test_clean, AVG_BET_SIZE, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID', 'STATUS_ID', 'INPLAY_BET'))
+test_clean <- merge(test_clean, MAX_BET_SIZE, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID', 'STATUS_ID', 'INPLAY_BET'))
+test_clean <- merge(test_clean, MIN_BET_SIZE, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID', 'STATUS_ID', 'INPLAY_BET'))
+test_clean <- merge(test_clean, VAR, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID', 'STATUS_ID', 'INPLAY_BET'))
+
+test <- test_clean
+test_dt <- test[!duplicated(test[,c(1,2)]),c(1,2)]
   
 ### MERGE AND RETURN Member base
 # Event specific
-t2 <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,3)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'S', c(1,2,3)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'L', c(1,2,3)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c(1,2,3)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'C', c(1,2,3)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c(1,2,3)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'S', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'L', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'C', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
 
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'S', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'L', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'C', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'S', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'L', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'C', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c(1,2,6)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
 
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'S', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'L', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'C', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'S', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'L', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'C', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c(1,2,7)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
 
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'S', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'L', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'C', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'S', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'L', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'C', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c(1,2,8)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
 
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'S', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'L', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'C', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-t <- merge(t, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'S', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'L', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'C', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c(1,2,9)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
 
 names(test_dt) <- c('ACCOUNT_ID','EVENT_ID','TRANSACTION_COUNT_INPLAY','TRANSACTION_COUNT_OUTPLAY','TRANSACTION_COUNT_INPLAY_L','TRANSACTION_COUNT_OUTPLAY_L','TRANSACTION_COUNT_INPLAY_C','TRANSACTION_COUNT_OUTPLAY_C',
                     'AVG_BET_SIZE_INPLAY','AVG_BET_SIZE_OUTPLAY','AVG_BET_SIZE_INPLAY_L','AVG_BET_SIZE_OUTPLAY_L','AVG_BET_SIZE_INPLAY_C','AVG_BET_SIZE_OUTPLAY_C',
@@ -125,5 +154,5 @@ test_dt[,c(46:48)][is.na(test_dt[,c(46:48)])] <- 0
 
 # 2. CLUSTERING
 
-save(test_dt, file='../test.RData')
+save(test_dt, file='data/test.RData')
 
