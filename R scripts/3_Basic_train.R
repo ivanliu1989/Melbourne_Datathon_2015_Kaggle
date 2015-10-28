@@ -9,7 +9,7 @@ load('data/train_validation_test.RData');ls()
 ### Training Model ###
 ######################
 # Config
-train$flag_class <- as.factor(train$flag_class)
+total$flag_class <- as.factor(total$flag_class)
 
 fitControl <- trainControl(method = "none",
                            number = 2,
@@ -20,7 +20,7 @@ Grid <-  expand.grid(mtry=8)
 
 # Training
 set.seed(825)
-fit <- train(flag_class ~ ., data=train[,-c(1,2,49)], # classification
+fit <- train(flag_class ~ ., data=total[,-c(1,2,49)], # classification
              method = "rf",
              trControl = fitControl,
              tuneGrid = Grid,
@@ -41,11 +41,12 @@ p <- predict(fit, newdata=validation, type = 'prob')
 validation$INVEST <- validation$TRANSACTION_COUNT_INPLAY * validation$AVG_BET_SIZE_INPLAY + validation$TRANSACTION_COUNT_OUTPLAY * validation$AVG_BET_SIZE_OUTPLAY
 validation$Y <- p$Y
 validation$PRED_PROFIT_LOSS <- (validation$Y - 0.5) * validation$INVEST
-pred_fin <- aggregate(PROFIT_LOSS ~ ACCOUNT_ID, data=validation, sum, na.rm=T)
+pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=validation, sum, na.rm=F)
+pred_fin$PRED_PROFIT_LOSS_2 <- ifelse(pred_fin$PRED_PROFIT_LOSS > 0, 1, ifelse(pred_fin$PRED_PROFIT_LOSS < 0, 0, 0.5))
 
 ### Validation
 validation$flag_class <- as.factor(validation$flag_class)
-val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=validation, sum, na.rm=T)
+val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=validation, sum, na.rm=F)
 
 val_fin2 <- val_fin
 val_fin2$flag_regr <- ifelse(val_fin2$flag_regr > 0, 1, ifelse(val_fin2$flag_regr < 0, 0, 0.5))
@@ -56,12 +57,14 @@ val_fin <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE)
 #########################
 ### Model Performance ###
 #########################
+v <- merge(val_fin2,pred_fin,all.x = TRUE,all.y = FALSE)
+
 # With a roc object:
-rocobj <- roc(val_fin2$flag_regr, pred_fin$PROFIT_LOSS)
+rocobj <- roc(v$flag_regr, v$PRED_PROFIT_LOSS_2)
 # Full AUC:
-auc(rocobj) # 0.8434
+auc(rocobj) # 0.8434 | 0.7256
 # Partial AUC:
-auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE) # 0.7389
+auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE) # 0.7389 | 0.5946
 # Plot
 plot(rocobj)
 
