@@ -2,8 +2,7 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(caret);library(pROC)
-load('data/train_validation.RData')
-load('data/test.RData');ls()
+load('data/train_validation_test');ls()
 
 ### Training Model
 # Config
@@ -72,7 +71,7 @@ submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
 write.csv(submit,'pred/submission_20151028_1.csv',quote = FALSE,row.names = FALSE)
-
+save(fit, file='../rf.RData')
 
 # Imputation
 load('data/mbr_event_data.RData')

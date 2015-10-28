@@ -9,7 +9,7 @@ length(table(mbr.event$EVENT_ID))
 mbr.event[is.na(mbr.event$AVG_TAKEN_HOUR_INPLAY),'AVG_TAKEN_HOUR_INPLAY'] <- median(mbr.event$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
 mbr.event[is.na(mbr.event$AVG_TAKEN_HOUR_OUTPLAY),'AVG_TAKEN_HOUR_OUTPLAY'] <- median(mbr.event$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
 
-load('data/mbr_event_data.RData')
+load('data/test.RData')
 test_dt[is.na(test_dt$AVG_TAKEN_HOUR_INPLAY),'AVG_TAKEN_HOUR_INPLAY'] <- median(mbr.event$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
 test_dt[is.na(test_dt$AVG_TAKEN_HOUR_OUTPLAY),'AVG_TAKEN_HOUR_OUTPLAY'] <- median(mbr.event$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
 test <- test_dt
@@ -19,5 +19,5 @@ total <- mbr.event
 validation <- mbr.event[mbr.event$EVENT_ID %in% c(101183757,101183885,101184013),]
 train <- mbr.event[!mbr.event$EVENT_ID %in% c(101183757,101183885,101184013),]
 dim(train); dim(validation)
-save(train, validation, test, file='data/train_validation.RData')
+save(train, validation, test, total, file='data/train_validation.RData')
 
