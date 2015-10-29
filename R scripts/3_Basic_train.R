@@ -11,11 +11,17 @@ load('data/train_validation_test.RData');ls()
 # Config
 train$flag_class <- as.factor(train$flag_class)
 
-fitControl <- trainControl(method = "none",
+fitControl <- trainControl(method = "cv",
                            number = 2,
                            classProbs = TRUE,
                            summaryFunction = twoClassSummary)
-Grid <-  expand.grid(mtry=8)
+Grid <-  expand.grid(mtry=6)
+# Grid <-  expand.grid(nrounds = 100, max_depth = 8, eta = 0.05) # xgbTree
+# Grid <-  expand.grid(sigma = 1, C = 0.1) # svmRaidal
+# Grid <-  expand.grid(size = 80, decay = 0.1) # nnet
+# Grid <-  expand.grid(fL=0.01, usekernel=F) # nb
+# Grid <-  expand.grid(nIter=20) # LogitBoost
+# Grid <-  expand.grid(n.trees = 180, interaction.depth = 6, shrinkage = 0.01) # gbm
 
 # Training
 set.seed(825)
@@ -38,13 +44,13 @@ fitControl2 <- trainControl(method = "adaptive_cv",
                             ## the following function
                             summaryFunction = twoClassSummary,
                             ## Adaptive resampling information:
-                            adaptive = list(min = 10,
+                            adaptive = list(min = 8,
                                             alpha = 0.05,
                                             method = "BT", #gls for Linear
                                             complete = TRUE))
 
 set.seed(825)
-svmFit2 <- train(flag_class ~ ., data=total[,-c(1,2,49)],
+svmFit2 <- train(flag_class ~ ., data=train[,-c(1,2,53)],
                  method = "rf", #svmRadial
                  trControl = fitControl2,
                  # preProc = c("center", "scale"),
@@ -60,31 +66,39 @@ fitImp[1]
 ### Validation ###
 ##################
 ### Predict
-p <- predict(fit, newdata=validation, type = 'prob')
-validation$INVEST <- validation$TRANSACTION_COUNT_INPLAY * validation$AVG_BET_SIZE_INPLAY + validation$TRANSACTION_COUNT_OUTPLAY * validation$AVG_BET_SIZE_OUTPLAY
-validation$Y <- p$Y
-validation$PRED_PROFIT_LOSS <- (validation$Y - 0.5) * validation$INVEST * 2
-pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=validation, sum, na.rm=F)
+val <- validation[!validation$COUNTRY_OF_RESIDENCE_NAME %in% c('Macau','Qatar'),]
+p <- predict(fit, newdata=val, type = 'prob')
+val$INVEST <- val$TRANSACTION_COUNT_INPLAY * val$AVG_BET_SIZE_INPLAY + val$TRANSACTION_COUNT_OUTPLAY * val$AVG_BET_SIZE_OUTPLAY
+val$Y <- p$Y
+val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2
+pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=F)
 pred_fin$PRED_PROFIT_LOSS_2 <- ifelse(pred_fin$PRED_PROFIT_LOSS > 0, 1, ifelse(pred_fin$PRED_PROFIT_LOSS < 0, 0, 0.5))
 
 ### Validation
 # validation$flag_class <- as.factor(validation$flag_class)
-val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=validation, sum, na.rm=F)
+val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=val, sum, na.rm=F)
 val_fin$PRED_PROFIT_LOSS_3 <- ifelse(val_fin$flag_regr > 0, 1, ifelse(val_fin$flag_regr < 0, 0, 0.5))
 
-
+p_rf <- p
+p_lg <- p
 #########################
 ### Model Performance ###
 #########################
 v <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
 
 # With a roc object:
-rocobj <- roc(v$flag_regr, v$PRED_PROFIT_LOSS)
-rocobj <- roc(validation$flag_class, p$Y)
+rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$PRED_PROFIT_LOSS_2)
+rocobj <- roc(val$flag_class, p$Y)
 # Full AUC:
-auc(rocobj) # 0.8434 | 0.7256
+auc(rocobj) 
+# rf 0.7225 
+# lg 0.7517
+
 # Partial AUC:
-auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE) # 0.7389 | 0.5946
+auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE) 
+# rf 0.5933
+# lg 0.6529
+
 # Plot
 plot(rocobj)
 
