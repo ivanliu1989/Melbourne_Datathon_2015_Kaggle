@@ -19,7 +19,7 @@ Grid <-  expand.grid(mtry=8)
 
 # Training
 set.seed(825)
-fit <- train(flag_class ~ ., data=train[,-c(1,2,49)], # classification
+fit <- train(flag_class ~ ., data=train[,-c(1,2,53)], # classification
              method = "rf",
              trControl = fitControl,
              tuneGrid = Grid,
@@ -30,8 +30,8 @@ fit <- train(flag_class ~ ., data=train[,-c(1,2,49)], # classification
 
 # Config 2
 fitControl2 <- trainControl(method = "adaptive_cv",
-                            number = 10,
-                            repeats = 5,
+                            number = 5,
+                            repeats = 2,
                             ## Estimate class probabilities
                             classProbs = TRUE,
                             ## Evaluate performance using 

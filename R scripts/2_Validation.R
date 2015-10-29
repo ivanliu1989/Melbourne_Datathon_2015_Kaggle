@@ -17,3 +17,4 @@ train <- mbr.event[!mbr.event$EVENT_ID %in% c(101183757,101183885,101184013),]
 dim(train); dim(validation)
 save(train, validation, total, file='data/train_validation.RData')
 
+apply(total,2, function(x) mean(is.na(x)))
