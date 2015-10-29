@@ -16,7 +16,10 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 
 ### Steps
 
-1. Validation sets
-2. Develop evaluation function
-3. Regression (one hot encoding)
-4. Classification 
+1. B & L Identify
+2. B & L rates
+3. Profit_Loss formula
+4. Logistic regression, nnet, gbm, svm, rf
+5. Feature selection
+6. Tune
+7. Clustering
