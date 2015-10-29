@@ -2,9 +2,9 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 
-load('data/train_validation.RData');
-load('data/mbr_event_data.RData');ls()
+load('data/train_validation.RData');ls()
 
+mbr.event <- total
 submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
 test <- read.csv('data/semi_and_final_features.csv', stringsAsFactors=FALSE,na.strings = "")
 head(submit)
@@ -141,6 +141,7 @@ test_dt[, c(39:41)][is.na(test_dt[, c(39:41)])] <- 0.5
 test_dt$AVG_TAKEN_HOUR_INPLAY <- floor(test_dt$AVG_TAKEN_HOUR_INPLAY)
 test_dt$AVG_TAKEN_HOUR_OUTPLAY <- floor(test_dt$AVG_TAKEN_HOUR_OUTPLAY)
 
+head(test_dt)
 # 10. CANCEL_RATIO
 test_dt$CANCEL_RATIO_INPLAY <- test_dt$TRANSACTION_COUNT_INPLAY_C/(test_dt$TRANSACTION_COUNT_INPLAY_C+test_dt$TRANSACTION_COUNT_INPLAY+test_dt$TRANSACTION_COUNT_INPLAY_L)
 test_dt$CANCEL_RATIO_OUTPLAY <- test_dt$TRANSACTION_COUNT_OUTPLAY_C/(test_dt$TRANSACTION_COUNT_OUTPLAY_C+test_dt$TRANSACTION_COUNT_OUTPLAY+test_dt$TRANSACTION_COUNT_OUTPLAY_L)
@@ -150,15 +151,15 @@ test_dt$INPLAY_RATIO <- test_dt$TRANSACTION_COUNT_INPLAY/(test_dt$TRANSACTION_CO
 test_dt[,c(46:48)][is.na(test_dt[,c(46:48)])] <- 0
 
 # 12. Country
-country <- mbr.event[!duplicated(mbr.event[,c(1,33)]),c(1,33)]
+country <- mbr.event[!duplicated(mbr.event[,c(1,49)]),c(1,49)]
 test_dt <- merge(test_dt, country, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 # 13. BL_RATIO
-BL_RATIO_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,33)]),c(1,33)]
+BL_RATIO_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,50)]),c(1,50)]
 test_dt <- merge(test_dt, BL_RATIO_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-BL_RATIO_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,33)]),c(1,33)]
+BL_RATIO_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,51)]),c(1,51)]
 test_dt <- merge(test_dt, BL_RATIO_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-BL_RATIO <- mbr.event[!duplicated(mbr.event[,c(1,33)]),c(1,33)]
+BL_RATIO <- mbr.event[!duplicated(mbr.event[,c(1,52)]),c(1,52)]
 test_dt <- merge(test_dt, BL_RATIO, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 #META DATA
@@ -166,5 +167,11 @@ test_dt <- merge(test_dt, BL_RATIO, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT
 
 # 2. CLUSTERING
 
-save(test_dt, file='data/test.RData')
 
+# Imputation
+test_dt[is.na(test_dt$AVG_TAKEN_HOUR_INPLAY),'AVG_TAKEN_HOUR_INPLAY'] <- median(mbr.event$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
+test_dt[is.na(test_dt$AVG_TAKEN_HOUR_OUTPLAY),'AVG_TAKEN_HOUR_OUTPLAY'] <- median(mbr.event$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
+test <- test_dt
+save(test, file='data/test.RData')
+
+save(train, validation, test, total, file='data/train_validation_test.RData')

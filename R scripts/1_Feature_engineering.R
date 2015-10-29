@@ -271,7 +271,7 @@ feat.eng <- function(d){
     # 2. CLUSTERING
     
     # Result
-    flag <- aggregate(PROFIT_LOSS ~ ACCOUNT_ID + EVENT_ID + BID_TYP, data=d, sum, na.rm = T) 
+    flag <- aggregate(PROFIT_LOSS ~ ACCOUNT_ID + EVENT_ID, data=d, sum, na.rm = T) 
     flag$flag_class <- ifelse(flag$PROFIT_LOSS<0, 'N', 'Y')
     names(flag) <- c('ACCOUNT_ID','EVENT_ID','flag_regr','flag_class')
     

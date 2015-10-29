@@ -9,7 +9,7 @@ load('data/train_validation_test.RData');ls()
 ### Training Model ###
 ######################
 # Config
-total$flag_class <- as.factor(total$flag_class)
+train$flag_class <- as.factor(train$flag_class)
 
 fitControl <- trainControl(method = "none",
                            number = 2,
@@ -19,7 +19,7 @@ Grid <-  expand.grid(mtry=8)
 
 # Training
 set.seed(825)
-fit <- train(flag_class ~ ., data=total[,-c(1,2,49)], # classification
+fit <- train(flag_class ~ ., data=train[,-c(1,2,49)], # classification
              method = "rf",
              trControl = fitControl,
              tuneGrid = Grid,
@@ -80,6 +80,7 @@ v <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
 
 # With a roc object:
 rocobj <- roc(v$flag_regr, v$PRED_PROFIT_LOSS)
+rocobj <- roc(validation$flag_class, p$Y)
 # Full AUC:
 auc(rocobj) # 0.8434 | 0.7256
 # Partial AUC:
