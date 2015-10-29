@@ -8,6 +8,7 @@ dt_4 <- read.csv('../Datathon_Full_Dataset/Datathon WC Data Games 31-40.csv', st
 dt_5 <- read.csv('../Datathon_Full_Dataset/Datathon WC Data Games QTR Finals.csv', stringsAsFactors=FALSE,na.strings = "")
 
 dt <- rbind(dt_1, dt_2, dt_3, dt_4, dt_5)
+rm(list = c('dt_1', 'dt_2', 'dt_3', 'dt_4', 'dt_5'))
 
 feat.eng <- function(d){
     #trim the white space
@@ -16,7 +17,7 @@ feat.eng <- function(d){
     
     #the columns of interest 
     requiredColumns <- c('ACCOUNT_ID','EVENT_ID','BID_TYP','PRICE_TAKEN','BET_SIZE','STATUS_ID','PROFIT_LOSS',
-                         'INPLAY_BET','PLACED_DATE','TAKEN_DATE','MATCH')
+                         'INPLAY_BET','PLACED_DATE','TAKEN_DATE','MATCH','COUNTRY_OF_RESIDENCE_NAME')
     # INPLAY_BET, PLACED_DATE-TAKEN_DATE, TAKEN_TIME, COUNTRY, TEAM_WIN_RATES, CUSTOMER_TYPE, PREV_WIN, PREV_AMOUNT
     # Average bet size / current bet size
     
