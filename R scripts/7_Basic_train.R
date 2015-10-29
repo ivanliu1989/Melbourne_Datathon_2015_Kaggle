@@ -80,10 +80,11 @@ v <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
 
 # With a roc object:
 rocobj <- roc(v$flag_regr, v$PRED_PROFIT_LOSS)
+rocobj <- roc(validation$flag_class, p$Y)
 # Full AUC:
-auc(rocobj) # 0.8434 | 0.7256
+auc(rocobj) # 0.8434 | 0.7256 | 0.9057
 # Partial AUC:
-auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE) # 0.7389 | 0.5946
+auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE) # 0.7389 | 0.5946 | 0.8304
 # Plot
 plot(rocobj)
 

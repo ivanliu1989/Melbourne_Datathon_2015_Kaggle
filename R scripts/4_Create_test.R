@@ -149,6 +149,18 @@ test_dt$CANCEL_RATIO_OUTPLAY <- test_dt$TRANSACTION_COUNT_OUTPLAY_C/(test_dt$TRA
 test_dt$INPLAY_RATIO <- test_dt$TRANSACTION_COUNT_INPLAY/(test_dt$TRANSACTION_COUNT_INPLAY + test_dt$TRANSACTION_COUNT_OUTPLAY)
 test_dt[,c(46:48)][is.na(test_dt[,c(46:48)])] <- 0
 
+# 12. Country
+country <- mbr.event[!duplicated(mbr.event[,c(1,33)]),c(1,33)]
+test_dt <- merge(test_dt, country, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+
+# 13. BL_RATIO
+BL_RATIO_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,33)]),c(1,33)]
+test_dt <- merge(test_dt, BL_RATIO_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+BL_RATIO_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,33)]),c(1,33)]
+test_dt <- merge(test_dt, BL_RATIO_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+BL_RATIO <- mbr.event[!duplicated(mbr.event[,c(1,33)]),c(1,33)]
+test_dt <- merge(test_dt, BL_RATIO, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+
 #META DATA
 # 1. RFM
 
