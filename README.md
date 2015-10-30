@@ -16,7 +16,7 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 
 ### Steps
 
-1. New member imputation (test)
+1. New member imputation (test line 136-150)
 2. Feature selection
 3. One-hot (pca, scale)
 4. Evaluation formula (B&L classifier)
