@@ -1,6 +1,6 @@
-setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
+library(MASS);library(e1071)
 
 dt_1 <- read.csv('../Datathon_Full_Dataset/Datathon WC Data Games 1-10.csv', stringsAsFactors=FALSE,na.strings = "")
 dt_2 <- read.csv('../Datathon_Full_Dataset/Datathon WC Data Games 11-20.csv', stringsAsFactors=FALSE,na.strings = "")
@@ -112,11 +112,25 @@ feat.eng <- function(d){
   # 7. STDEV_PLACED_TAKEN_TIME (ALL/INDIVIDUAL) (?)
   STDEV_PLACED_TAKEN_TIME <- aggregate(PLACED_TAKEN_TIME ~ ACCOUNT_ID + STATUS_ID + INPLAY_BET ,data=d, sd, na.rm = T) 
   names(STDEV_PLACED_TAKEN_TIME) <- c('ACCOUNT_ID', 'STATUS_ID', 'INPLAY_BET', 'STDEV_PLACED_TAKEN_TIME') #EVENT_ID
-  STDEV_PLACED_TAKEN_TIME[is.na(STDEV_PLACED_TAKEN_TIME$STDEV_PLACED_TAKEN_TIME), 5] <- 0
+  STDEV_PLACED_TAKEN_TIME[is.na(STDEV_PLACED_TAKEN_TIME$STDEV_PLACED_TAKEN_TIME), 4] <- 0
+  
+  # 7.2 SKEW_PLACED_TAKEN_TIME (ALL/INDIVIDUAL) (?)
+  SKEW_PLACED_TAKEN_TIME <- aggregate(PLACED_TAKEN_TIME ~ ACCOUNT_ID + STATUS_ID + INPLAY_BET ,data=d, skewness, na.rm = T) 
+  names(SKEW_PLACED_TAKEN_TIME) <- c('ACCOUNT_ID', 'STATUS_ID', 'INPLAY_BET', 'SKEW_PLACED_TAKEN_TIME') #EVENT_ID
+  SKEW_PLACED_TAKEN_TIME[is.na(SKEW_PLACED_TAKEN_TIME$SKEW_PLACED_TAKEN_TIME), 4] <- 0
+  
+  # 7.3 KURT_PLACED_TAKEN_TIME (ALL/INDIVIDUAL) (?)
+  KURT_PLACED_TAKEN_TIME <- aggregate(PLACED_TAKEN_TIME ~ ACCOUNT_ID + STATUS_ID + INPLAY_BET ,data=d, kurtosis, na.rm = T) 
+  names(KURT_PLACED_TAKEN_TIME) <- c('ACCOUNT_ID', 'STATUS_ID', 'INPLAY_BET', 'KURT_PLACED_TAKEN_TIME') #EVENT_ID
+  KURT_PLACED_TAKEN_TIME[is.na(KURT_PLACED_TAKEN_TIME$KURT_PLACED_TAKEN_TIME), 4] <- 0
   
   # 8. AVG_TAKEN_HOUR (?)
   AVG_TAKEN_HOUR <- aggregate(as.numeric(format(PLACED_DATE, "%H")) ~ ACCOUNT_ID + STATUS_ID + INPLAY_BET ,data=d, mean, na.rm = T) #EVENT_ID
   names(AVG_TAKEN_HOUR) <- c('ACCOUNT_ID', 'STATUS_ID', 'INPLAY_BET', 'AVG_TAKEN_HOUR')
+  
+  # 8.2 STDEV_TAKEN_HOUR (?)
+  STDEV_TAKEN_HOUR <- aggregate(as.numeric(format(PLACED_DATE, "%H")) ~ ACCOUNT_ID + STATUS_ID + INPLAY_BET ,data=d, sd, na.rm = T) #EVENT_ID
+  names(STDEV_TAKEN_HOUR) <- c('ACCOUNT_ID', 'STATUS_ID', 'INPLAY_BET', 'STDEV_TAKEN_HOUR')
   
   # 9. PREV_WIN_RATE (*)
   PREV_WIN_RATE_W <- aggregate(PROFIT_LOSS ~ ACCOUNT_ID + STATUS_ID + INPLAY_BET ,data=d[d$PROFIT_LOSS>0,], length) 
@@ -191,8 +205,17 @@ feat.eng <- function(d){
   mbr.event <- merge(mbr.event, STDEV_PLACED_TAKEN_TIME[STDEV_PLACED_TAKEN_TIME$INPLAY_BET == 'Y', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
   mbr.event <- merge(mbr.event, STDEV_PLACED_TAKEN_TIME[STDEV_PLACED_TAKEN_TIME$INPLAY_BET == 'N', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
   
+  mbr.event <- merge(mbr.event, SKEW_PLACED_TAKEN_TIME[SKEW_PLACED_TAKEN_TIME$INPLAY_BET == 'Y', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+  mbr.event <- merge(mbr.event, SKEW_PLACED_TAKEN_TIME[SKEW_PLACED_TAKEN_TIME$INPLAY_BET == 'N', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+  
+  mbr.event <- merge(mbr.event, KURT_PLACED_TAKEN_TIME[KURT_PLACED_TAKEN_TIME$INPLAY_BET == 'Y', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+  mbr.event <- merge(mbr.event, KURT_PLACED_TAKEN_TIME[KURT_PLACED_TAKEN_TIME$INPLAY_BET == 'N', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+  
   mbr.event <- merge(mbr.event, AVG_TAKEN_HOUR[AVG_TAKEN_HOUR$INPLAY_BET == 'Y', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
   mbr.event <- merge(mbr.event, AVG_TAKEN_HOUR[AVG_TAKEN_HOUR$INPLAY_BET == 'N', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+  
+  mbr.event <- merge(mbr.event, STDEV_TAKEN_HOUR[STDEV_TAKEN_HOUR$INPLAY_BET == 'Y', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+  mbr.event <- merge(mbr.event, STDEV_TAKEN_HOUR[STDEV_TAKEN_HOUR$INPLAY_BET == 'N', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
   
   mbr.event <- merge(mbr.event, PREV_WIN_RATE[PREV_WIN_RATE$INPLAY_BET == 'Y', c(1,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
   mbr.event <- merge(mbr.event, PREV_WIN_RATE[PREV_WIN_RATE$INPLAY_BET == 'N', c(1,4,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
@@ -210,14 +233,16 @@ feat.eng <- function(d){
                         'STDEV_BET_SIZE_INPLAY','STDEV_BET_SIZE_OUTPLAY','STDEV_BET_SIZE_INPLAY_L','STDEV_BET_SIZE_OUTPLAY_L','STDEV_BET_SIZE_INPLAY_C','STDEV_BET_SIZE_OUTPLAY_C',
                         'AVG_PLACED_TAKEN_TIME_INPLAY','AVG_PLACED_TAKEN_TIME_OUTPLAY',
                         'STDEV_PLACED_TAKEN_TIME_INPLAY','STDEV_PLACED_TAKEN_TIME_OUTPLAY',
+                        'SKEW_PLACED_TAKEN_TIME_INPLAY','SKEW_PLACED_TAKEN_TIME_OUTPLAY',
+                        'KURT_PLACED_TAKEN_TIME_INPLAY','KURT_PLACED_TAKEN_TIME_OUTPLAY',
                         'AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY',
+                        'STDEV_TAKEN_HOUR_INPLAY','STDEV_TAKEN_HOUR_OUTPLAY',
                         'PREV_WIN_RATE_INPLAY','PREV_WIN_RATE_OUTPLAY','PREV_WIN_RATE',
                         'NET_PROFIT_INPLAY','NET_PROFIT_OUTPLAY',
                         'MARGIN_INPLAY','MARGIN_OUTPLAY'
   )
-  mbr.event[, -c(1,2,33:41)][is.na(mbr.event[, -c(1,2,33:41)])] <- 0
-  mbr.event[, c(33:36)][is.na(mbr.event[, c(33:36)])] <- 0
-  mbr.event[, c(39:41)][is.na(mbr.event[, c(39:41)])] <- 0.5
+  mbr.event[, -c(1,2,45:47)][is.na(mbr.event[, -c(1,2,45:47)])] <- 0
+  mbr.event[, c(45:47)][is.na(mbr.event[, c(45:47)])] <- 0.5
   mbr.event$AVG_TAKEN_HOUR_INPLAY <- floor(mbr.event$AVG_TAKEN_HOUR_INPLAY)
   mbr.event$AVG_TAKEN_HOUR_OUTPLAY <- floor(mbr.event$AVG_TAKEN_HOUR_OUTPLAY)
   
@@ -227,9 +252,11 @@ feat.eng <- function(d){
   
   # 11. INPLAY_RATIO
   mbr.event$INPLAY_RATIO <- mbr.event$TRANSACTION_COUNT_INPLAY/(mbr.event$TRANSACTION_COUNT_INPLAY + mbr.event$TRANSACTION_COUNT_OUTPLAY)
-  mbr.event[,c(46:48)][is.na(mbr.event[,c(46:48)])] <- 0
+  mbr.event[,c(52:54)][is.na(mbr.event[,c(52:54)])] <- 0
   
   # 12. Country
+  country$COUNTRY_OF_RESIDENCE_NAME <- substr(country$COUNTRY_OF_RESIDENCE_NAME, 1,5) 
+  country$COUNTRY_OF_RESIDENCE_NAME <- gsub(" ", "", country$COUNTRY_OF_RESIDENCE_NAME, fixed = TRUE)
   mbr.event <- merge(mbr.event, country, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
   
   # 13. BL_RATIO
@@ -281,5 +308,6 @@ feat.eng <- function(d){
 }
 
 mbr.event <- feat.eng(dt)
+apply(mbr.event,2, function(x) mean(is.na(x)))
 
 save(mbr.event, file='data/mbr_event_data.RData')
