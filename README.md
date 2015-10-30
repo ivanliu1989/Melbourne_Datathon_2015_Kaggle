@@ -16,10 +16,9 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 
 ### Steps
 
-1. B & L Identify
-2. B & L rates
-3. Profit_Loss formula
-4. Logistic regression, nnet, gbm, svm, rf
-5. Feature selection
-6. Tune
-7. Clustering
+1. New member imputation (test)
+2. Feature selection
+3. One-hot (pca, scale)
+4. Evaluation formula (B&L classifier)
+5. h2o (gbm, rf, nnet)
+6. caret (nb, glm, svm)
