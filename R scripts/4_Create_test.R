@@ -1,4 +1,3 @@
-setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 
@@ -99,45 +98,62 @@ STDEV_PLACED_TAKEN_TIME_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,36)]),c(
 test_dt <- merge(test_dt, STDEV_PLACED_TAKEN_TIME_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 test_dt <- merge(test_dt, STDEV_PLACED_TAKEN_TIME_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
-AVG_TAKEN_HOUR_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,37)]),c(1,37)]
-AVG_TAKEN_HOUR_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,38)]),c(1,38)]
+SKEW_PLACED_TAKEN_TIME_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,37)]),c(1,37)]
+SKEW_PLACED_TAKEN_TIME_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,38)]),c(1,38)]
+test_dt <- merge(test_dt, SKEW_PLACED_TAKEN_TIME_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test_dt <- merge(test_dt, SKEW_PLACED_TAKEN_TIME_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+
+KURT_PLACED_TAKEN_TIME_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,39)]),c(1,39)]
+KURT_PLACED_TAKEN_TIME_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,40)]),c(1,40)]
+test_dt <- merge(test_dt, KURT_PLACED_TAKEN_TIME_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test_dt <- merge(test_dt, KURT_PLACED_TAKEN_TIME_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+
+AVG_TAKEN_HOUR_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,41)]),c(1,41)]
+AVG_TAKEN_HOUR_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,42)]),c(1,42)]
 test_dt <- merge(test_dt, AVG_TAKEN_HOUR_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 test_dt <- merge(test_dt, AVG_TAKEN_HOUR_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
-PREV_WIN_RATE_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,39)]),c(1,39)]
-PREV_WIN_RATE_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,40)]),c(1,40)]
+STDEV_TAKEN_HOUR_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,43)]),c(1,43)]
+STDEV_TAKEN_HOUR_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,44)]),c(1,44)]
+test_dt <- merge(test_dt, STDEV_TAKEN_HOUR_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test_dt <- merge(test_dt, STDEV_TAKEN_HOUR_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+
+PREV_WIN_RATE_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,45)]),c(1,45)]
+PREV_WIN_RATE_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,46)]),c(1,46)]
 test_dt <- merge(test_dt, PREV_WIN_RATE_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 test_dt <- merge(test_dt, PREV_WIN_RATE_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
-PREV_WIN_RATE <- mbr.event[!duplicated(mbr.event[,c(1,41)]),c(1,41)]
+PREV_WIN_RATE <- mbr.event[!duplicated(mbr.event[,c(1,47)]),c(1,47)]
 test_dt <- merge(test_dt, PREV_WIN_RATE, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
-NET_PROFIT_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,42)]),c(1,42)]
-NET_PROFIT_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,43)]),c(1,43)]
+NET_PROFIT_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,48)]),c(1,48)]
+NET_PROFIT_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,49)]),c(1,49)]
 test_dt <- merge(test_dt, NET_PROFIT_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 test_dt <- merge(test_dt, NET_PROFIT_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
-MARGIN_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,44)]),c(1,44)]
-MARGIN_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,45)]),c(1,45)]
+MARGIN_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,50)]),c(1,50)]
+MARGIN_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,51)]),c(1,51)]
 test_dt <- merge(test_dt, MARGIN_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 test_dt <- merge(test_dt, MARGIN_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
-names(test_dt) <- c('ACCOUNT_ID','EVENT_ID','TRANSACTION_COUNT_INPLAY','TRANSACTION_COUNT_OUTPLAY','TRANSACTION_COUNT_INPLAY_L','TRANSACTION_COUNT_OUTPLAY_L','TRANSACTION_COUNT_INPLAY_C','TRANSACTION_COUNT_OUTPLAY_C',
-                    'AVG_BET_SIZE_INPLAY','AVG_BET_SIZE_OUTPLAY','AVG_BET_SIZE_INPLAY_L','AVG_BET_SIZE_OUTPLAY_L','AVG_BET_SIZE_INPLAY_C','AVG_BET_SIZE_OUTPLAY_C',
-                    'MAX_BET_SIZE_INPLAY','MAX_BET_SIZE_OUTPLAY','MAX_BET_SIZE_INPLAY_L','MAX_BET_SIZE_OUTPLAY_L','MAX_BET_SIZE_INPLAY_C','MAX_BET_SIZE_OUTPLAY_C',
-                    'MIN_BET_SIZE_INPLAY','MIN_BET_SIZE_OUTPLAY','MIN_BET_SIZE_INPLAY_L','MIN_BET_SIZE_OUTPLAY_L','MIN_BET_SIZE_INPLAY_C','MIN_BET_SIZE_OUTPLAY_C',
-                    'STDEV_BET_SIZE_INPLAY','STDEV_BET_SIZE_OUTPLAY','STDEV_BET_SIZE_INPLAY_L','STDEV_BET_SIZE_OUTPLAY_L','STDEV_BET_SIZE_INPLAY_C','STDEV_BET_SIZE_OUTPLAY_C',
-                    'AVG_PLACED_TAKEN_TIME_INPLAY','AVG_PLACED_TAKEN_TIME_OUTPLAY',
-                    'STDEV_PLACED_TAKEN_TIME_INPLAY','STDEV_PLACED_TAKEN_TIME_OUTPLAY',
-                    'AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY',
-                    'PREV_WIN_RATE_INPLAY','PREV_WIN_RATE_OUTPLAY','PREV_WIN_RATE',
-                    'NET_PROFIT_INPLAY','NET_PROFIT_OUTPLAY',
-                    'MARGIN_INPLAY','MARGIN_OUTPLAY'
+names(mbr.event) <- c('ACCOUNT_ID','EVENT_ID','TRANSACTION_COUNT_INPLAY','TRANSACTION_COUNT_OUTPLAY','TRANSACTION_COUNT_INPLAY_L','TRANSACTION_COUNT_OUTPLAY_L','TRANSACTION_COUNT_INPLAY_C','TRANSACTION_COUNT_OUTPLAY_C',
+                      'AVG_BET_SIZE_INPLAY','AVG_BET_SIZE_OUTPLAY','AVG_BET_SIZE_INPLAY_L','AVG_BET_SIZE_OUTPLAY_L','AVG_BET_SIZE_INPLAY_C','AVG_BET_SIZE_OUTPLAY_C',
+                      'MAX_BET_SIZE_INPLAY','MAX_BET_SIZE_OUTPLAY','MAX_BET_SIZE_INPLAY_L','MAX_BET_SIZE_OUTPLAY_L','MAX_BET_SIZE_INPLAY_C','MAX_BET_SIZE_OUTPLAY_C',
+                      'MIN_BET_SIZE_INPLAY','MIN_BET_SIZE_OUTPLAY','MIN_BET_SIZE_INPLAY_L','MIN_BET_SIZE_OUTPLAY_L','MIN_BET_SIZE_INPLAY_C','MIN_BET_SIZE_OUTPLAY_C',
+                      'STDEV_BET_SIZE_INPLAY','STDEV_BET_SIZE_OUTPLAY','STDEV_BET_SIZE_INPLAY_L','STDEV_BET_SIZE_OUTPLAY_L','STDEV_BET_SIZE_INPLAY_C','STDEV_BET_SIZE_OUTPLAY_C',
+                      'AVG_PLACED_TAKEN_TIME_INPLAY','AVG_PLACED_TAKEN_TIME_OUTPLAY',
+                      'STDEV_PLACED_TAKEN_TIME_INPLAY','STDEV_PLACED_TAKEN_TIME_OUTPLAY',
+                      'SKEW_PLACED_TAKEN_TIME_INPLAY','SKEW_PLACED_TAKEN_TIME_OUTPLAY',
+                      'KURT_PLACED_TAKEN_TIME_INPLAY','KURT_PLACED_TAKEN_TIME_OUTPLAY',
+                      'AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY',
+                      'STDEV_TAKEN_HOUR_INPLAY','STDEV_TAKEN_HOUR_OUTPLAY',
+                      'PREV_WIN_RATE_INPLAY','PREV_WIN_RATE_OUTPLAY','PREV_WIN_RATE',
+                      'NET_PROFIT_INPLAY','NET_PROFIT_OUTPLAY',
+                      'MARGIN_INPLAY','MARGIN_OUTPLAY'
 )
 test <- test_dt
-test_dt[, -c(1,2,33:41)][is.na(test_dt[, -c(1,2,33:41)])] <- 0
-test_dt[, c(33:36)][is.na(test_dt[, c(33:36)])] <- 0
-test_dt[, c(39:41)][is.na(test_dt[, c(39:41)])] <- 0.5
+test_dt[, -c(1,2,45:47)][is.na(test_dt[, -c(1,2,45:47)])] <- 0
+test_dt[, c(45:47)][is.na(test_dt[, c(45:47)])] <- 0.5
 test_dt$AVG_TAKEN_HOUR_INPLAY <- floor(test_dt$AVG_TAKEN_HOUR_INPLAY)
 test_dt$AVG_TAKEN_HOUR_OUTPLAY <- floor(test_dt$AVG_TAKEN_HOUR_OUTPLAY)
 
@@ -148,18 +164,18 @@ test_dt$CANCEL_RATIO_OUTPLAY <- test_dt$TRANSACTION_COUNT_OUTPLAY_C/(test_dt$TRA
 
 # 11. INPLAY_RATIO
 test_dt$INPLAY_RATIO <- test_dt$TRANSACTION_COUNT_INPLAY/(test_dt$TRANSACTION_COUNT_INPLAY + test_dt$TRANSACTION_COUNT_OUTPLAY)
-test_dt[,c(46:48)][is.na(test_dt[,c(46:48)])] <- 0
+test_dt[,c(52:54)][is.na(test_dt[,c(52:54)])] <- 0
 
 # 12. Country
-country <- mbr.event[!duplicated(mbr.event[,c(1,49)]),c(1,49)]
+country <- mbr.event[!duplicated(mbr.event[,c(1,55)]),c(1,55)]
 test_dt <- merge(test_dt, country, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 # 13. BL_RATIO
-BL_RATIO_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,50)]),c(1,50)]
+BL_RATIO_INPLAY <- mbr.event[!duplicated(mbr.event[,c(1,56)]),c(1,56)]
 test_dt <- merge(test_dt, BL_RATIO_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-BL_RATIO_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,51)]),c(1,51)]
+BL_RATIO_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c(1,57)]),c(1,57)]
 test_dt <- merge(test_dt, BL_RATIO_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-BL_RATIO <- mbr.event[!duplicated(mbr.event[,c(1,52)]),c(1,52)]
+BL_RATIO <- mbr.event[!duplicated(mbr.event[,c(1,58)]),c(1,58)]
 test_dt <- merge(test_dt, BL_RATIO, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 #META DATA
