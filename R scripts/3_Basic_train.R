@@ -81,6 +81,7 @@ val_fin$PRED_PROFIT_LOSS_3 <- ifelse(val_fin$flag_regr > 0, 1, ifelse(val_fin$fl
 
 p_rf <- p
 p_lg <- p
+p$Y <- (p_rf$Y + p_lg$Y)/2
 #########################
 ### Model Performance ###
 #########################
