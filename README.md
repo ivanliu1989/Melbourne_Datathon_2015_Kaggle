@@ -22,3 +22,4 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 4. Evaluation formula (B&L classifier)
 5. h2o (gbm, rf, nnet)
 6. caret (nb, glm, svm)
+7. xgboost
