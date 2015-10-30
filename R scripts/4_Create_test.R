@@ -43,7 +43,7 @@ test_clean <- merge(test_clean, VAR, all.x = TRUE, all.y = FALSE, by = c('ACCOUN
 
 test <- test_clean
 test_dt <- test[!duplicated(test[,c(1,2)]),c(1,2)]
-  
+
 ### MERGE AND RETURN Member base
 # Event specific
 test_dt <- merge(test_dt, test[test$INPLAY_BET == 'Y' & test$STATUS_ID == 'S', c(1,2,5)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
@@ -123,16 +123,16 @@ test_dt <- merge(test_dt, MARGIN_INPLAY, all.x = TRUE, all.y = FALSE, by = c('AC
 test_dt <- merge(test_dt, MARGIN_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 names(test_dt) <- c('ACCOUNT_ID','EVENT_ID','TRANSACTION_COUNT_INPLAY','TRANSACTION_COUNT_OUTPLAY','TRANSACTION_COUNT_INPLAY_L','TRANSACTION_COUNT_OUTPLAY_L','TRANSACTION_COUNT_INPLAY_C','TRANSACTION_COUNT_OUTPLAY_C',
-                      'AVG_BET_SIZE_INPLAY','AVG_BET_SIZE_OUTPLAY','AVG_BET_SIZE_INPLAY_L','AVG_BET_SIZE_OUTPLAY_L','AVG_BET_SIZE_INPLAY_C','AVG_BET_SIZE_OUTPLAY_C',
-                      'MAX_BET_SIZE_INPLAY','MAX_BET_SIZE_OUTPLAY','MAX_BET_SIZE_INPLAY_L','MAX_BET_SIZE_OUTPLAY_L','MAX_BET_SIZE_INPLAY_C','MAX_BET_SIZE_OUTPLAY_C',
-                      'MIN_BET_SIZE_INPLAY','MIN_BET_SIZE_OUTPLAY','MIN_BET_SIZE_INPLAY_L','MIN_BET_SIZE_OUTPLAY_L','MIN_BET_SIZE_INPLAY_C','MIN_BET_SIZE_OUTPLAY_C',
-                      'STDEV_BET_SIZE_INPLAY','STDEV_BET_SIZE_OUTPLAY','STDEV_BET_SIZE_INPLAY_L','STDEV_BET_SIZE_OUTPLAY_L','STDEV_BET_SIZE_INPLAY_C','STDEV_BET_SIZE_OUTPLAY_C',
-                      'AVG_PLACED_TAKEN_TIME_INPLAY','AVG_PLACED_TAKEN_TIME_OUTPLAY',
-                      'STDEV_PLACED_TAKEN_TIME_INPLAY','STDEV_PLACED_TAKEN_TIME_OUTPLAY',
-                      'AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY',
-                      'PREV_WIN_RATE_INPLAY','PREV_WIN_RATE_OUTPLAY','PREV_WIN_RATE',
-                      'NET_PROFIT_INPLAY','NET_PROFIT_OUTPLAY',
-                      'MARGIN_INPLAY','MARGIN_OUTPLAY'
+                    'AVG_BET_SIZE_INPLAY','AVG_BET_SIZE_OUTPLAY','AVG_BET_SIZE_INPLAY_L','AVG_BET_SIZE_OUTPLAY_L','AVG_BET_SIZE_INPLAY_C','AVG_BET_SIZE_OUTPLAY_C',
+                    'MAX_BET_SIZE_INPLAY','MAX_BET_SIZE_OUTPLAY','MAX_BET_SIZE_INPLAY_L','MAX_BET_SIZE_OUTPLAY_L','MAX_BET_SIZE_INPLAY_C','MAX_BET_SIZE_OUTPLAY_C',
+                    'MIN_BET_SIZE_INPLAY','MIN_BET_SIZE_OUTPLAY','MIN_BET_SIZE_INPLAY_L','MIN_BET_SIZE_OUTPLAY_L','MIN_BET_SIZE_INPLAY_C','MIN_BET_SIZE_OUTPLAY_C',
+                    'STDEV_BET_SIZE_INPLAY','STDEV_BET_SIZE_OUTPLAY','STDEV_BET_SIZE_INPLAY_L','STDEV_BET_SIZE_OUTPLAY_L','STDEV_BET_SIZE_INPLAY_C','STDEV_BET_SIZE_OUTPLAY_C',
+                    'AVG_PLACED_TAKEN_TIME_INPLAY','AVG_PLACED_TAKEN_TIME_OUTPLAY',
+                    'STDEV_PLACED_TAKEN_TIME_INPLAY','STDEV_PLACED_TAKEN_TIME_OUTPLAY',
+                    'AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY',
+                    'PREV_WIN_RATE_INPLAY','PREV_WIN_RATE_OUTPLAY','PREV_WIN_RATE',
+                    'NET_PROFIT_INPLAY','NET_PROFIT_OUTPLAY',
+                    'MARGIN_INPLAY','MARGIN_OUTPLAY'
 )
 test <- test_dt
 test_dt[, -c(1,2,33:41)][is.na(test_dt[, -c(1,2,33:41)])] <- 0
@@ -172,6 +172,15 @@ test_dt <- merge(test_dt, BL_RATIO, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT
 test_dt[is.na(test_dt$AVG_TAKEN_HOUR_INPLAY),'AVG_TAKEN_HOUR_INPLAY'] <- median(mbr.event$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
 test_dt[is.na(test_dt$AVG_TAKEN_HOUR_OUTPLAY),'AVG_TAKEN_HOUR_OUTPLAY'] <- median(mbr.event$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
 test <- test_dt
+
+apply(test,2, function(x) mean(is.na(x)))
 save(test, file='data/test.RData')
 
 save(train, validation, test, total, file='data/train_validation_test.RData')
+
+write.csv(total,'../total.csv',quote = FALSE,row.names = FALSE)
+write.csv(test,'../test.csv',quote = FALSE,row.names = FALSE)
+
+t_c <- unique(test$ACCOUNT_ID)
+tot_c <- unique(total$ACCOUNT_ID)
+ex <- t_c[!t_c %in% tot_c]
