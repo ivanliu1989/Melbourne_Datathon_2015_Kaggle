@@ -3,24 +3,29 @@ setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 # devtools::install_github('dmlc/xgboost',subdir='R-package')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
-# load('data/6_train_validation_test_center_scale_no_dummy.RData');ls()
-load('data/6_train_validation_test_center_scale_no_dummy_2.RData');ls()
+load('data/6_train_validation_test_center_scale_no_dummy.RData');ls()
+# load('data/6_train_validation_test_center_scale_no_dummy_2.RData');ls()
 
 # Validation
 set.seed(8)
-inTraining <- createDataPartition(total$flag_class, p = .8, list = FALSE)
-train <- total[inTraining,]
-validation  <- total[-inTraining,]
+# inTraining <- createDataPartition(total$flag_class, p = .8, list = FALSE)
+# train <- total[inTraining,]
+# validation  <- total[-inTraining,]
 dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 
 
-for(d in c(0.14, 0.16, 0.17, 0.18, 0.19, 0.2)){
+for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     print (paste0('Parameter: ', d))
     
     #-------------Basic Training using XGBoost-----------------
-    bst <- xgboost(data = as.matrix(train[,3:46]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500,
-                   nthread = 4, objective = "binary:logistic", verbose = 1)
+    bst <- xgboost(data = as.matrix(train[,3:46]), label = train$flag_class, max.depth = 6, eta = 0.1, nround = 1400, maximize = F, 
+                   objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 50) #nthread = 4, 
+    
+    
+    bst <- xgb.cv(data = as.matrix(train[,3:46]), label = train$flag_class, nround = 1400, max.depth = 6, eta = 0.1, nfold = 5, 
+                  prediction = F, showsd = T, stratified = T, #metrics = 'auc', 'rmse', 'logloss', 'error'
+                  verbose = 1, early.stop.round = 20, print.every.n = 5, maximize = F)
     
     #----------------Advanced features --------------
     # dtrain <- xgb.DMatrix(data = as.matrix(train[,2:46]), label=as.matrix(train$flag_class))
@@ -56,8 +61,6 @@ for(d in c(0.14, 0.16, 0.17, 0.18, 0.19, 0.2)){
     
     # Partial AUC:
     print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
-    
-    
 }
 
 
