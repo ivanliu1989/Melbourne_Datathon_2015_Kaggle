@@ -15,12 +15,12 @@ dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 
 
-for(d in c(0.05, 0.08, 0.12, 0.15)){
+for(d in c(0.14, 0.16, 0.17, 0.18, 0.19, 0.2)){
     print (paste0('Parameter: ', d))
     
     #-------------Basic Training using XGBoost-----------------
-    bst <- xgboost(data = as.matrix(train[,2:46]), label = train$flag_class, max.depth = 6, eta = d, nround = 500,
-                   nthread = 4, objective = "binary:logistic", verbose = 0)
+    bst <- xgboost(data = as.matrix(train[,2:46]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500,
+                   nthread = 4, objective = "binary:logistic", verbose = 1)
     
     #----------------Advanced features --------------
     # dtrain <- xgb.DMatrix(data = as.matrix(train[,2:46]), label=as.matrix(train$flag_class))
@@ -62,3 +62,27 @@ for(d in c(0.05, 0.08, 0.12, 0.15)){
 
 
 head(v[,c(3,6)], 100)
+
+
+### Test 
+train <- total
+
+############
+### test ###
+############
+p <- predict(bst, as.matrix(test[,2:46]))
+test$Y <- p
+pred_fin <- aggregate(Y ~ ACCOUNT_ID, data=test, mean, na.rm=F)
+
+### Submission
+submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
+names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')
+submit <- merge(submit,pred_fin,all.x = TRUE,all.y = FALSE)
+table(is.na(submit$PRED_PROFIT_LOSS))
+submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
+submit$Prediction <- submit$PRED_PROFIT_LOSS
+submit$PRED_PROFIT_LOSS <- NULL
+
+write.csv(submit,'pred/submission_20151028_1.csv',quote = FALSE,row.names = FALSE)
+save(fit, file='../rf.RData')
+
