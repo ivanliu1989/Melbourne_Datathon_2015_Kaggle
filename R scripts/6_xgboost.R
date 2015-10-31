@@ -8,8 +8,8 @@ load('data/6_train_validation_test_center_scale_no_dummy_2.RData');ls()
 
 # Validation
 set.seed(8)
-inTraining <- createDataPartition(total$flag_class, p = .5, list = FALSE)
-train <- total[ inTraining,]
+inTraining <- createDataPartition(total$flag_class, p = .8, list = FALSE)
+train <- total[inTraining,]
 validation  <- total[-inTraining,]
 dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
@@ -19,7 +19,7 @@ for(d in c(0.14, 0.16, 0.17, 0.18, 0.19, 0.2)){
     print (paste0('Parameter: ', d))
     
     #-------------Basic Training using XGBoost-----------------
-    bst <- xgboost(data = as.matrix(train[,2:46]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500,
+    bst <- xgboost(data = as.matrix(train[,3:46]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500,
                    nthread = 4, objective = "binary:logistic", verbose = 1)
     
     #----------------Advanced features --------------
@@ -34,7 +34,7 @@ for(d in c(0.14, 0.16, 0.17, 0.18, 0.19, 0.2)){
     
     #--------------------basic prediction using xgboost--------------
     val <- validation#[!validation$COUNTRY_OF_RESIDENCE_NAME %in% c('Qatar'),]
-    p <- predict(bst, as.matrix(validation[,2:46]))
+    p <- predict(bst, as.matrix(validation[,3:46]))
     val$Y <- p
     val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2
     pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=F)
@@ -70,7 +70,7 @@ train <- total
 ############
 ### test ###
 ############
-p <- predict(bst, as.matrix(test[,2:46]))
+p <- predict(bst, as.matrix(test[,3:46]))
 test$Y <- p
 pred_fin <- aggregate(Y ~ ACCOUNT_ID, data=test, mean, na.rm=F)
 
@@ -83,6 +83,5 @@ submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-write.csv(submit,'pred/submission_20151028_1.csv',quote = FALSE,row.names = FALSE)
-save(fit, file='../rf.RData')
+write.csv(submit,'pred/submission_20151031_gbm_c_s_nd.csv',quote = FALSE,row.names = FALSE)
 
