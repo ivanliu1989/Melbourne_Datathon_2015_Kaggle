@@ -16,15 +16,15 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 
 ### Steps
 
-1. New member imputation (test line 136-150)
+1. New member imputation (test median)
 2. Feature selection
-    1. Creating Dummy Variables
-    2. Zero- and Near Zero-Variance Predictors
-    3. Identifying Correlated Predictors
-    4. Linear Dependencies
-    5. Centering and Scaling or Log transform
+	1. PCA
+    2. Centering and Scaling or Log transform
 3. One-hot (pca, scale)
 4. Evaluation formula (B&L classifier)
-5. h2o (gbm, rf, nnet)
-6. caret (nb, glm, svm)
+5. h2o (gbm, rf, nnet, nb, glm)
+6. caret (svm)
 7. xgboost
+
+### Ideas
+1. Win rate distributions
