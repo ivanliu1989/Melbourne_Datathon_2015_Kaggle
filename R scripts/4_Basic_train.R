@@ -17,9 +17,9 @@ fitControl <- trainControl(method = "none",
                            number = 5,
                            classProbs = TRUE,
                            summaryFunction = twoClassSummary)
-Grid <-  expand.grid(mtry=7)
+# Grid <-  expand.grid(mtry=7)
 # Grid <-  expand.grid(nrounds = 100, max_depth = 8, eta = 0.05) # xgbTree
-# Grid <-  expand.grid(sigma = 1, C = 0.1) # svmRaidal
+Grid <-  expand.grid(sigma = 1, C = 0.1) # svmRadial
 # Grid <-  expand.grid(size = 80, decay = 0.1) # nnet
 # Grid <-  expand.grid(fL=0.01, usekernel=F) # nb
 # Grid <-  expand.grid(nIter=20) # LogitBoost
@@ -28,7 +28,7 @@ Grid <-  expand.grid(mtry=7)
 # Training
 set.seed(825)
 fit <- train(flag_class ~ ., data=train[,-c(1,2,47,49)], # classification
-             method = "rf",
+             method = "svmRadial",
              trControl = fitControl,
              tuneGrid = Grid,
              # preProcess = c('center', 'scale'),

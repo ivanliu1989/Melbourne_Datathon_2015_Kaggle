@@ -19,13 +19,13 @@ for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     print (paste0('Parameter: ', d))
     
     #-------------Basic Training using XGBoost-----------------
-    bst <- xgboost(data = as.matrix(train[,3:46]), label = train$flag_class, max.depth = 6, eta = 0.1, nround = 1400, maximize = F, 
+    bst <- xgboost(data = as.matrix(train[,3:46]), label = train$flag_class, max.depth = 6, eta = 0.02, nround = 852, maximize = F, 
                    objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 50) #nthread = 4, 
     
-    
-    bst <- xgb.cv(data = as.matrix(train[,3:46]), label = train$flag_class, nround = 1400, max.depth = 6, eta = 0.1, nfold = 5, 
-                  prediction = F, showsd = T, stratified = T, #metrics = 'auc', 'rmse', 'logloss', 'error'
-                  verbose = 1, early.stop.round = 20, print.every.n = 5, maximize = F)
+#     
+    bst <- xgb.cv(data = as.matrix(train[,3:46]), label = train$flag_class, nround = 5000, max.depth = 6, eta = 0.02, nfold = 5, 
+                  prediction = F, showsd = T, stratified = T, objective = "binary:logistic", #metrics = 'auc',# 'rmse', 'logloss', 'error', 'auc'
+                  verbose = 1, early.stop.round = 50, print.every.n = 5, maximize = F)
     
     #----------------Advanced features --------------
     # dtrain <- xgb.DMatrix(data = as.matrix(train[,2:46]), label=as.matrix(train$flag_class))
