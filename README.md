@@ -38,3 +38,4 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 6. Separate Models for Old & Existing Account IDs
 
 7. All last events attributes (sparsity)
+8. Difference between B & L
