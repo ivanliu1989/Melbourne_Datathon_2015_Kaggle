@@ -8,14 +8,16 @@ load('data/6_train_validation_test_center_scale_no_dummy.RData');ls()
 
 ### Prepare data
 train$flag_class <- as.factor(train$flag_class); levels(train$flag_class) <- c(0,1) 
-y <- as.numeric(train$flag_class)-1
+# y <- as.numeric(train$flag_class)-1
+y <- train$flag_class
 x <- train[,-c(1,2,47,48,49)]
 x <- as.matrix(x)
 y <- as.matrix(y)
 
 ### Start modeling
 library('e1071')
-fit_svmL <- svm(x,y,scale=T,kernel='linear',cost=100, cross=10, cachesize=1000, tolerance=.001)
+fit_svmL <- svm(x,y,scale=T,kernel='linear',epsilon=0.1,probability=T,
+                cost=100, cross=10, cachesize=1000, tolerance=.001)
 fit_svmL$SV
 fit_svmL$coefs
 
@@ -27,7 +29,7 @@ tc <- tune.control(nrepeat=5,repeat.aggregate=min, sampling='cross',sampling.agg
                    performances=T,error.fun=NULL)
 gamma = 1/length(names(train_pH_1[,-1]))
 fit_svmL_tune <- tune(svm, flag_class~., data=train[,-c(1,2,47,49)], ranges=list(gamma=2^(-3:1),cost=2^(2:10)),
-                         tunecontrol = tc)
+                      tunecontrol = tc)
 best.tune()
 
 summary(fit_svmL_tune)
@@ -53,7 +55,7 @@ fit_pH <- train(pH~., data=train_pH, method='svmRadial',trControl = fitControl,
 ##################
 ### Predict
 val <- validation#[!validation$COUNTRY_OF_RESIDENCE_NAME %in% c('Qatar'),]
-p <- predict(fit_svmL_tune$best.model, newdata=val)#, type = 'prob')
+p <- predict(fit_svmL_tune$best.model, newdata=val, probability = T)
 fit_svmL_tune$best.parameters
 fit_svmL_tune$best.performance
 fit_svmL_tune$performances

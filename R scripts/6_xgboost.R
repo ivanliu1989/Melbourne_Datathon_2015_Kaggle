@@ -3,8 +3,8 @@ setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 # devtools::install_github('dmlc/xgboost',subdir='R-package')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
-load('data/6_train_validation_test_center_scale_no_dummy.RData');ls()
-# load('data/6_train_validation_test_center_scale_no_dummy_2.RData');ls()
+load('data/9_train_validation_test_TREE_1.RData');ls()
+# load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 # Validation
 set.seed(8)
@@ -19,27 +19,17 @@ for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     print (paste0('Parameter: ', d))
     
     #-------------Basic Training using XGBoost-----------------
-    bst <- xgboost(data = as.matrix(train[,3:46]), label = train$flag_class, max.depth = 6, eta = 0.02, nround = 852, maximize = F, 
+    bst <- xgboost(data = as.matrix(train[,3:56]), label = train$flag_class, max.depth = 6, eta = 0.02, nround = 1400, maximize = F, 
                    objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 50) #nthread = 4, 
     
-#     
-    bst <- xgb.cv(data = as.matrix(train[,3:46]), label = train$flag_class, nround = 5000, max.depth = 6, eta = 0.02, nfold = 5, 
-                  prediction = F, showsd = T, stratified = T, objective = "binary:logistic", #metrics = 'auc',# 'rmse', 'logloss', 'error', 'auc'
-                  verbose = 1, early.stop.round = 50, print.every.n = 5, maximize = F)
-    
-    #----------------Advanced features --------------
-    # dtrain <- xgb.DMatrix(data = as.matrix(train[,2:46]), label=as.matrix(train$flag_class))
-    # dtest <- xgb.DMatrix(data = validation[,2:46], label=test$flag_class)
-    # 
-    # watchlist <- list(train=dtrain, test=dtest)
-    # bst <- xgb.train(data=dtrain, max.depth=2, eta=1, nround=2, watchlist=watchlist,
-    #                  eval.metric = "error", eval.metric = "logloss",
-    #                  nthread = 2, objective = "binary:logistic")
-    
+    #-------------Tuning using XGBoost-----------------  
+#     bst <- xgb.cv(data = as.matrix(train[,3:46]), label = train$flag_class, nround = 5000, max.depth = 6, eta = 0.02, nfold = 5, 
+#                   prediction = F, showsd = T, stratified = T, objective = "binary:logistic", #metrics = 'auc',# 'rmse', 'logloss', 'error', 'auc'
+#                   verbose = 1, early.stop.round = 50, print.every.n = 5, maximize = F)
     
     #--------------------basic prediction using xgboost--------------
     val <- validation#[!validation$COUNTRY_OF_RESIDENCE_NAME %in% c('Qatar'),]
-    p <- predict(bst, as.matrix(validation[,3:46]))
+    p <- predict(bst, as.matrix(validation[,3:56]))
     val$Y <- p
     val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2
     pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=F)
