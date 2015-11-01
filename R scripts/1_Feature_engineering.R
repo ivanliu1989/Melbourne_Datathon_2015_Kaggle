@@ -19,4 +19,4 @@ total <- feat.eng(dt)
 apply(total,2, function(x) mean(is.na(x)))
 
 ### output
-save(total, file='data/1_complete_data.RData')
+save(total, file='data/1_complete_data_new.RData')
