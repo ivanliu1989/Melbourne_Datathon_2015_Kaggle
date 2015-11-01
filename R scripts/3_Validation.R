@@ -12,18 +12,18 @@ test$flag_class <- 'M'
 all <- rbind(total, test)
 str(all)
 all$COUNTRY_OF_RESIDENCE_NAME <- NULL
-all$AVG_TAKEN_HOUR_INPLAY <- as.factor(all$AVG_TAKEN_HOUR_INPLAY)
-all$AVG_TAKEN_HOUR_OUTPLAY <- as.factor(all$AVG_TAKEN_HOUR_OUTPLAY)
+# all$AVG_TAKEN_HOUR_INPLAY <- as.factor(all$AVG_TAKEN_HOUR_INPLAY)
+# all$AVG_TAKEN_HOUR_OUTPLAY <- as.factor(all$AVG_TAKEN_HOUR_OUTPLAY)
 # all$COUNTRY_OF_RESIDENCE_NAME <- as.factor(all$COUNTRY_OF_RESIDENCE_NAME)
 
-library(caret)
-dummies <- dummyVars(flag_class ~ ., data = all[,c('AVG_TAKEN_HOUR_INPLAY', 'AVG_TAKEN_HOUR_OUTPLAY', 'flag_class')])
-dum <- predict(dummies, newdata = all[,c('AVG_TAKEN_HOUR_INPLAY', 'AVG_TAKEN_HOUR_OUTPLAY', 'flag_class')])
-apply(dum,2, function(x) mean(is.na(x)))
-dum[is.na(dum)] <- 0
-all_c <- cbind(all[,!names(all) %in% c('AVG_TAKEN_HOUR_INPLAY', 'AVG_TAKEN_HOUR_OUTPLAY', 'flag_regr','flag_class')], 
-               dum, all[,c('flag_regr','flag_class')])
-all <- all_c
+# library(caret)
+# dummies <- dummyVars(flag_class ~ ., data = all[,c('AVG_TAKEN_HOUR_INPLAY', 'AVG_TAKEN_HOUR_OUTPLAY', 'flag_class')])
+# dum <- predict(dummies, newdata = all[,c('AVG_TAKEN_HOUR_INPLAY', 'AVG_TAKEN_HOUR_OUTPLAY', 'flag_class')])
+# apply(dum,2, function(x) mean(is.na(x)))
+# dum[is.na(dum)] <- 0
+# all_c <- cbind(all[,!names(all) %in% c('AVG_TAKEN_HOUR_INPLAY', 'AVG_TAKEN_HOUR_OUTPLAY', 'flag_regr','flag_class')], 
+#                dum, all[,c('flag_regr','flag_class')])
+# all <- all_c
 
 ### Imputation
 all_c <- all # No dummy variable
@@ -94,8 +94,8 @@ all_c$AVG_TAKEN_HOUR_OUTPLAY[is.na(all_c$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all_
 #                                                                                                                           "flag_regr","flag_class","INVEST"))])
 test <- all_c[all_c$flag_class == 'M', ]
 total <- all_c[all_c$flag_class != 'M', ]
-validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398)  ,]
-train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398)  ,]
+validation <- total[total$EVENT_ID %in% c(101183757,101183885,101184013),]
+train <- total[!total$EVENT_ID %in% c(101183757,101183885,101184013),]
 dim(train); dim(validation)
 
 
@@ -103,7 +103,7 @@ dim(train); dim(validation)
 # save(train, validation, total, test, file='data/3_train_validation_test.RData')
 # save(train, validation, total, test, file='data/4_train_validation_test_center_scale.RData')
 # save(train, validation, total, test, file='data/5_train_validation_test_pca.RData')
-save(train, validation, total, test, file='data/9_train_validation_test_TREE_2.RData')
+save(train, validation, total, test, file='data/9_train_validation_test_TREE_1.RData')
 save(train, validation, total, test, file='data/9_train_validation_test_ONEHOT_2.RData')
 
 

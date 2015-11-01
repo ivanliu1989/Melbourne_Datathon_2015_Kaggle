@@ -4,7 +4,7 @@ rm(list=ls()); gc();
 require(hydroGOF); require(parcor); require(prospectr)
 library(caret);library(pROC);library(doMC)
 registerDoMC(cores = 4)
-load('data/6_train_validation_test_center_scale_no_dummy.RData');ls()
+load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 ### Prepare data
 train$flag_class <- as.factor(train$flag_class); levels(train$flag_class) <- c(0,1) 

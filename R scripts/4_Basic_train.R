@@ -4,8 +4,8 @@ rm(list=ls()); gc()
 library(caret);library(pROC);library(doMC)
 registerDoMC(cores = 4)
 
-load('data/6_train_validation_test_center_scale_no_dummy.RData');ls()
-# load('data/6_train_validation_test_center_scale_no_dummy_2.RData');ls()
+load('data/9_train_validation_test_TREE_1.RData');ls()
+# load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 
 ####################
@@ -13,13 +13,13 @@ load('data/6_train_validation_test_center_scale_no_dummy.RData');ls()
 ####################
 train$flag_class <- as.factor(train$flag_class)
 
-fitControl <- trainControl(method = "none",
-                           number = 5,
+fitControl <- trainControl(method = "cv",
+                           number = 2,
                            classProbs = TRUE,
                            summaryFunction = twoClassSummary)
-# Grid <-  expand.grid(mtry=7)
+Grid <-  expand.grid(mtry=8)
 # Grid <-  expand.grid(nrounds = 100, max_depth = 8, eta = 0.05) # xgbTree
-Grid <-  expand.grid(sigma = 1, C = 0.1) # svmRadial
+# Grid <-  expand.grid(sigma = 1, C = 0.1) # svmRadial
 # Grid <-  expand.grid(size = 80, decay = 0.1) # nnet
 # Grid <-  expand.grid(fL=0.01, usekernel=F) # nb
 # Grid <-  expand.grid(nIter=20) # LogitBoost
@@ -27,8 +27,8 @@ Grid <-  expand.grid(sigma = 1, C = 0.1) # svmRadial
 
 # Training
 set.seed(825)
-fit <- train(flag_class ~ ., data=train[,-c(1,2,47,49)], # classification
-             method = "svmRadial",
+fit <- train(flag_class ~ ., data=train[,-c(1,2,57,59)], # classification
+             method = "rf",
              trControl = fitControl,
              tuneGrid = Grid,
              # preProcess = c('center', 'scale'),
@@ -85,16 +85,16 @@ fit <- train(flag_class ~ ., data=train[,-c(1,2,47,49)], # classification
 
 
 # Variable Imp
-# fitImp <- varImp(fit, scale = T)
-# as.data.frame(fitImp[1])
-# write.csv(as.data.frame(fitImp[1]),'model/variable_imp_rf_2.csv',quote = FALSE,row.names = T)
+fitImp <- varImp(fit, scale = T)
+as.data.frame(fitImp[1])
+write.csv(as.data.frame(fitImp[1]),'model/variable_imp_rf_new_feat.csv',quote = FALSE,row.names = T)
 
 ##################
 ### Validation ###
 ##################
 ### Predict
 val <- validation#[!validation$COUNTRY_OF_RESIDENCE_NAME %in% c('Qatar'),]
-p <- predict(fit, newdata=val)#, type = 'prob')
+p <- predict(fit, newdata=val, type = 'prob')
 val$Y <- p$Y
 val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2
 pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=F)

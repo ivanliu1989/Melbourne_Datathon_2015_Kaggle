@@ -19,7 +19,7 @@ for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     print (paste0('Parameter: ', d))
     
     #-------------Basic Training using XGBoost-----------------
-    bst <- xgboost(data = as.matrix(train[,3:56]), label = train$flag_class, max.depth = 6, eta = 0.02, nround = 1400, maximize = F, 
+    bst <- xgboost(data = as.matrix(train[,3:56]), label = train$flag_class, max.depth = 6, eta = 0.13, nround = 1400, maximize = F, 
                    objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 50) #nthread = 4, 
     
     #-------------Tuning using XGBoost-----------------  
@@ -44,7 +44,7 @@ for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     ### Model Performance ###
     #########################
     v <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
-    v <- merge(v,pred_fin2,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
+    v <- merge(val_fin,pred_fin2,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
     rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$PRED_PROFIT_LOSS_2);print(auc(rocobj)) # Invest * Possibility
     rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$Y);print(auc(rocobj)) # Average Possibility
     # rocobj <- roc(val$flag_class, p);auc(rocobj) # Single Events 
