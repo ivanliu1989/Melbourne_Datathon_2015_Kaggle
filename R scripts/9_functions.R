@@ -305,58 +305,71 @@ feat.eng <- function(d){
     mbr.event[is.na(mbr.event$BL_RATIO),'BL_RATIO'] <- mean(mbr.event$BL_RATIO, na.rm=T)
     
     # 14. B_L_DIFF
-        test <- mbr.event[,c('ACCOUNT_ID', 'EVENT_ID',)]
-        library(data.table)
-        test <- data.table(test)
-        
         TRANSACTION_COUNT_I <- aggregate(BET_SIZE ~ ACCOUNT_ID + EVENT_ID + BID_TYP ,data=test[test$INPLAY_BET=='Y',], length)
+        names(TRANSACTION_COUNT_I) <- c('ACCOUNT_ID','EVENT_ID', 'BID_TYP','TRANSACTION_COUNT_I')
         TRANSACTION_COUNT_O <- aggregate(BET_SIZE ~ ACCOUNT_ID + EVENT_ID + BID_TYP ,data=test[test$INPLAY_BET=='N',], length)
+        names(TRANSACTION_COUNT_O) <- c('ACCOUNT_ID','EVENT_ID', 'BID_TYP','TRANSACTION_COUNT_O')
         AVG_BET_SIZE_I <- aggregate(BET_SIZE ~ ACCOUNT_ID + EVENT_ID + BID_TYP ,data=test[test$INPLAY_BET=='Y',], mean, na.rm = T)
+        names(AVG_BET_SIZE_I) <- c('ACCOUNT_ID','EVENT_ID', 'BID_TYP','AVG_BET_SIZE_I')
         AVG_BET_SIZE_O <- aggregate(BET_SIZE ~ ACCOUNT_ID + EVENT_ID + BID_TYP ,data=test[test$INPLAY_BET=='N',], mean, na.rm = T)
+        names(AVG_BET_SIZE_O) <- c('ACCOUNT_ID','EVENT_ID', 'BID_TYP','AVG_BET_SIZE_O')
         MAX_BET_SIZE_I <- aggregate(BET_SIZE ~ ACCOUNT_ID + EVENT_ID + BID_TYP ,data=test[test$INPLAY_BET=='Y',], max, na.rm = T)
+        names(MAX_BET_SIZE_I) <- c('ACCOUNT_ID','EVENT_ID', 'BID_TYP','MAX_BET_SIZE_I')
         MAX_BET_SIZE_O <- aggregate(BET_SIZE ~ ACCOUNT_ID + EVENT_ID + BID_TYP ,data=test[test$INPLAY_BET=='N',], max, na.rm = T)
+        names(MAX_BET_SIZE_O) <- c('ACCOUNT_ID','EVENT_ID', 'BID_TYP','MAX_BET_SIZE_O')
         MIN_BET_SIZE_I <- aggregate(BET_SIZE ~ ACCOUNT_ID + EVENT_ID + BID_TYP ,data=test[test$INPLAY_BET=='Y',], min, na.rm = T)
+        names(MIN_BET_SIZE_I) <- c('ACCOUNT_ID','EVENT_ID', 'BID_TYP','MIN_BET_SIZE_I')
         MIN_BET_SIZE_O <- aggregate(BET_SIZE ~ ACCOUNT_ID + EVENT_ID + BID_TYP ,data=test[test$INPLAY_BET=='N',], min, na.rm = T)
+        names(MIN_BET_SIZE_O) <- c('ACCOUNT_ID','EVENT_ID', 'BID_TYP','MIN_BET_SIZE_O')
         STDEV_BET_SIZE_I <- aggregate(BET_SIZE ~ ACCOUNT_ID + EVENT_ID + BID_TYP ,data=test[test$INPLAY_BET=='Y',], sd, na.rm = T)
+        names(STDEV_BET_SIZE_I) <- c('ACCOUNT_ID','EVENT_ID', 'BID_TYP','STDEV_BET_SIZE_I')
         STDEV_BET_SIZE_O <- aggregate(BET_SIZE ~ ACCOUNT_ID + EVENT_ID + BID_TYP ,data=test[test$INPLAY_BET=='N',], sd, na.rm = T)
+        names(STDEV_BET_SIZE_O) <- c('ACCOUNT_ID','EVENT_ID', 'BID_TYP','STDEV_BET_SIZE_O')
         
-        ### campute lag
-        test[, lag_TRANSACTION_COUNT:=c(0, TRANSACTION_COUNT[-.N]), by=c('Account_ID','EVENT_ID','INPLAY_BET')]
-        test[, lag_AVG_BET_SIZE:=c(0, AVG_BET_SIZE[-.N]), by=c('Account_ID','EVENT_ID','INPLAY_BET')]
-        test[, lag_MAX_BET_SIZE:=c(0, MAX_BET_SIZE[-.N]), by=c('Account_ID','EVENT_ID','INPLAY_BET')]
-        test[, lag_MIN_BET_SIZE:=c(0, MIN_BET_SIZE[-.N]), by=c('Account_ID','EVENT_ID','INPLAY_BET')]
-        test[, lag_STDEV_BET_SIZE:=c(0, STDEV_BET_SIZE[-.N]), by=c('Account_ID','EVENT_ID','INPLAY_BET')]
+        test <- mbr.event[,c('ACCOUNT_ID', 'EVENT_ID')]
         
-        ### aggregate
-        test <- as.data.frame(test)
-        test$bl_diff_TRANSACTION_COUNT <- abs(test$TRANSACTION_COUNT - test$lag_TRANSACTION_COUNT)/(test$TRANSACTION_COUNT + test$lag_TRANSACTION_COUNT)
-        test$bl_diff_AVG_BET_SIZE<- abs(test$AVG_BET_SIZE - test$lag_AVG_BET_SIZE)/(test$AVG_BET_SIZE + test$lag_AVG_BET_SIZE)
-        test$bl_diff_MAX_BET_SIZE<- abs(test$MAX_BET_SIZE - test$lag_MAX_BET_SIZE)/(test$MAX_BET_SIZE + test$lag_MAX_BET_SIZE)
-        test$bl_diff_MIN_BET_SIZE<- abs(test$MIN_BET_SIZE - test$lag_MIN_BET_SIZE)/(test$MIN_BET_SIZE + test$lag_MIN_BET_SIZE)
-        test$bl_diff_STDEV_BET_SIZE<- abs(test$STDEV_BET_SIZE - test$lag_STDEV_BET_SIZE)/(test$STDEV_BET_SIZE + test$lag_STDEV_BET_SIZE)
+        test <- merge(test, TRANSACTION_COUNT_I[TRANSACTION_COUNT_I$BID_TYP=='B',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, TRANSACTION_COUNT_O[TRANSACTION_COUNT_I$BID_TYP=='B',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, AVG_BET_SIZE_I[AVG_BET_SIZE_I$BID_TYP=='B',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, AVG_BET_SIZE_O[AVG_BET_SIZE_O$BID_TYP=='B',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, MAX_BET_SIZE_I[MAX_BET_SIZE_I$BID_TYP=='B',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, MAX_BET_SIZE_O[MAX_BET_SIZE_O$BID_TYP=='B',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, MIN_BET_SIZE_I[MIN_BET_SIZE_I$BID_TYP=='B',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, MIN_BET_SIZE_O[MIN_BET_SIZE_O$BID_TYP=='B',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, STDEV_BET_SIZE_I[STDEV_BET_SIZE_I$BID_TYP=='B',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, STDEV_BET_SIZE_O[STDEV_BET_SIZE_O$BID_TYP=='B',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
         
-        test$row_num <- 1
-        test$identifier <- paste0(test$Account_ID, test$EVENT_ID, test$STATUS_ID, test$INPLAY_BET)
-        test[duplicated(test[,c(1,2,4,5)]), 'row_num'] <- 2
+        test <- merge(test, TRANSACTION_COUNT_I[TRANSACTION_COUNT_I$BID_TYP=='L',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, TRANSACTION_COUNT_O[TRANSACTION_COUNT_I$BID_TYP=='L',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, AVG_BET_SIZE_I[AVG_BET_SIZE_I$BID_TYP=='L',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, AVG_BET_SIZE_O[AVG_BET_SIZE_O$BID_TYP=='L',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, MAX_BET_SIZE_I[MAX_BET_SIZE_I$BID_TYP=='L',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, MAX_BET_SIZE_O[MAX_BET_SIZE_O$BID_TYP=='L',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, MIN_BET_SIZE_I[MIN_BET_SIZE_I$BID_TYP=='L',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, MIN_BET_SIZE_O[MIN_BET_SIZE_O$BID_TYP=='L',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, STDEV_BET_SIZE_I[STDEV_BET_SIZE_I$BID_TYP=='L',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+        test <- merge(test, STDEV_BET_SIZE_O[STDEV_BET_SIZE_O$BID_TYP=='L',c(1,2,4)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
         
-        test_feat_bl <- test[test$row_num == 2, c(1,2,4,5, 15:19, 21)]
-        test_feat <- test[!test$identifier %in% test_feat_bl$identifier, c(1,2,4,5, 15:19, 21)]
+        ### calculation
+        test_feat_final <- test
+        test[,-c(1,2)][is.na(test[,-c(1,2)])] <- 0
+        test$BL_DIFF_TRANSACTION_COUNT_IN <- abs(test$TRANSACTION_COUNT_I.x - test$TRANSACTION_COUNT_I.y)/(test$TRANSACTION_COUNT_I.x + test$TRANSACTION_COUNT_I.y)
+        test$BL_DIFF_AVG_BET_SIZE_IN<- abs(test$AVG_BET_SIZE_I.x - test$AVG_BET_SIZE_I.y)/(test$AVG_BET_SIZE_I.x + test$AVG_BET_SIZE_I.y)
+        test$BL_DIFF_MAX_BET_SIZE_IN<- abs(test$MAX_BET_SIZE_I.x - test$MAX_BET_SIZE_I.y)/(test$MAX_BET_SIZE_I.x + test$MAX_BET_SIZE_I.y)
+        test$BL_DIFF_MIN_BET_SIZE_IN<- abs(test$MIN_BET_SIZE_I.x - test$MIN_BET_SIZE_I.y)/(test$MIN_BET_SIZE_I.x + test$MIN_BET_SIZE_I.y)
+        test$BL_DIFF_STDEV_BET_SIZE_IN<- abs(test$STDEV_BET_SIZE_I.x - test$STDEV_BET_SIZE_I.y)/(test$STDEV_BET_SIZE_I.x + test$STDEV_BET_SIZE_I.y)
         
-        test_feat_final <- rbind(test_feat_bl, test_feat)
-        
-        ### Output
-        dim(test_feat_final);length(unique(test_feat_final$identifier))
-        test_feat_final$identifier <- NULL
+        test$BL_DIFF_TRANSACTION_COUNT_OUT <- abs(test$TRANSACTION_COUNT_O.x - test$TRANSACTION_COUNT_O.y)/(test$TRANSACTION_COUNT_O.x + test$TRANSACTION_COUNT_O.y)
+        test$BL_DIFF_AVG_BET_SIZE_OUT<- abs(test$AVG_BET_SIZE_O.x - test$AVG_BET_SIZE_O.y)/(test$AVG_BET_SIZE_O.x + test$AVG_BET_SIZE_O.y)
+        test$BL_DIFF_MAX_BET_SIZE_OUT<- abs(test$MAX_BET_SIZE_O.x - test$MAX_BET_SIZE_O.y)/(test$MAX_BET_SIZE_O.x + test$MAX_BET_SIZE_O.y)
+        test$BL_DIFF_MIN_BET_SIZE_OUT<- abs(test$MIN_BET_SIZE_O.x - test$MIN_BET_SIZE_O.y)/(test$MIN_BET_SIZE_O.x + test$MIN_BET_SIZE_O.y)
+        test$BL_DIFF_STDEV_BET_SIZE_OUT<- abs(test$STDEV_BET_SIZE_O.x - test$STDEV_BET_SIZE_O.y)/(test$STDEV_BET_SIZE_O.x + test$STDEV_BET_SIZE_O.y)
         
         ### test_feat merge
-        test_feat_inplay <- test_feat_final[test_feat_final$INPLAY_BET == 'Y',-c(3,4,10)]; 
-        names(test_feat_inplay) <- c('ACCOUNT_ID', 'EVENT_ID', 'BL_DIFF_TRANSACTION_COUNT_IN', 'BL_DIFF_AVG_BET_SIZE_IN',
-                                     'BL_DIFF_MAX_BET_SIZE_IN','BL_DIFF_MIN_BET_SIZE_IN','BL_DIFF_STDEV_BET_SIZE_IN')
-        test_feat_outplay <- test_feat_final[!test_feat_final$INPLAY_BET == 'Y',-c(3,4,10)]
-        names(test_feat_outplay) <- c('ACCOUNT_ID', 'EVENT_ID', 'BL_DIFF_TRANSACTION_COUNT_OUT', 'BL_DIFF_AVG_BET_SIZE_OUT',
-                                      'BL_DIFF_MAX_BET_SIZE_OUT','BL_DIFF_MIN_BET_SIZE_OUT','BL_DIFF_STDEV_BET_SIZE_OUT')
-        test_dt <- merge(test_dt, test_feat_inplay, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-        test_dt <- merge(test_dt, test_feat_outplay, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+        test_dt <- test[,c('ACCOUNT_ID', 'EVENT_ID','BL_DIFF_TRANSACTION_COUNT_IN', 'BL_DIFF_AVG_BET_SIZE_IN',
+                                   'BL_DIFF_MAX_BET_SIZE_IN','BL_DIFF_MIN_BET_SIZE_IN','BL_DIFF_STDEV_BET_SIZE_IN',
+                                   'BL_DIFF_TRANSACTION_COUNT_OUT', 'BL_DIFF_AVG_BET_SIZE_OUT',
+                                   'BL_DIFF_MAX_BET_SIZE_OUT','BL_DIFF_MIN_BET_SIZE_OUT','BL_DIFF_STDEV_BET_SIZE_OUT')]
         
         test_dt[,c('BL_DIFF_TRANSACTION_COUNT_IN', 'BL_DIFF_AVG_BET_SIZE_IN',
                    'BL_DIFF_MAX_BET_SIZE_IN','BL_DIFF_MIN_BET_SIZE_IN','BL_DIFF_STDEV_BET_SIZE_IN',
@@ -365,7 +378,7 @@ feat.eng <- function(d){
                                                                                                                          'BL_DIFF_MAX_BET_SIZE_IN','BL_DIFF_MIN_BET_SIZE_IN','BL_DIFF_STDEV_BET_SIZE_IN',
                                                                                                                          'BL_DIFF_TRANSACTION_COUNT_OUT', 'BL_DIFF_AVG_BET_SIZE_OUT',
                                                                                                                          'BL_DIFF_MAX_BET_SIZE_OUT','BL_DIFF_MIN_BET_SIZE_OUT','BL_DIFF_STDEV_BET_SIZE_OUT')])] <- 0
-        
+        mbr.event <- merge(mbr.event, test_dt, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
     #META DATA
     # 1. RFM
     
