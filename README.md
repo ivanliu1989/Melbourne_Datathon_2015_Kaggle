@@ -28,3 +28,11 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 
 ### Ideas
 1. Win rate distributions
+
+### Further improvements
+1. Raw data (no transform for tree model)
+2. Sparse (one-hot for svm, logit)
+3. Weighted target formula
+4. Logit + xgboost (blend)
+5. Deep learning
+6. Separate Models for Old & Existing Account IDs
