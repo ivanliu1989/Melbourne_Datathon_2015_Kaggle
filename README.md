@@ -36,3 +36,5 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 4. Logit + xgboost (blend)
 5. Deep learning
 6. Separate Models for Old & Existing Account IDs
+
+7. All last events attributes (sparsity)

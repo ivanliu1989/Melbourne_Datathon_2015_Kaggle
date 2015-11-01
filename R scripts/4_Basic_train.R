@@ -94,7 +94,7 @@ fit <- train(flag_class ~ ., data=train[,-c(1,2,47,49)], # classification
 ##################
 ### Predict
 val <- validation#[!validation$COUNTRY_OF_RESIDENCE_NAME %in% c('Qatar'),]
-p <- predict(fit, newdata=val, type = 'prob')
+p <- predict(fit, newdata=val)#, type = 'prob')
 val$Y <- p$Y
 val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2
 pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=F)
