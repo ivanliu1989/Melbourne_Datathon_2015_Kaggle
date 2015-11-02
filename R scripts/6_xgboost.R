@@ -1,12 +1,12 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
-setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
+# setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
-load('data/9_train_validation_test_TREE_2.RData');ls()
+load('data/9_train_validation_test_TREE_3.RData');ls()
 # load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 # Validation
-set.seed(8)
+set.seed(18)
 dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 
@@ -16,8 +16,8 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     
     #-------------Basic Training using XGBoost-----------------
     bst <-
-        xgboost(
-            data = as.matrix(train[,3:56]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = f,
+        xgboost(  # c(3:22,42,43,47:56) | 3:56
+            data = as.matrix(train[,c(3:22,42,43,47:56)]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F,
             nthread = 4, objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 10, metrics = 'auc'
         )
     
@@ -27,10 +27,11 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     #                   verbose = 1, early.stop.round = 50, print.every.n = 5, maximize = F)
     
     #--------------------basic prediction using xgboost--------------
-    val <- validation#[!validation$COUNTRY_OF_RESIDENCE_NAME %in% c('Qatar'),]
-    p <- predict(bst, as.matrix(validation[,3:56]))
+    val <- validation
+    # val[,c(3:22,42,43,47:56)]
+    p <- predict(bst, as.matrix(validation[,3:56])) 
     val$Y <- p
-    val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2
+    val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2 
     pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=F)
     pred_fin$PRED_PROFIT_LOSS_2 <- ifelse(pred_fin$PRED_PROFIT_LOSS > 0, 1, ifelse(pred_fin$PRED_PROFIT_LOSS < 0, 0, 0.5))
     pred_fin2 <- aggregate(Y ~ ACCOUNT_ID, data=val, mean, na.rm=F)
@@ -47,10 +48,14 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$PRED_PROFIT_LOSS_2);print(auc(rocobj)) # Invest * Possibility
     rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$Y);print(auc(rocobj)) # Average Possibility
     print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
+    
+    # roc(val$flag_class, p)
 # }
 
-### Test 
+### Test
 train <- total
+names(total[,c(3:22,42,43,47:56)])
+head(test[,c(3:22,42,43,47:56)])
 
 ############
 ### test ###
