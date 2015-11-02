@@ -1,8 +1,8 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
-setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
+# setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(h2o);library(pROC);library(doMC)
-load('data/9_train_validation_test_TREE_1.RData');ls()
+load('data/9_train_validation_test_TREE_2.RData');ls()
 # load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 ################
@@ -49,17 +49,17 @@ for(d1 in c(128,256,512,1024)){
             
             fit <-
                 h2o.deeplearning(
-                    y = dependent, x = independent, data = train_df,
-                    classification_stop = -1, activation =
-                        "TanhWithDropout",#TanhWithDropout "RectifierWithDropout"
-                    hidden = c(128,128,128), hidden_dropout_ratios = c(0.1,0.1,0.1), input_dropout_ratio = 0.5,
-                    epochs = 5, adaptive_rate = T, rho = 0.99, epsilon = 1e-10, # 1e-4
-                    rate_decay = 0.8, rate = 0.2, momentum_start = 0.5, momentum_stable =
-                        0.99,
-                    nesterov_accelerated_gradient = T, loss =
-                        'CrossEntropy', l2 = 3e-6, max_w2 = 2,
-                    seed = 8,variable_importances =
-                        F,sparse = F,diagnostics = T,shuffle_training_data = T
+                    y = dependent, x = independent, data = train_df, classification = T,
+                    nfolds = 5, activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout"
+                    hidden = c(512,256,128), seed = 8, adaptive_rate = T, rho = 0.99, 
+                    epsilon = 1e-4, rate = 0.1, rate_decay = 0.9, # rate_annealing = , 
+                    momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
+                    nesterov_accelerated_gradient = T, input_dropout_ratio = 0.2, hidden_dropout_ratios = c(0.5,0.5,0.5), 
+                    l2 = 3e-6, max_w2 = 4, #Rect
+                    loss = 'CrossEntropy', classification_stop = -1, quiet_mode = F, 
+                    diagnostics = T, variable_importances = T, ignore_const_cols = T,
+                    force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
+                    sparse = F, epochs = 100 #, reproducible, score_validation_sampling
                 )
             
 #             fit <-
