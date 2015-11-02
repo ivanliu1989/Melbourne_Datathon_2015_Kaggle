@@ -54,14 +54,14 @@ apply(all_c,2, function(x) mean(is.na(x)))
 ### Validation set
 all_c$INVEST <- all_c$TRANSACTION_COUNT_INPLAY * all_c$AVG_BET_SIZE_INPLAY + all_c$TRANSACTION_COUNT_OUTPLAY * all_c$AVG_BET_SIZE_OUTPLAY
 
-# 1.Normal
+###  1.Normal
 # test <- all_c[all_c$flag_class == 'M', ]
 # total <- all_c[all_c$flag_class != 'M', ]
 # validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398) ,] #c(101150834,101153072,101149398)      c(101183757,101183885,101184013) - last 3 event
 # train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398) ,]
 # dim(train); dim(validation)
 
-# 2.Center Scale
+###  2.Center Scale
 # prep <- preProcess(all_c[, -c(1,2,161,162,163)], method = c('center',"scale"), verbose =T)
 # all_c[, -c(1,2,161,162,163)] <- predict(prep, all_c[, -c(1,2,161,162,163)])
 # 
@@ -71,7 +71,7 @@ all_c$INVEST <- all_c$TRANSACTION_COUNT_INPLAY * all_c$AVG_BET_SIZE_INPLAY + all
 # train <- total[!total$EVENT_ID %in% c(101183757,101183885,101184013),]
 # dim(train); dim(validation)
 
-# 3.PCA
+###  3.PCA
 # prepca <- preProcess(all_c[, -c(1,2,161,162,163)], method = c('pca'), verbose =T, thresh = 0.9999)
 # pcadt <- predict(prepca, all_c[, -c(1,2,161,162,163)])
 # all_pca <- cbind(all_c[, c(1,2)], pcadt, all_c[,c(161,162,163)])
@@ -82,7 +82,12 @@ all_c$INVEST <- all_c$TRANSACTION_COUNT_INPLAY * all_c$AVG_BET_SIZE_INPLAY + all
 # train <- total[!total$EVENT_ID %in% c(101183757,101183885,101184013),]
 # dim(train); dim(validation)
 
-# 4. No Dummy
+### 4. No Dummy 
+# c(101150834,101153072,101149398)
+# c(101183757,101183885,101184013) - last 3 event
+# c(101093076,101093194,101093312) 
+# c(101128387,101150348,101152275) 
+# c(101149870,101150716,101153308)
 all_c$AVG_TAKEN_HOUR_INPLAY[is.na(all_c$AVG_TAKEN_HOUR_INPLAY)] <- median(all_c$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
 all_c$AVG_TAKEN_HOUR_OUTPLAY[is.na(all_c$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all_c$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
 # all_c$COUNTRY_OF_RESIDENCE_NAME[is.na(all_c$COUNTRY_OF_RESIDENCE_NAME)] <- 'UAE'
@@ -94,8 +99,8 @@ all_c$AVG_TAKEN_HOUR_OUTPLAY[is.na(all_c$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all_
 #                                                                                                                           "flag_regr","flag_class","INVEST"))])
 test <- all_c[all_c$flag_class == 'M', ]
 total <- all_c[all_c$flag_class != 'M', ]
-validation <- total[total$EVENT_ID %in% c(101183757,101183885,101184013),]
-train <- total[!total$EVENT_ID %in% c(101183757,101183885,101184013),]
+validation <- total[total$EVENT_ID %in% c(101149870,101150716,101153308),]
+train <- total[!total$EVENT_ID %in% c(101149870,101150716,101153308),]
 dim(train); dim(validation)
 
 
@@ -103,7 +108,7 @@ dim(train); dim(validation)
 # save(train, validation, total, test, file='data/3_train_validation_test.RData')
 # save(train, validation, total, test, file='data/4_train_validation_test_center_scale.RData')
 # save(train, validation, total, test, file='data/5_train_validation_test_pca.RData')
-save(train, validation, total, test, file='data/9_train_validation_test_TREE_1.RData')
+save(train, validation, total, test, file='data/9_train_validation_test_TREE_5.RData')
 save(train, validation, total, test, file='data/9_train_validation_test_ONEHOT_2.RData')
 
 
