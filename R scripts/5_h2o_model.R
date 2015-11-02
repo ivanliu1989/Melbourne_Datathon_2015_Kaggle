@@ -2,8 +2,8 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(h2o);library(pROC);library(doMC)
-load('data/6_train_validation_test_center_scale_no_dummy.RData');ls()
-# load('data/6_train_validation_test_center_scale_no_dummy_2.RData');ls()
+load('data/9_train_validation_test_TREE_1.RData');ls()
+# load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 ################
 ### Register ###
@@ -40,10 +40,10 @@ for(d1 in c(2:100)){
         
         for(d3 in c(1e-8, 3e-8, 1e-6, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3, 0.01, 0.03, 0.1)){
             
-            #     fit <- h2o.gbm(y = dependent, x = independent, training_frame = train_df, 
-            #                    ntrees = 200, max_depth = 8, min_rows = 1,
-            #                    learn_rate = 0.25, distribution= "bernoulli", nbins = 20,  #AUTO
-            #                    nbins_cats = 1024, seed = 8)
+                fit <- h2o.gbm(y = dependent, x = independent, data = train_df, 
+                               n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
+                               shrinkage = 0.25, distribution= "bernoulli", n.bins = 20,  #AUTO
+                               importance = T)
             
             #     fit <- h2o.deeplearning(y = dependent, x = independent, data = train_df,
             #                             classification_stop = -1, activation="TanhWithDropout",#TanhWithDropout "RectifierWithDropout"
@@ -53,9 +53,8 @@ for(d1 in c(2:100)){
             #                             nesterov_accelerated_gradient = T, loss='CrossEntropy', l2=3e-6, max_w2=2,
             #                             seed=8,variable_importances=F,sparse= F,diagnostics=T,shuffle_training_data=T)# classification=T, autoencoder = F, 
             
-            #     fit <- h2o.randomForest(y = dependent, x = independent, training_frame = train_df, #validation_frame
-            #                             ntree=100, max_depth=10, mtries=8, sample_rate=0.8,
-            #                             min_rows=1, nbins_cats=1024, nbins = 10, seed=8, binomial_double_trees = T)
+#                 fit <- h2o.randomForest(y = dependent, x = independent, data = train_df, #validation_frame
+#                                         ntree=100, depth=10, mtries=8, sample.rate=0.8, nbins = 10, seed=8)
             
             # fit <- h2o.naiveBayes(y = dependent, x = independent, data = train_df, laplace = 0)
             
@@ -96,6 +95,9 @@ for(d1 in c(2:100)){
             perf_new <- auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE)
             rocobj;perf_new
             
+            
+            pref_lg <- pred
+            pref_rf <- pred
 #             if (perf_new > perf){
 #                 perf <- perf_new
 #                 print (paste0('lambda: ', d3, ' | nlambda: ', d1, ' | lambda.min.ratio: ', d2))
