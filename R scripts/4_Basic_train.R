@@ -4,8 +4,8 @@ rm(list=ls()); gc()
 library(caret);library(pROC);library(doMC)
 registerDoMC(cores = 4)
 
-load('data/9_train_validation_test_TREE_2.RData');ls()
-# load('data/9_train_validation_test_ONEHOT_1.RData');ls()
+# load('data/9_train_validation_test_TREE_2.RData');ls()
+load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 
 ####################
@@ -20,19 +20,19 @@ fitControl <- trainControl(method = "repeatedcv",
                            summaryFunction = twoClassSummary)
 Grid <-  expand.grid(mtry=8)
 # Grid <-  expand.grid(nrounds = 100, max_depth = 8, eta = 0.05) # xgbTree
-# Grid <-  expand.grid(sigma = 1, C = 0.01) # svmRadial
+Grid <-  expand.grid(sigma = 10, C = 0.01) # svmRadial
 # Grid <-  expand.grid(size = 80, decay = 0.1) # nnet
 # Grid <-  expand.grid(fL=0.01, usekernel=F) # nb
 # Grid <-  expand.grid(nIter=20) # LogitBoost
 # Grid <-  expand.grid(n.trees = 180, interaction.depth = 6, shrinkage = 0.01) # gbm
 
-Training
+# Training -c(1,2,57,59) | -c(1,2,103,105)
 set.seed(825)
-fit <- train(flag_class ~ ., data=train[,-c(1,2,57,59)], # classification
-             method = "rf",
+fit <- train(flag_class ~ ., data=train[,-c(1,2,103, 105)], # classification
+             method = "svmRadial",
              trControl = fitControl,
              tuneGrid = Grid,
-             # preProcess = c('center', 'scale'),
+             preProcess = c('center', 'scale'),
              metric ='ROC',
              verbose = T)
 

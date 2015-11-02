@@ -15,27 +15,10 @@ We are treating this as a binary classification problem - did the account make a
 An AUC of 0.5 is random guessing and 1 is a prefect solution.
 
 ### Steps
-
-1. New member imputation (test median)
-2. Feature selection
-	1. PCA
-    2. Centering and Scaling or Log transform
-3. One-hot (pca, scale)
-4. Evaluation formula (B&L classifier)
-5. h2o (gbm, rf, nnet, nb, glm)
-6. caret (svm)
-7. xgboost
+1. Logit + xgboost (blend)
+2. Weighted target formula
+3. Separate models
+4. Deep learning
 
 ### Ideas
 1. Win rate distributions
-
-### Further improvements
-1. Raw data (no transform for tree model)
-2. Sparse (one-hot for svm, logit)
-3. Weighted target formula
-4. Logit + xgboost (blend)
-5. Deep learning
-6. Separate Models for Old & Existing Account IDs
-
-7. All last events attributes (sparsity)
-8. Difference between B & L (r = abs(b-l)/(b+l))

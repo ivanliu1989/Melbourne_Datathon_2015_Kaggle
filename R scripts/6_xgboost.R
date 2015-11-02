@@ -8,9 +8,9 @@ load('data/9_train_validation_test_TREE_1.RData');ls()
 
 # Validation
 set.seed(8)
-# inTraining <- createDataPartition(total$flag_class, p = .8, list = FALSE)
-# train <- total[inTraining,]
-# validation  <- total[-inTraining,]
+inTraining <- createDataPartition(total$flag_class, p = .8, list = FALSE)
+train <- total[inTraining,]
+validation  <- total[-inTraining,]
 dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 

@@ -98,6 +98,7 @@ for(d1 in c(2:100)){
             
             pref_lg <- pred
             pref_rf <- pred
+            pref_gbm <- pred
 #             if (perf_new > perf){
 #                 perf <- perf_new
 #                 print (paste0('lambda: ', d3, ' | nlambda: ', d1, ' | lambda.min.ratio: ', d2))
