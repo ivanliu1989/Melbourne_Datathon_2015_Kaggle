@@ -1,15 +1,16 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 # setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
-rm(list=ls()); gc()
+# rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
-load('data/9_train_validation_test_TREE_1.RData');ls()
+load('data/9_train_validation_test_TREE_3.RData');ls()
 # load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
-# Validation
-set.seed(18)
+### Test
+# train <- total
+### Validation
+set.seed(808)
 dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
-all <- rbind(total, test)
 
 # for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     # print (paste0('Parameter: ', d))
@@ -54,16 +55,6 @@ all <- rbind(total, test)
     # roc(val$flag_class, p)
 # }
 
-### Blend
-p_1 <- p
-p_2 <- p
-p_3 <- p
-    
-### Test
-train <- total
-names(total[,c(3:22,42,43,47:56)])
-head(test[,c(3:22,42,43,47:56)])
-
 ############
 ### test ###
 ############
@@ -80,5 +71,5 @@ submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-write.csv(submit,'pred/submission_20151031_gbm_c_s_nd.csv',quote = FALSE,row.names = FALSE)
+write.csv(submit,'pred/submission_20151103_gbm_new_feat_2.csv',quote = FALSE,row.names = FALSE)
 

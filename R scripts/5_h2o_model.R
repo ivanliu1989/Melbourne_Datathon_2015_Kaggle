@@ -34,24 +34,24 @@ dependent <- "flag_class"
 ### Models ###
 ##############
 perf <- 0
-for(d1 in c(2:100)){
+for(d1 in c(128,256,512,1024)){
     
-    for(d2 in c(0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)){
+    for(d2 in c(0.1,0.2,0.3,0.5)){
         
-        for(d3 in c(1e-8, 3e-8, 1e-6, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3, 0.01, 0.03, 0.1)){
+        for(d3 in c(0.02,0.1,0.15,0.2)){
             
-                fit <- h2o.gbm(y = dependent, x = independent, data = train_df, 
-                               n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
-                               shrinkage = 0.25, distribution= "bernoulli", n.bins = 20,  #AUTO
-                               importance = T)
+#                 fit <- h2o.gbm(y = dependent, x = independent, data = train_df, 
+#                                n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
+#                                shrinkage = 0.25, distribution= "bernoulli", n.bins = 20,  #AUTO
+#                                importance = T)
             
-            #     fit <- h2o.deeplearning(y = dependent, x = independent, data = train_df,
-            #                             classification_stop = -1, activation="TanhWithDropout",#TanhWithDropout "RectifierWithDropout"
-            #                             hidden=c(512,256), hidden_dropout_ratios = c(0.15,0.15), input_dropout_ratio = 0.5,
-            #                             epochs=5, adaptive_rate = T, rho = 0.99, epsilon = 1e-10, # 1e-4
-            #                             rate_decay=0.8,rate=0.1,momentum_start = 0.5, momentum_stable=0.99,
-            #                             nesterov_accelerated_gradient = T, loss='CrossEntropy', l2=3e-6, max_w2=2,
-            #                             seed=8,variable_importances=F,sparse= F,diagnostics=T,shuffle_training_data=T)# classification=T, autoencoder = F, 
+                fit <- h2o.deeplearning(y = dependent, x = independent, data = train_df,
+                                        classification_stop = -1, activation="RectifierWithDropout",#TanhWithDropout "RectifierWithDropout"
+                                        hidden=c(d1,d1,d1), hidden_dropout_ratios = c(d2,d2,d2), input_dropout_ratio = 0.5,
+                                        epochs=5, adaptive_rate = T, rho = 0.99, epsilon = 1e-10, # 1e-4
+                                        rate_decay=0.8,rate=d3,momentum_start = 0.5, momentum_stable=0.99,
+                                        nesterov_accelerated_gradient = T, loss='CrossEntropy', l2=3e-6, max_w2=2,
+                                        seed=8,variable_importances=F,sparse= F,diagnostics=T,shuffle_training_data=T)# classification=T, autoencoder = F, 
             
 #                 fit <- h2o.randomForest(y = dependent, x = independent, data = train_df, #validation_frame
 #                                         ntree=100, depth=10, mtries=8, sample.rate=0.8, nbins = 10, seed=8)
@@ -93,17 +93,13 @@ for(d1 in c(2:100)){
             
             # Performance Selection 
             perf_new <- auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE)
-            rocobj;perf_new
+            # rocobj;perf_new
             
-            
-            pref_lg <- pred
-            pref_rf <- pred
-            pref_gbm <- pred
-#             if (perf_new > perf){
-#                 perf <- perf_new
-#                 print (paste0('lambda: ', d3, ' | nlambda: ', d1, ' | lambda.min.ratio: ', d2))
-#                 print(auc(rocobj)); print(perf_new)
-#             }
+            if (perf_new > perf){
+                perf <- perf_new
+                print (paste0('lambda: ', d3, ' | nlambda: ', d1, ' | lambda.min.ratio: ', d2))
+                print(auc(rocobj)); print(perf_new)
+            }
         }
     }
 }
