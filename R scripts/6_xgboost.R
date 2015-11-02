@@ -2,14 +2,14 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 # setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
-load('data/9_train_validation_test_TREE_3.RData');ls()
+load('data/9_train_validation_test_TREE_1.RData');ls()
 # load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 # Validation
 set.seed(18)
 dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
-
+all <- rbind(total, test)
 
 # for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     # print (paste0('Parameter: ', d))
@@ -17,7 +17,7 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     #-------------Basic Training using XGBoost-----------------
     bst <-
         xgboost(  # c(3:22,42,43,47:56) | 3:56
-            data = as.matrix(train[,c(3:22,42,43,47:56)]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F,
+            data = as.matrix(train[,3:56]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F,
             nthread = 4, objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 10, metrics = 'auc'
         )
     
@@ -28,8 +28,10 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     
     #--------------------basic prediction using xgboost--------------
     val <- validation
-    # val[,c(3:22,42,43,47:56)]
-    p <- predict(bst, as.matrix(validation[,3:56])) 
+    # for (col in names(val[,-c(1:22,42,43,47:59)])){
+    #     val[, col] <- median(all[,col], na.rm = T)
+    # }  
+    p <- predict(bst, as.matrix(val[,3:56])) 
     val$Y <- p
     val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2 
     pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=F)
@@ -52,6 +54,11 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     # roc(val$flag_class, p)
 # }
 
+### Blend
+p_1 <- p
+p_2 <- p
+p_3 <- p
+    
 ### Test
 train <- total
 names(total[,c(3:22,42,43,47:56)])
