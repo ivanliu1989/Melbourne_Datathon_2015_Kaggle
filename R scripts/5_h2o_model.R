@@ -40,30 +40,49 @@ for(d1 in c(128,256,512,1024)){
         
         for(d3 in c(0.02,0.1,0.15,0.2)){
             
-#                 fit <- h2o.gbm(y = dependent, x = independent, data = train_df, 
-#                                n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
-#                                shrinkage = 0.25, distribution= "bernoulli", n.bins = 20,  #AUTO
-#                                importance = T)
+#             fit <- h2o.gbm(
+#                 y = dependent, x = independent, data = train_df,
+#                 n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
+#                 shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
+#                 importance = T
+#             )
             
-                fit <- h2o.deeplearning(y = dependent, x = independent, data = train_df,
-                                        classification_stop = -1, activation="RectifierWithDropout",#TanhWithDropout "RectifierWithDropout"
-                                        hidden=c(d1,d1,d1), hidden_dropout_ratios = c(d2,d2,d2), input_dropout_ratio = 0.5,
-                                        epochs=5, adaptive_rate = T, rho = 0.99, epsilon = 1e-10, # 1e-4
-                                        rate_decay=0.8,rate=d3,momentum_start = 0.5, momentum_stable=0.99,
-                                        nesterov_accelerated_gradient = T, loss='CrossEntropy', l2=3e-6, max_w2=2,
-                                        seed=8,variable_importances=F,sparse= F,diagnostics=T,shuffle_training_data=T)# classification=T, autoencoder = F, 
+            fit <-
+                h2o.deeplearning(
+                    y = dependent, x = independent, data = train_df,
+                    classification_stop = -1, activation =
+                        "TanhWithDropout",#TanhWithDropout "RectifierWithDropout"
+                    hidden = c(128,128,128), hidden_dropout_ratios = c(0.1,0.1,0.1), input_dropout_ratio = 0.5,
+                    epochs = 5, adaptive_rate = T, rho = 0.99, epsilon = 1e-10, # 1e-4
+                    rate_decay = 0.8, rate = 0.2, momentum_start = 0.5, momentum_stable =
+                        0.99,
+                    nesterov_accelerated_gradient = T, loss =
+                        'CrossEntropy', l2 = 3e-6, max_w2 = 2,
+                    seed = 8,variable_importances =
+                        F,sparse = F,diagnostics = T,shuffle_training_data = T
+                )
             
-#                 fit <- h2o.randomForest(y = dependent, x = independent, data = train_df, #validation_frame
-#                                         ntree=100, depth=10, mtries=8, sample.rate=0.8, nbins = 10, seed=8)
-            
-            # fit <- h2o.naiveBayes(y = dependent, x = independent, data = train_df, laplace = 0)
-            
-#             fit <- h2o.glm(y = dependent, x = independent, data = train_df,
-#                            family='binomial', link='logit',alpha = 0.5, # 1 lasso 0 ridge
-#                            lambda = 1e-08, lambda_search = T, nlambda = 8, lambda.min.ratio = 0.1,
-#                            strong_rules = T, standardize = T, intercept = T, use_all_factor_levels = F, 
-#                            epsilon = 1e-4, iter.max = 100, higher_accuracy = T, disable_line_search = F)
-            
+#             fit <-
+#                 h2o.randomForest(
+#                     y = dependent, x = independent, data = train_df, #validation_frame
+#                     ntree = 100, depth = 10, mtries =
+#                         8, sample.rate = 0.8, nbins = 10, seed = 8
+#                 )
+#             
+#             fit <-
+#                 h2o.naiveBayes(
+#                     y = dependent, x = independent, data = train_df, laplace = 0
+#                 )
+#             
+#             fit <-
+#                 h2o.glm(
+#                     y = dependent, x = independent, data = train_df,
+#                     family = 'binomial', link = 'logit',alpha = 0.5, # 1 lasso 0 ridge
+#                     lambda = 1e-08, lambda_search = T, nlambda = 8, lambda.min.ratio = 0.1,
+#                     strong_rules = T, standardize = T, intercept = T, use_all_factor_levels = F,
+#                     epsilon = 1e-4, iter.max = 100, higher_accuracy = T, disable_line_search = F
+#                 )
+#             
             ##################
             ### Prediction ###
             ##################
@@ -83,23 +102,22 @@ for(d1 in c(128,256,512,1024)){
             #########################
             v <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
             v <- merge(v,pred_fin2,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
-            # print(fit)
+            
             # With a roc object:
             rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$PRED_PROFIT_LOSS_2)
             rocobj <- roc(v$PRED_PROFIT_LOSS_3, v[,6])
-            # Partial AUC:
-            # print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
-            # Plot plot(rocobj)
             
             # Performance Selection 
             perf_new <- auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE)
-            # rocobj;perf_new
+            rocobj;perf_new
             
-            if (perf_new > perf){
-                perf <- perf_new
-                print (paste0('lambda: ', d3, ' | nlambda: ', d1, ' | lambda.min.ratio: ', d2))
-                print(auc(rocobj)); print(perf_new)
-            }
+#             if (perf_new > perf){
+#                 perf <- perf_new
+#                 print (paste0('lambda: ', d3, ' | nlambda: ', d1, ' | lambda.min.ratio: ', d2))
+#                 print(auc(rocobj)); print(perf_new)
+#             }
+            
+            write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/0_deeplearning',as.numeric(perf_new),'.csv'),quote = FALSE,row.names = FALSE)
         }
     }
 }

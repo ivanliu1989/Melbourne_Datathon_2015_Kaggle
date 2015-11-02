@@ -15,10 +15,9 @@ We are treating this as a binary classification problem - did the account make a
 An AUC of 0.5 is random guessing and 1 is a prefect solution.
 
 ### Steps
-1. Logit + xgboost (blend)
+1. deeplearning + xgboost (blend)
 2. Weighted target formula
-3. Separate models
-4. Deep learning
+3. New features (QC & Distribution & Invest & Total)
 
 ### Ideas
 1. Win rate distributions
