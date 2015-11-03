@@ -2,7 +2,7 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(pROC)
-load('data/9_train_validation_test_TREE_1.RData');ls()
+load('data/9_train_validation_test_TREE_2.RData');ls()
 # load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 file.names <- list.files('ReadyForBlending/validation/')

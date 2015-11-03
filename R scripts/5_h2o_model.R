@@ -49,16 +49,16 @@ for(d0 in c(128, 256, 512)){
                 fit <-
                     h2o.deeplearning(
                         y = dependent, x = independent, data = train_df, classification = T,
-                        nfolds = 5, activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout"
-                        hidden = c(d0,d0/2,d0/4), seed = 8, adaptive_rate = T, rho = 0.99, 
+                        activation = "TanhWithDropout",#TanhWithDropout "RectifierWithDropout" nfolds = 5, 
+                        hidden = c(128,64,32), seed = 8, adaptive_rate = T, rho = 0.99, 
                         epsilon = 1e-4, rate = 0.1, rate_decay = 0.9, # rate_annealing = , 
                         momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
-                        nesterov_accelerated_gradient = T, input_dropout_ratio = d1, hidden_dropout_ratios = c(d2,d2,d2), 
+                        nesterov_accelerated_gradient = T, input_dropout_ratio = 0.8, hidden_dropout_ratios = c(0.8,0.8,0.8), 
                         l2 = 3e-6, max_w2 = 4, #Rect
                         loss = 'CrossEntropy', classification_stop = -1,
                         diagnostics = T, variable_importances = F, ignore_const_cols = T,
-                        force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
-                        sparse = F, epochs = d3 #, reproducible, score_validation_sampling
+                        force_load_balance = T, replicate_training_data = T, shuffle_training_data = F,
+                        sparse = F, epochs = 9 #, reproducible, score_validation_sampling
                     )
                 
                 #             fit <-
@@ -108,17 +108,17 @@ for(d0 in c(128, 256, 512)){
                 
                 # Performance Selection
                 perf_new <- auc(rocobj, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE)
-                # rocobj;perf_new
+                rocobj;perf_new
                 
-                if (perf_new > perf) {
-                    perf <- perf_new
-                    print (
-                        paste0(
-                            'hidden: ', d0, ' | input_dropout_ratio: ', d1, ' | hidden_dropout_ratios: ', d2, ' | epochs: ', d3
-                        )
-                    )
-                    print(auc(rocobj)); print(perf_new)
-                }
+#                 if (perf_new > perf) {
+#                     perf <- perf_new
+#                     print (
+#                         paste0(
+#                             'hidden: ', d0, ' | input_dropout_ratio: ', d1, ' | hidden_dropout_ratios: ', d2, ' | epochs: ', d3
+#                         )
+#                     )
+#                     print(auc(rocobj)); print(perf_new)
+#                 }
                 write.csv(as.data.frame(pred),
                           file=paste0('ReadyForBlending/validation/0_deeplearning_d0', d0,
                                       '_d1', d1, '_d2', d2, '_d3', d3, '_score', as.numeric(perf_new),'.csv'),quote = FALSE,row.names = FALSE)
