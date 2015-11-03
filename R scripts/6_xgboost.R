@@ -19,7 +19,7 @@ feat <- c(3:56,59)
     #-------------Basic Training using XGBoost-----------------
     bst <-
         xgboost(  # c(3:22,42,43,47:56) | 3:56
-            data = as.matrix(train[,feat]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F,
+            data = as.matrix(train[,feat]), label = train$flag_class, max.depth = 6, eta = 0.02, nround = 1400, maximize = F,
             nthread = 4, objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 10, metrics = 'auc'
         )
     
@@ -75,5 +75,5 @@ submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-write.csv(submit,'pred/submission_20151103_gbm_blend.csv',quote = FALSE,row.names = FALSE)
+write.csv(submit,'pred/submission_20151103_xg_blend.csv',quote = FALSE,row.names = FALSE)
 
