@@ -19,5 +19,5 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 2. Weighted target formula
 3. New features (QC & Distribution & Invest & Total)
 
-### Ideas
-1. Win rate distributions
+### Proven Ideas
+1. Linear blending

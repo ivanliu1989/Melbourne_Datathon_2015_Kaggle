@@ -43,27 +43,29 @@ for(i in 1:20){
     #                 importance = T
     #             )
     
-    fit <-
-        h2o.deeplearning(
-            y = dependent, x = independent, data = train_df, classification = T,
-            activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout" nfolds = 5, 
-            hidden = c(128,64,32), seed = 8, adaptive_rate = T, rho = 0.99, 
-            epsilon = 1e-4, rate = 0.15, rate_decay = 0.9, # rate_annealing = , 
-            momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
-            nesterov_accelerated_gradient = T, input_dropout_ratio = 0.5, hidden_dropout_ratios = c(0.15,0.15,0.15), 
-            l2 = 3e-6, max_w2 = 4, #Rect
-            loss = 'CrossEntropy', classification_stop = -1,
-            diagnostics = T, variable_importances = F, ignore_const_cols = T,
-            force_load_balance = T, replicate_training_data = T, shuffle_training_data = F,
-            sparse = F, epochs = 9 #, reproducible, score_validation_sampling
-        )
+#     d0 <- 256; d1 <- 0.01; d2 <- 0.5; d3 <- 0.5
+#     fit <-
+#         h2o.deeplearning(
+#             y = dependent, x = independent, data = train_df, classification = T,
+#             activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout" nfolds = 5, 
+#             hidden = c(256,256,256), adaptive_rate = T, rho = 0.99, 
+#             epsilon = 1e-4, rate = 0.01, rate_decay = 0.9, # rate_annealing = , 
+#             momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
+#             nesterov_accelerated_gradient = T, input_dropout_ratio = 0.5, hidden_dropout_ratios = c(0.5,0.5,0.5), 
+#             l2 = 3e-6, max_w2 = 4, #Rect
+#             loss = 'CrossEntropy', classification_stop = -1,
+#             diagnostics = T, variable_importances = F, ignore_const_cols = T,
+#             force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
+#             sparse = F, epochs = 5 #, reproducible, score_validation_sampling seed = 8, 
+#         )
     
-    #             fit <-
-    #                 h2o.randomForest(
-    #                     y = dependent, x = independent, data = train_df, #validation_frame
-    #                     ntree = 100, depth = 10, mtries =
-    #                         8, sample.rate = 0.8, nbins = 10, seed = 8
-    #                 )
+        d0 <- 100; d1 <- 10; d2 <- 8; d3 <- 0.8
+                fit <-
+                    h2o.randomForest(
+                        y = dependent, x = independent, data = train_df, #validation_frame
+                        ntree = 100, depth = 10, mtries =
+                            8, sample.rate = 0.8, nbins = 10
+                    )
     #             
     #             fit <-
     #                 h2o.naiveBayes(
@@ -117,7 +119,7 @@ for(i in 1:20){
     #                     print(auc(rocobj)); print(perf_new)
     #                 }
     write.csv(as.data.frame(pred),
-              file=paste0('ReadyForBlending/validation/0_deeplearning_d0', d0,
+              file=paste0('ReadyForBlending/validation/1_randomforest_d0', d0,
                           '_d1', d1, '_d2', d2, '_d3', d3, '_score', as.numeric(perf_new),'.csv'),quote = FALSE,row.names = FALSE)
     
 }

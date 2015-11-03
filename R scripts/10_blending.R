@@ -6,24 +6,41 @@ load('data/9_train_validation_test_TREE_2.RData');ls()
 # load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 file.names <- list.files('ReadyForBlending/validation/')
+########################
+### Average Blending ###
+########################
+# for(file in 1:(length(file.names)-1)){
+#     p <- read.csv(paste0('ReadyForBlending/validation/', file.names[file]))
+#     if(file==1){
+#         pred <- p
+#     }else{
+#         pred <- p + pred
+#     }
+#     if(file==(length(file.names)-1)) pred <- pred/file
+# }
+# head(pred)
 
-for(file in 1:length(file.names)){
+#######################
+### Linear Blending ###
+#######################
+X.train.combine <- ifelse(validation$flag_class == 'N', 0, 1)
+
+for(file in 1:(length(file.names)-1)){
     p <- read.csv(paste0('ReadyForBlending/validation/', file.names[file]))
-    if(file==1){
-        pred <- p
-    }else{
-        pred <- p + pred
-    }
-    if(file==length(file.names)) pred <- pred/file
+    X.train.combine <- cbind(X.train.combine,p[,3])
 }
-head(pred)
+X.train.combine <- as.data.frame(X.train.combine)
+combine.model <- lm((X.train.combine==1) ~ ., data=X.train.combine)
+
+combine.y.train.predict <- predict(combine.model, X.train.combine) # ~ 0.05 increase
 
 
 ##################
 ### Prediction ###
 ##################
 val <- validation
-X1 <- pred[,3]
+# X1 <- pred[,3]
+X1 <- combine.y.train.predict
 val <- cbind(val, X1)
 val$PRED_PROFIT_LOSS <- (val[,ncol(val)] - 0.5) * val$INVEST * 2
 pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=T)
@@ -43,4 +60,6 @@ rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$PRED_PROFIT_LOSS_2)
 rocobj <- roc(v$PRED_PROFIT_LOSS_3, v[,6])
 perf_new <- auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE)
 rocobj;perf_new
-plot(rocobj)
+
+
+
