@@ -6,7 +6,7 @@ load('data/9_train_validation_test_TREE_1.RData');ls()
 # load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 # path <- 'ReadyForBlending/validation/model/'
-path <- 'ReadyForBlending/validation/test/'
+path <- 'ReadyForBlending/submission/randomforest/'
 file.names <- list.files(path)
 ########################
 ### Average Blending ###
@@ -17,6 +17,7 @@ p3 <- read.csv(paste0(path, file.names[3]))[,3]
 p4 <- read.csv(paste0(path, file.names[4]))[,3]
 p5 <- read.csv(paste0(path, file.names[5]))
 X1 <- (p1+p2+p3+p4+p5)/5; names(X1) <- 'X1'
+
 
 #####################
 ### Bias Blending ###

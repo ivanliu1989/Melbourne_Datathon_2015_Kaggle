@@ -83,8 +83,8 @@ all_c$INVEST <- all_c$TRANSACTION_COUNT_INPLAY * all_c$AVG_BET_SIZE_INPLAY + all
 # dim(train); dim(validation)
 
 ### 4. No Dummy 
-# c(101150834,101153072,101149398)
 # c(101183757,101183885,101184013) - last 3 event
+# c(101150834,101153072,101149398)
 # c(101093076,101093194,101093312) 
 # c(101128387,101150348,101152275) 
 # c(101149870,101150716,101153308)
@@ -93,10 +93,9 @@ all_c$INVEST <- all_c$TRANSACTION_COUNT_INPLAY * all_c$AVG_BET_SIZE_INPLAY + all
 # all_c$COUNTRY_OF_RESIDENCE_NAME[is.na(all_c$COUNTRY_OF_RESIDENCE_NAME)] <- 'UAE'
 
 prep <- preProcess(all_c[,-which(names(all_c) %in% c('ACCOUNT_ID','EVENT_ID','AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY', 
-                                                     "flag_regr","flag_class","INVEST"))], method = c('center',"scale"), verbose =T)
+                                                     "flag_regr","flag_class"))], method = c('center',"scale"), verbose =T)
 all_c[,-which(names(all_c) %in% c('ACCOUNT_ID','EVENT_ID','AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY', 
-                                  "flag_regr","flag_class","INVEST"))] <- predict(prep, all_c[,-which(names(all_c) %in% c('ACCOUNT_ID','EVENT_ID','AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY', 
-                                                                                                                          "flag_regr","flag_class","INVEST"))])
+                                  "flag_regr","flag_class"))] <- predict(prep, all_c[,-which(names(all_c) %in% c('ACCOUNT_ID','EVENT_ID','AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY',"flag_regr","flag_class"))])
 test <- all_c[all_c$flag_class == 'M', ]
 total <- all_c[all_c$flag_class != 'M', ]
 validation <- total[total$EVENT_ID %in% c(101149870,101150716,101153308),]

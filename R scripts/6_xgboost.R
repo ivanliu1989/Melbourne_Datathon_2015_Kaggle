@@ -6,11 +6,12 @@ load('data/9_train_validation_test_TREE_1.RData');ls()
 # load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 ### Test
-# train <- total
+train <- total
 ### Validation
 set.seed(808)
 dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
+feat <- c(3:56,59)
 
 # for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     # print (paste0('Parameter: ', d))
@@ -18,7 +19,7 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     #-------------Basic Training using XGBoost-----------------
     bst <-
         xgboost(  # c(3:22,42,43,47:56) | 3:56
-            data = as.matrix(train[,3:56]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F,
+            data = as.matrix(train[,feat]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F,
             nthread = 4, objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 10, metrics = 'auc'
         )
     
@@ -32,8 +33,8 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     # for (col in names(val[,-c(1:22,42,43,47:59)])){
     #     val[, col] <- median(all[,col], na.rm = T)
     # }  
-    p <- predict(bst, as.matrix(val[,3:56])) 
-    # p <- predict(bst, as.matrix(train[,3:56])) 
+    p <- predict(bst, as.matrix(val[,feat])) 
+    # p <- predict(bst, as.matrix(train[,feat])) 
     val$Y <- p
     val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2 
     pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=F)
@@ -54,14 +55,14 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
     
     # roc(val$flag_class, p)
-    write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/1_xg_0.9351_0.8786.csv'),quote = FALSE,row.names = FALSE)
+    write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/1_xg_0.9361_0.88886.csv'),quote = FALSE,row.names = FALSE)
     write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/2_xg_train.csv'),quote = FALSE,row.names = FALSE)
 # }
     
 ############
 ### test ###
 ############
-p <- predict(bst, as.matrix(test[,3:56]))
+p <- predict(bst, as.matrix(test[,feat]))
 test$Y <- p
 pred_fin <- aggregate(Y ~ ACCOUNT_ID, data=test, mean, na.rm=F)
 
@@ -74,5 +75,5 @@ submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-write.csv(submit,'pred/submission_20151103_gbm_new_feat_2.csv',quote = FALSE,row.names = FALSE)
+write.csv(submit,'pred/submission_20151103_gbm_blend.csv',quote = FALSE,row.names = FALSE)
 
