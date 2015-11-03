@@ -2,7 +2,7 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 # setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 # rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
-load('data/9_train_validation_test_TREE_3.RData');ls()
+load('data/9_train_validation_test_TREE_1.RData');ls()
 # load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 ### Test
@@ -33,6 +33,7 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     #     val[, col] <- median(all[,col], na.rm = T)
     # }  
     p <- predict(bst, as.matrix(val[,3:56])) 
+    # p <- predict(bst, as.matrix(train[,3:56])) 
     val$Y <- p
     val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2 
     pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=F)
@@ -53,8 +54,10 @@ train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
     
     # roc(val$flag_class, p)
+    write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/1_xg_0.9351_0.8786.csv'),quote = FALSE,row.names = FALSE)
+    write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/2_xg_train.csv'),quote = FALSE,row.names = FALSE)
 # }
-
+    
 ############
 ### test ###
 ############
