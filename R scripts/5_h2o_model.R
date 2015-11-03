@@ -2,8 +2,8 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 # setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(h2o);library(pROC);library(doMC)
-load('data/9_train_validation_test_TREE_1.RData');ls()
-# load('data/9_train_validation_test_ONEHOT_1.RData');ls()
+# load('data/9_train_validation_test_TREE_1.RData');ls()
+load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 
 ################
 ### Register ###
@@ -35,30 +35,30 @@ dependent <- "flag_class"
 ##############
 perf <- 0
 for(i in 1:10){
-    
+#     
 #                 fit <- h2o.gbm(
 #                     y = dependent, x = independent, data = train_df,
 #                     n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
 #                     shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
 #                     importance = T
 #                 )
-    
+#     
 #     d0 <- 256; d1 <- 0.01; d2 <- 0.5; d3 <- 0.5
-    fit <-
-        h2o.deeplearning(
-            y = dependent, x = independent, data = train_df, classification = T,
-            activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout" nfolds = 5, 
-            hidden = c(256,256,256), adaptive_rate = T, rho = 0.99, 
-            epsilon = 1e-4, rate = 0.01, rate_decay = 0.9, # rate_annealing = , 
-            momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
-            nesterov_accelerated_gradient = T, input_dropout_ratio = 0.5, hidden_dropout_ratios = c(0.5,0.5,0.5), 
-            l2 = 3e-6, max_w2 = 4, #Rect
-            loss = 'CrossEntropy', classification_stop = -1,
-            diagnostics = T, variable_importances = F, ignore_const_cols = T,
-            force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
-            sparse = F, epochs = 5 #, reproducible, score_validation_sampling seed = 8, 
-        )
-    
+#     fit <-
+#         h2o.deeplearning(
+#             y = dependent, x = independent, data = train_df, classification = T,
+#             activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout" nfolds = 5, 
+#             hidden = c(256,256,256), adaptive_rate = T, rho = 0.99, 
+#             epsilon = 1e-4, rate = 0.01, rate_decay = 0.9, # rate_annealing = , 
+#             momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
+#             nesterov_accelerated_gradient = T, input_dropout_ratio = 0.5, hidden_dropout_ratios = c(0.5,0.5,0.5), 
+#             l2 = 3e-6, max_w2 = 4, #Rect
+#             loss = 'CrossEntropy', classification_stop = -1,
+#             diagnostics = T, variable_importances = F, ignore_const_cols = T,
+#             force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
+#             sparse = F, epochs = 5 #, reproducible, score_validation_sampling seed = 8, 
+#         )
+#     
 #         d0 <- 100; d1 <- 10; d2 <- 8; d3 <- 0.8
 #                 fit <-
 #                     h2o.randomForest(
@@ -66,12 +66,12 @@ for(i in 1:10){
 #                         ntree = 100, depth = 10, mtries =
 #                             8, sample.rate = 0.8, nbins = 10
 #                     )
-                
+#                 
 #                 fit <-
 #                     h2o.naiveBayes(
 #                         y = dependent, x = independent, data = train_df, laplace = 0
 #                     )
-                
+#                 
 #                 fit <-
 #                     h2o.glm(
 #                         y = dependent, x = independent, data = train_df,
@@ -80,7 +80,7 @@ for(i in 1:10){
 #                         strong_rules = T, standardize = T, intercept = F, use_all_factor_levels = F,
 #                         epsilon = 1e-4, iter.max = 100, higher_accuracy = T, disable_line_search = F
 #                     )
-    #             
+#                 
     ##################
     ### Prediction ###
     ##################
