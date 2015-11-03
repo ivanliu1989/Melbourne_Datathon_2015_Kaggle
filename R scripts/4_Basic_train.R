@@ -13,14 +13,14 @@ load('data/9_train_validation_test_ONEHOT_1.RData');ls()
 ####################
 train$flag_class <- as.factor(train$flag_class)
 
-fitControl <- trainControl(method = "repeatedcv",
+fitControl <- trainControl(method = "none",
                            number = 5,
                            repeats = 2,
                            classProbs = TRUE,
                            summaryFunction = twoClassSummary)
-Grid <-  expand.grid(mtry=8)
+# Grid <-  expand.grid(mtry=8)
 # Grid <-  expand.grid(nrounds = 100, max_depth = 8, eta = 0.05) # xgbTree
-Grid <-  expand.grid(sigma = 10, C = 0.01) # svmRadial
+Grid <-  expand.grid(sigma = 0.1, C = 100) # svmRadial gamma=2^(-3:1),cost=2^(2:6)
 # Grid <-  expand.grid(size = 80, decay = 0.1) # nnet
 # Grid <-  expand.grid(fL=0.01, usekernel=F) # nb
 # Grid <-  expand.grid(nIter=20) # LogitBoost
@@ -28,11 +28,11 @@ Grid <-  expand.grid(sigma = 10, C = 0.01) # svmRadial
 
 # Training -c(1,2,57,59) | -c(1,2,103,105)
 set.seed(825)
-fit <- train(flag_class ~ ., data=train[,-c(1,2,103, 105)], # classification
+fit <- train(flag_class ~ ., data=train[,-c(1,2,103)], # classification
              method = "svmRadial",
              trControl = fitControl,
              tuneGrid = Grid,
-             preProcess = c('center', 'scale'),
+             preProcess = c('pca'),
              metric ='ROC',
              verbose = T)
 
