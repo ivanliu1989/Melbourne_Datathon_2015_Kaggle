@@ -95,4 +95,4 @@ dim(train); dim(validation)
 ###################
 # 8. Output #######
 ###################
-save(train, validation, total, test, file='data/9_train_validation_test_TREE_1.RData')
+save(train, validation, total, test, file='data/9_train_validation_test_log.RData')
