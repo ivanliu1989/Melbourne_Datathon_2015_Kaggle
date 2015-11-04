@@ -14,35 +14,35 @@ We are treating this as a binary classification problem - did the account make a
 
 An AUC of 0.5 is random guessing and 1 is a prefect solution.
 
-#### 1st submission - 0.60778 (+0.00, +0.00%)
+##### 1st submission - 0.60778 (+0.00, +0.00%)
 1. basic features
 2. random forest
 3. weighted profit formula
 
-#### 2nd submission - 0.62711 (+0.01933, +3.18%)
+##### 2nd submission - 0.62711 (+0.01933, +3.18%)
 1. new features (BL ratio, cancel ratio etc.)
 2. average profit formula
 
-#### 3rd submission - 0.63243 (+0.00532, +0.85%)
+##### 3rd submission - 0.63243 (+0.00532, +0.85%)
 1. new features (difference between L and B)
 2. xgboost
 
-#### 4th submission - 0.64118 (+0.00875, +1.384%)
+##### 4th submission - 0.64118 (+0.00875, +1.384%)
 1. new feature (invest amount)
 2. blended models
 
-#### 5th submission - 0.
+##### 5th submission - 0.
 1. Log transformation
 2. K-means (transactional features & customized imputation)
 
-#### 6th submission - 0.
+##### 6th submission - 0.
 1. GBDT latent factors (meta data)
 2. Hash tricks
 
-#### 7th submission - 0.
+##### 7th submission - 0.
 1. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
 
-#### 8th submission - 0.
+##### 8th submission - 0.
 1. New feature inventation
 2. Separate models (new/existing customers)
 3. Blending strategies
