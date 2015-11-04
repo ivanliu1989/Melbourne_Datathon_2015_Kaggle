@@ -9,7 +9,7 @@ load('data/9_train_validation_test_TREE_1.RData');ls()
 set.seed(18)
 dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
-feat <- c(3:58)
+feat <- c(3:56,58)
 
 # for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     # print (paste0('Parameter: ', d))

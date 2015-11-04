@@ -63,6 +63,10 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 ##############################
 # 4. Log transformation ######
 ##############################
+log_names <- names(all)[c(3:56, 59:60)]
+for (col in log_names){
+    all[,col] <- log_trans(all[,col])
+}
 
 ##########################
 # 5. Kmeans Cluster ######

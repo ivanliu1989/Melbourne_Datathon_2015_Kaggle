@@ -23,7 +23,7 @@ train_df <- as.h2o(localH2O, train)
 validation_df <- as.h2o(localH2O, validation)
 # test_df <- as.h2o(localH2O, test)
 
-independent <- c(colnames(train_df[,3:(ncol(train_df)-2)]))
+independent <- c(colnames(train_df[,3:(ncol(train_df)-4)]), 'INVEST')
 dependent <- "flag_class"
 
 ##############
@@ -32,12 +32,12 @@ dependent <- "flag_class"
 # perf <- 0
 for(i in 1:50){
 #     
-    fit <- h2o.gbm(
-        y = dependent, x = independent, data = train_df, #train_df | total_df
-        n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
-        shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
-        importance = T
-    )
+#     fit <- h2o.gbm(
+#         y = dependent, x = independent, data = train_df, #train_df | total_df
+#         n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
+#         shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
+#         importance = T
+#     )
 #     
 #     d0 <- 256; d1 <- 0.01; d2 <- 0.5; d3 <- 0.5
 #     fit <-
@@ -67,15 +67,15 @@ for(i in 1:50){
 #             y = dependent, x = independent, data = train_df, laplace = 0
 #         )
 #     
-#     fit <-
-#         h2o.glm(
-#             y = dependent, x = independent, data = train_df, #train_df | total_df
-#             family = 'binomial', link = 'logit',alpha = 0.5, # 1 lasso 0 ridge
-#             lambda = 1e-08, lambda_search = T, nlambda = 12, lambda.min.ratio = 0.1,
-#             strong_rules = T, standardize = T, intercept = F, use_all_factor_levels = F,
-#             epsilon = 1e-4, iter.max = 100, higher_accuracy = T, disable_line_search = F
-#         )
-#                 
+    fit <-
+        h2o.glm(
+            y = dependent, x = independent, data = train_df, #train_df | total_df
+            family = 'binomial', link = 'logit',alpha = 0.5, # 1 lasso 0 ridge
+            lambda = 1e-08, lambda_search = T, nlambda = 12, lambda.min.ratio = 0.1,
+            strong_rules = T, standardize = T, intercept = F, use_all_factor_levels = F,
+            epsilon = 1e-4, iter.max = 100, higher_accuracy = T, disable_line_search = F
+        )
+                
     ##################
     ### Prediction ###
     ##################
@@ -114,7 +114,7 @@ for(i in 1:50){
     #                 }
 #     write.csv(as.data.frame(pred),
 #               file=paste0('ReadyForBlending/submission/randomforest/2_rf_score', as.numeric(perf_new),'.csv'),quote = FALSE,row.names = FALSE)
-    write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/1_gbm_0.9029_0.8172.csv'),quote = FALSE,row.names = FALSE)
+    write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/3_gbm_0.155_0.837.csv'),quote = FALSE,row.names = FALSE)
     # write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/2_dl_train.csv'),quote = FALSE,row.names = FALSE)
 
 
