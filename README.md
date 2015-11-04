@@ -32,17 +32,20 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 2. blended models
 
 ##### 5th submission - 0.
+1. New benchmark (past history by game)
+
+##### 6th submission - 0.
 1. Log transformation
 2. K-means (transactional features & customized imputation)
 
-##### 6th submission - 0.
+##### 7th submission - 0.
 1. GBDT latent factors (meta data)
 2. Hash tricks
 
-##### 7th submission - 0.
+##### 8th submission - 0.
 1. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
 
-##### 8th submission - 0.
+##### 9th submission - 0.
 1. New feature inventation
 2. Separate models (new/existing customers)
 3. Blending strategies
