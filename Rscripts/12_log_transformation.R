@@ -15,3 +15,27 @@ log_trans <- function(P) {
 raw_trans <- function(log_P){
     sign(log_P)*(10^(abs(log_P))-1)    
 }
+
+## modelling with Kmeans
+KmeansClusters <- function(dt, k = 3, nstart = 50, feat){
+    kmAcct.out <- kmeans(dt[,feat], k, nstart = 50)
+    dtCombined <- cbind(dt, CLUSTER = kmAcct.out$cluster)
+    
+    dtCombined <- as.data.frame(dtCombined)
+    # dtClusters <- SummariseClusters(dtCombined)
+    
+    # return(dtClusters)
+    return(dtCombined)
+}
+
+## modelling with Hierachical Clustering
+HierClusters <- function(dt, k = 2, method, feat){
+    hc <- hclust(dist(dt[,feat]), method = method)
+    hcAcc.out <- cutree(hc, k)
+    dtCombined <- cbind(dt, CLUSTER = hcAcc.out)
+    
+    dtCombined <- as.data.table(dtCombined)
+    dtClusters <- SummariseClusters(dtCombined)
+    
+    return(dtClusters)
+}

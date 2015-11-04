@@ -26,7 +26,7 @@ test <- merge(test, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 all <- rbind(total, test); str(all)
 all$COUNTRY_OF_RESIDENCE_NAME <- NULL
 
-########################
+########################å
 # 2. Imputation 1 ######
 ########################
 all$AVG_PLACED_TAKEN_TIME_INPLAY[is.na(all$AVG_PLACED_TAKEN_TIME_INPLAY)] <- median(all$AVG_PLACED_TAKEN_TIME_INPLAY, na.rm=T)
@@ -53,7 +53,7 @@ all$win_hist[is.na(all$win_hist)] <- 0
 all$AVG_TAKEN_HOUR_INPLAY[is.na(all$AVG_TAKEN_HOUR_INPLAY)] <- median(all$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
 all$AVG_TAKEN_HOUR_OUTPLAY[is.na(all$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
 
-apply(all,2, function(x) mean(is.na(x)))
+# apply(all,2, function(x) mean(is.na(x)))
 
 ##########################
 # 3. Invest feature ######
@@ -63,14 +63,26 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 ##############################
 # 4. Log transformation ######
 ##############################
-log_names <- names(all)[c(3:56, 59:60)]
-for (col in log_names){
-    all[,col] <- log_trans(all[,col])
-}
+# log_names <- names(all)[c(3:56, 59:60)]
+# for (col in log_names){
+#     all[,col] <- log_trans(all[,col])
+# }
 
 ##########################
 # 5. Kmeans Cluster ######
 ##########################
+feat <- c(3:4,7:8,11:12,15:16,19:20,47:56,60)
+names(all[,feat])
+kmean_dt <- KmeansClusters(all, k = 10, nstart = 50, feat)
+table(kmean_dt$CLUSTER)
+
+# h2o
+library(h2o)
+set.seed(8)
+registerDoMC(cores = 4)
+localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
+kmeans_df <- as.h2o(localH2O, all[,feat])
+
 
 ##########################
 # 6. GBDT Meta Data ######
