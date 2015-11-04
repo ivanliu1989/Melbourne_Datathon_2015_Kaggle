@@ -53,7 +53,7 @@ feat <- c(3:58)
     print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
     
     # roc(val$flag_class, p)
-    write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/1_xg_0.9361_0.88886.csv'),quote = FALSE,row.names = FALSE)
+    write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/1_xg_0.9416_0.8996.csv'),quote = FALSE,row.names = FALSE)
     write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/2_xg_train.csv'),quote = FALSE,row.names = FALSE)
 # }
     

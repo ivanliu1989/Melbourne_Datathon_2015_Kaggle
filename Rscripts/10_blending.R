@@ -3,10 +3,8 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 rm(list=ls()); gc()
 library(pROC)
 load('data/9_train_validation_test_TREE_1.RData');ls()
-# load('data/9_train_validation_test_ONEHOT_1.RData');ls()
-
-# path <- 'ReadyForBlending/validation/model/'
-path <- 'ReadyForBlending/submission/randomforest/'
+path <- 'ReadyForBlending/validation/test/'
+# path <- 'ReadyForBlending/submission/randomforest/'
 file.names <- list.files(path)
 ########################
 ### Average Blending ###
