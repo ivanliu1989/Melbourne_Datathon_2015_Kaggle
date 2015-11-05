@@ -49,3 +49,7 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 1. New feature inventation
 2. Separate models (new/existing customers)
 3. Blending strategies
+
+##### Ref
+1. https://github.com/Gzsiceberg/kaggle-avito
+2. entropy based features

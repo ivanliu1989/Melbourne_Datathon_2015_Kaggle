@@ -85,6 +85,19 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 # pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
 # all$kmeans <- pred[,1]; table(all$kmeans)
 
+######################################
+# Class Distance Calculations ########
+######################################
+library(caret)
+centroids <- classDist(dt, as.factor(total$flag_class))
+distances <- predict(centroids, dt)
+distances <- as.data.frame(distances)
+head(distances)
+
+xyplot(dist.Y ~ dist.N,
+       data = distances,
+       groups = as.factor(total$flag_class),
+       auto.key = list(columns = 2))
 
 ##########################
 # 6. GBDT Meta Data ######
