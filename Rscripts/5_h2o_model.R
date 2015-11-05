@@ -22,7 +22,7 @@ train_df <- as.h2o(localH2O, train)
 validation_df <- as.h2o(localH2O, validation)
 # test_df <- as.h2o(localH2O, test)
 
-independent <- c(colnames(train_df[,3:(ncol(train_df)-2)]))
+independent <- c(colnames(train_df[,3:(ncol(train_df)-5)]), 'INVEST')
 dependent <- "flag_class"
 
 # independent <- independent[
@@ -133,7 +133,7 @@ for(i in 1:50){
     #                     print(auc(rocobj)); print(perf_new)
     #                 }
     write.csv(as.data.frame(pred),
-              file=paste0('ReadyForBlending/validation/randomforest/2_dl_score', as.numeric(perf_new1),'.csv'),quote = FALSE,row.names = FALSE)
+              file=paste0('ReadyForBlending/validation/deeplearning/2_dl_score', as.numeric(perf_new1),'.csv'),quote = FALSE,row.names = FALSE)
     # write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/3_gbm_0.155_0.837.csv'),quote = FALSE,row.names = FALSE)
     # write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/2_dl_train.csv'),quote = FALSE,row.names = FALSE)
 
