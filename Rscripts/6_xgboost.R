@@ -28,13 +28,16 @@ feat <- colnames(train)[c(3:56,58:59)]
 #           'INPLAY_RATIO',
 #           'win_hist')]
 
+feat <- feat[
+    !feat %in%
+        c('kmeans')]
 # for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     # print (paste0('Parameter: ', d))
     
     #-------------Basic Training using XGBoost-----------------
     bst <-
         xgboost(  # c(3:22,42,43,47:56) | 3:56
-            data = as.matrix(train[,feat]), label = train$flag_class, max.depth = 6, eta = 0.02, nround = 1200, maximize = F,
+            data = as.matrix(train[,feat]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F,
             nthread = 4, objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 10, metrics = 'auc'
         )
     
@@ -73,7 +76,7 @@ feat <- colnames(train)[c(3:56,58:59)]
     print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
     
     # roc(val$flag_class, p)
-    write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/1_xg_0.9416_0.8996.csv'),quote = FALSE,row.names = FALSE)
+    write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/1_xg_0.9635_0.9334.csv'),quote = FALSE,row.names = FALSE)
     write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/2_xg_train.csv'),quote = FALSE,row.names = FALSE)
 # }
     

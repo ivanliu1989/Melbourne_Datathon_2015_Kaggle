@@ -71,19 +71,19 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 ##########################
 # 5. Kmeans Cluster ######
 ##########################
-# feat <- c(1:2,3:4,7:8,11:12,15:16,19:20,47:56,60)
-# names(all[,feat])
-# # kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
-# # table(kmean_dt$CLUSTER)
-# 
-# # h2o
-# library(h2o)
-# localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
-# kmeans_df <- as.h2o(localH2O, all[,feat])
-# cols <- c(colnames(kmeans_df[,3:(ncol(kmeans_df))]))
-# fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
-# pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
-# all$kmeans <- pred[,1]; table(all$kmeans)
+feat <- c(1:2,3:4,7:8,11:12,15:16,19:20,47:56,60)
+names(all[,feat])
+# kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
+# table(kmean_dt$CLUSTER)
+
+# h2o
+library(h2o)
+localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
+kmeans_df <- as.h2o(localH2O, all[,feat])
+cols <- c(colnames(kmeans_df[,3:(ncol(kmeans_df))]))
+fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
+pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
+all$kmeans <- pred[,1]; table(all$kmeans)
 
 ######################################
 # Class Distance Calculations ########
@@ -132,4 +132,4 @@ dim(train); dim(validation)
 ###################
 # 8. Output #######
 ###################
-save(train, validation, total, test, file='data/9_train_validation_test_kmean.RData')
+save(train, validation, total, test, file='data/9_train_validation_test_20151105.RData')
