@@ -35,15 +35,18 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 1. X New benchmark (past history by game) 
 2. X Log transformation
 3. X K-means (transactional features & customized imputation)
-4. Feature selection
+4. O Feature selection
 5. X Multi-rounds
+6. O New Calculation
 
 ##### 6th submission - 0.
-1. GBDT latent factors (meta data)
-2. Hash tricks
+1. Event Counts / Bag of Event
+2. GBDT latent factors (meta data)
+3. Subset modeling
 
 ##### 7th submission - 0.
 1. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
+2. Hash tricks
 
 ##### 8th submission - 0.
 1. New feature inventation
