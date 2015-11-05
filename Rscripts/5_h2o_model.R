@@ -51,12 +51,12 @@ c('MAX_BET_SIZE_OUTPLAY_L',
 # perf <- 0
 # for(i in 1:50){
 #     
-#     fit <- h2o.gbm(
-#         y = dependent, x = independent, data = train_df, #train_df | total_df
-#         n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
-#         shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
-#         importance = T
-#     )
+    fit <- h2o.gbm(
+        y = dependent, x = independent, data = train_df, #train_df | total_df
+        n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
+        shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
+        importance = F
+    )
 #     
 #     d0 <- 256; d1 <- 0.01; d2 <- 0.5; d3 <- 0.5
 #     fit <-
@@ -86,14 +86,14 @@ c('MAX_BET_SIZE_OUTPLAY_L',
 #             y = dependent, x = independent, data = train_df, laplace = 0
 #         )
 #     
-    fit <-
-        h2o.glm(
-            y = dependent, x = independent, data = train_df, #train_df | total_df
-            family = 'binomial', link = 'logit',alpha = 0.5, # 1 lasso 0 ridge
-            lambda = 1e-08, lambda_search = T, nlambda = 12, lambda.min.ratio = 0.1,
-            strong_rules = T, standardize = T, intercept = F, use_all_factor_levels = F,
-            epsilon = 1e-4, iter.max = 100, higher_accuracy = T, disable_line_search = F
-        )
+#     fit <-
+#         h2o.glm(
+#             y = dependent, x = independent, data = train_df, #train_df | total_df
+#             family = 'binomial', link = 'logit',alpha = 0.5, # 1 lasso 0 ridge
+#             lambda = 1e-08, lambda_search = T, nlambda = 12, lambda.min.ratio = 0.1,
+#             strong_rules = T, standardize = T, intercept = F, use_all_factor_levels = F,
+#             epsilon = 1e-4, iter.max = 100, higher_accuracy = T, disable_line_search = F
+#         )
                 
     ##################
     ### Prediction ###
@@ -102,9 +102,11 @@ c('MAX_BET_SIZE_OUTPLAY_L',
     pred <- h2o.predict(object = fit, newdata = validation_df)
     # pred <- h2o.predict(object = fit, newdata = train_df)
     val <- cbind(val, as.data.frame(pred[,3]))
-    val$PRED_PROFIT_LOSS <- (val[,ncol(val)] - 0.5) * val$INVEST * 2
-    pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=T)
-    pred_fin$PRED_PROFIT_LOSS_2 <- ifelse(pred_fin$PRED_PROFIT_LOSS > 0, 1, ifelse(pred_fin$PRED_PROFIT_LOSS < 0, 0, 0.5))
+    
+    tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
+    val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+    val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * (val$X1 - 0.5) * 2
+    pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=val, mean, na.rm=F)
     pred_fin2 <- aggregate(X1 ~ ACCOUNT_ID, data=val, mean, na.rm=F)
     ### Validation
     val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=val, sum, na.rm=F)
@@ -116,11 +118,13 @@ c('MAX_BET_SIZE_OUTPLAY_L',
     v <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
     v <- merge(v,pred_fin2,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
     # With a roc object:
-    rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$PRED_PROFIT_LOSS_2)
-    rocobj <- roc(v$PRED_PROFIT_LOSS_3, v[,6])
-    # Performance Selection
-    perf_new <- auc(rocobj, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE)
-    rocobj;perf_new
+    rocobj1 <- roc(v$PRED_PROFIT_LOSS_3, v$INVEST_PERCENT);rocobj1
+    perf_new1 <- auc(rocobj1, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE)
+    perf_new1
+    
+    rocobj2 <- roc(v$PRED_PROFIT_LOSS_3, v$X1);rocobj2
+    perf_new2 <- auc(rocobj2, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE)
+    perf_new2
     
     #                 if (perf_new > perf) {
     #                     perf <- perf_new
@@ -142,7 +146,11 @@ c('MAX_BET_SIZE_OUTPLAY_L',
     ############
     p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
     test$Y <- p[,3]
-    pred_fin <- aggregate(Y ~ ACCOUNT_ID, data=test, mean, na.rm=F)
+    tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=test, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
+    test <- merge(test, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+    test$INVEST_PERCENT <- test$INVEST/test$TOT_INVEST * (test$Y - 0.5) * 2
+    pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=test, mean, na.rm=F)
+    # pred_fin <- aggregate(Y ~ ACCOUNT_ID, data=test, mean, na.rm=F)
     
     ### Submission
     submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")

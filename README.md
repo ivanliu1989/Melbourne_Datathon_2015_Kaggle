@@ -36,7 +36,7 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 2. X Log transformation
 3. X K-means (transactional features & customized imputation)
 4. Feature selection
-5. Multi-rounds
+5. X Multi-rounds
 
 ##### 6th submission - 0.
 1. GBDT latent factors (meta data)

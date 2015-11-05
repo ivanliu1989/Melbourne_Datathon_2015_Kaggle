@@ -11,22 +11,22 @@ dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 feat <- colnames(train)[c(3:56,58:59)]
 
-feat <- feat[
-    !feat %in%
-        c('MAX_BET_SIZE_OUTPLAY_L',
-          'AVG_PLACED_TAKEN_TIME_INPLAY',
-          'STDEV_BET_SIZE_OUTPLAY',
-          'AVG_BET_SIZE_OUTPLAY',
-          'BL_DIFF_STDEV_BET_SIZE_OUT',
-          'KURT_PLACED_TAKEN_TIME_INPLAY',
-          'NET_PROFIT_INPLAY',
-          'STDEV_BET_SIZE_INPLAY',
-          'TRANSACTION_COUNT_OUTPLAY_L',
-          'SKEW_PLACED_TAKEN_TIME_INPLAY',
-          'TRANSACTION_COUNT_INPLAY',
-          'BL_DIFF_TRANSACTION_COUNT_IN',
-          'INPLAY_RATIO',
-          'win_hist')]
+# feat <- feat[
+#     !feat %in%
+#         c('MAX_BET_SIZE_OUTPLAY_L',
+#           'AVG_PLACED_TAKEN_TIME_INPLAY',
+#           'STDEV_BET_SIZE_OUTPLAY',
+#           'AVG_BET_SIZE_OUTPLAY',
+#           'BL_DIFF_STDEV_BET_SIZE_OUT',
+#           'KURT_PLACED_TAKEN_TIME_INPLAY',
+#           'NET_PROFIT_INPLAY',
+#           'STDEV_BET_SIZE_INPLAY',
+#           'TRANSACTION_COUNT_OUTPLAY_L',
+#           'SKEW_PLACED_TAKEN_TIME_INPLAY',
+#           'TRANSACTION_COUNT_INPLAY',
+#           'BL_DIFF_TRANSACTION_COUNT_IN',
+#           'INPLAY_RATIO',
+#           'win_hist')]
 
 # for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     # print (paste0('Parameter: ', d))
@@ -34,7 +34,7 @@ feat <- feat[
     #-------------Basic Training using XGBoost-----------------
     bst <-
         xgboost(  # c(3:22,42,43,47:56) | 3:56
-            data = as.matrix(train[,feat]), label = train$flag_class, max.depth = 6, eta = 0.02, nround = 1400, maximize = F,
+            data = as.matrix(train[,feat]), label = train$flag_class, max.depth = 6, eta = 0.02, nround = 1200, maximize = F,
             nthread = 4, objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 10, metrics = 'auc'
         )
     
@@ -51,9 +51,11 @@ feat <- feat[
     p <- predict(bst, as.matrix(val[,feat])) 
     # p <- predict(bst, as.matrix(train[,feat])) 
     val$Y <- p
-    val$PRED_PROFIT_LOSS <- (val$Y - 0.5) * val$INVEST * 2 
-    pred_fin <- aggregate(PRED_PROFIT_LOSS ~ ACCOUNT_ID, data=val, sum, na.rm=F)
-    pred_fin$PRED_PROFIT_LOSS_2 <- ifelse(pred_fin$PRED_PROFIT_LOSS > 0, 1, ifelse(pred_fin$PRED_PROFIT_LOSS < 0, 0, 0.5))
+    
+    tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
+    val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+    val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * (val$Y - 0.5) * 2
+    pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=val, mean, na.rm=F)
     pred_fin2 <- aggregate(Y ~ ACCOUNT_ID, data=val, mean, na.rm=F)
     
     ### Validation
@@ -65,7 +67,8 @@ feat <- feat[
     #########################
     v <- merge(val_fin,pred_fin,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
     v <- merge(v,pred_fin2,all.x = TRUE,all.y = FALSE, by = 'ACCOUNT_ID')
-    rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$PRED_PROFIT_LOSS_2);print(auc(rocobj)) # Invest * Possibility
+    rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$INVEST_PERCENT);print(auc(rocobj)) # Invest * Possibility
+    print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
     rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$Y);print(auc(rocobj)) # Average Possibility
     print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
     
