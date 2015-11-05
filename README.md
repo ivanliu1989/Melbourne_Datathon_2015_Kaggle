@@ -32,9 +32,11 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 2. blended models
 
 ##### 5th submission - 0.
-1. New benchmark (past history by game)
-2. Log transformation
-3. K-means (transactional features & customized imputation)
+1. X New benchmark (past history by game) 
+2. X Log transformation
+3. X K-means (transactional features & customized imputation)
+4. Feature selection
+5. Multi-rounds
 
 ##### 6th submission - 0.
 1. GBDT latent factors (meta data)

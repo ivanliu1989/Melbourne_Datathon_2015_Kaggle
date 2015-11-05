@@ -1,8 +1,10 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(h2o);library(pROC);library(doMC)
-load('data/9_train_validation_test_normal.RData');ls()
+# load('data/9_train_validation_test_normal.RData');ls()
 # load('data/9_train_validation_test_log.RData');ls()
+load('data/9_train_validation_test_kmean.RData');ls()
+
 ################
 ### Register ###
 ################
@@ -23,14 +25,31 @@ train_df <- as.h2o(localH2O, train)
 validation_df <- as.h2o(localH2O, validation)
 # test_df <- as.h2o(localH2O, test)
 
-independent <- c(colnames(train_df[,3:(ncol(train_df)-4)]), 'INVEST')
+independent <- c(colnames(train_df[,3:(ncol(train_df)-2)]))
 dependent <- "flag_class"
+
+independent <- independent[
+!independent %in%
+c('MAX_BET_SIZE_OUTPLAY_L',
+'AVG_PLACED_TAKEN_TIME_INPLAY',
+'STDEV_BET_SIZE_OUTPLAY',
+'AVG_BET_SIZE_OUTPLAY',
+'BL_DIFF_STDEV_BET_SIZE_OUT',
+'KURT_PLACED_TAKEN_TIME_INPLAY',
+'NET_PROFIT_INPLAY',
+'STDEV_BET_SIZE_INPLAY',
+'TRANSACTION_COUNT_OUTPLAY_L',
+'SKEW_PLACED_TAKEN_TIME_INPLAY',
+'TRANSACTION_COUNT_INPLAY',
+'BL_DIFF_TRANSACTION_COUNT_IN',
+'INPLAY_RATIO',
+'win_hist')]
 
 ##############
 ### Models ###
 ##############
 # perf <- 0
-for(i in 1:50){
+# for(i in 1:50){
 #     
 #     fit <- h2o.gbm(
 #         y = dependent, x = independent, data = train_df, #train_df | total_df
@@ -50,16 +69,16 @@ for(i in 1:50){
 #             nesterov_accelerated_gradient = T, input_dropout_ratio = 0.5, hidden_dropout_ratios = c(0.5,0.5,0.5), 
 #             l2 = 3e-6, max_w2 = 4, #Rect
 #             loss = 'CrossEntropy', classification_stop = -1,
-#             diagnostics = T, variable_importances = F, ignore_const_cols = T,
+#             diagnostics = T, variable_importances = T, ignore_const_cols = T,
 #             force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
 #             sparse = F, epochs = 5 #, reproducible, score_validation_sampling seed = 8, 
 #         )
-#     
+    
 #     d0 <- 100; d1 <- 10; d2 <- 8; d3 <- 0.8
 #     fit <-
 #         h2o.randomForest(
 #             y = dependent, x = independent, data = train_df, #train_df | total_df #validation_frame
-#             ntree = 100, depth = 10, mtries = 8, sample.rate = 0.8, nbins = 10
+#             ntree = 100, depth = 10, mtries = 8, sample.rate = 0.8, nbins = 10, importance = T
 #         )
     
 #     fit <-
@@ -138,8 +157,7 @@ for(i in 1:50){
               file=paste0('ReadyForBlending/submission/deeplearning/2_dl_score', as.numeric(perf_new),'.csv'),quote = FALSE,row.names = FALSE)
     # write.csv(submit,'pred/submission_20151103_h2o_glm_blend.csv',quote = FALSE,row.names = FALSE)
     
-}
+# }
 
 h2o.shutdown(localH2O)
-
 

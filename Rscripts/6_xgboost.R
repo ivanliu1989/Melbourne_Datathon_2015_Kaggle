@@ -1,7 +1,7 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
-load('data/9_train_validation_test_TREE_1.RData');ls()
+load('data/9_train_validation_test_kmean.RData');ls()
 
 ### Test
 # train <- total
@@ -9,7 +9,24 @@ load('data/9_train_validation_test_TREE_1.RData');ls()
 set.seed(18)
 dim(train); dim(validation)
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
-feat <- c(3:56,58)
+feat <- colnames(train)[c(3:56,58:59)]
+
+feat <- feat[
+    !feat %in%
+        c('MAX_BET_SIZE_OUTPLAY_L',
+          'AVG_PLACED_TAKEN_TIME_INPLAY',
+          'STDEV_BET_SIZE_OUTPLAY',
+          'AVG_BET_SIZE_OUTPLAY',
+          'BL_DIFF_STDEV_BET_SIZE_OUT',
+          'KURT_PLACED_TAKEN_TIME_INPLAY',
+          'NET_PROFIT_INPLAY',
+          'STDEV_BET_SIZE_INPLAY',
+          'TRANSACTION_COUNT_OUTPLAY_L',
+          'SKEW_PLACED_TAKEN_TIME_INPLAY',
+          'TRANSACTION_COUNT_INPLAY',
+          'BL_DIFF_TRANSACTION_COUNT_IN',
+          'INPLAY_RATIO',
+          'win_hist')]
 
 # for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     # print (paste0('Parameter: ', d))

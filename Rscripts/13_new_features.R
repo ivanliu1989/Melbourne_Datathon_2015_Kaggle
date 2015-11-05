@@ -71,22 +71,34 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 ##########################
 # 5. Kmeans Cluster ######
 ##########################
-feat <- c(3:4,7:8,11:12,15:16,19:20,47:56,60)
+feat <- c(1:2,3:4,7:8,11:12,15:16,19:20,47:56,60)
 names(all[,feat])
-kmean_dt <- KmeansClusters(all, k = 10, nstart = 50, feat)
-table(kmean_dt$CLUSTER)
+# kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
+# table(kmean_dt$CLUSTER)
 
 # h2o
 library(h2o)
-set.seed(8)
-registerDoMC(cores = 4)
 localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 kmeans_df <- as.h2o(localH2O, all[,feat])
+cols <- c(colnames(kmeans_df[,3:(ncol(kmeans_df))]))
+fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
+pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
+all$kmeans <- pred[,1]; table(all$kmeans)
 
 
 ##########################
 # 6. GBDT Meta Data ######
 ##########################
+# library(xgboost);library(pROC);
+# set.seed(18)
+# dim(all)
+# all$flag_class <- ifelse(all$flag_class == 'Y', 1, 0)
+# feat <- c(3:56,59:60)
+# bst <- xgboost( data = as.matrix(all[,feat]), label = all$flag_class, max.depth = 7, eta = 0.2, nround = 30, maximize = F,
+#         nthread = 4, objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 10, metrics = 'auc')
+# p <- predict(bst, as.matrix(all[,feat])) 
+# table(p)
+# all$GBDT <- p; table(all$GBDT)
 
 ######################
 # 7. Validation ######
@@ -96,7 +108,7 @@ kmeans_df <- as.h2o(localH2O, all[,feat])
 # c(101093076,101093194,101093312) 
 # c(101128387,101150348,101152275) 
 # c(101149870,101150716,101153308)
-all <- all[,c(1:56, 59:60, 58, 57)]
+all <- all[,c(1:56, 59:61, 58, 57)]
 
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]
@@ -107,4 +119,4 @@ dim(train); dim(validation)
 ###################
 # 8. Output #######
 ###################
-save(train, validation, total, test, file='data/9_train_validation_test_log.RData')
+save(train, validation, total, test, file='data/9_train_validation_test_kmean.RData')
