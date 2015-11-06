@@ -6,6 +6,7 @@ load('data/2_test_new.RData');ls()
 
 total$win_hist <- ifelse(total$flag_regr > 0, 1, ifelse(total$flag_regr <0, -1, 0)) 
 win_hist <- aggregate(win_hist ~ ACCOUNT_ID, data=total, sum, na.rm = T) 
+event_count <- aggregate(EVENT_ID ~ ACCOUNT_ID, data=total, length); names(event_count) <- c('ACCOUNT_ID', 'EVENT_COUNT') 
 total$win_hist <- NULL
 
 #################################
@@ -20,13 +21,16 @@ test$flag_class <- 'M'
 total <- merge(total, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 test <- merge(test, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
+total <- merge(total, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test <- merge(test, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+
 #################################
 # 1.5 Combine Total & Test ######
 #################################
 all <- rbind(total, test); str(all)
 all$COUNTRY_OF_RESIDENCE_NAME <- NULL
 
-########################å
+########################
 # 2. Imputation 1 ######
 ########################
 all$AVG_PLACED_TAKEN_TIME_INPLAY[is.na(all$AVG_PLACED_TAKEN_TIME_INPLAY)] <- median(all$AVG_PLACED_TAKEN_TIME_INPLAY, na.rm=T)
@@ -71,34 +75,37 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 ##########################
 # 5. Kmeans Cluster ######
 ##########################
-feat <- c(1:2,3:4,7:8,11:12,15:16,19:20,47:56,60)
-names(all[,feat])
+# feat <- c(1:2,3:4,7:8,11:12,15:16,19:20,47:56,60)
+# names(all[,feat])
 # kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
 # table(kmean_dt$CLUSTER)
 
 # h2o
-library(h2o)
-localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
-kmeans_df <- as.h2o(localH2O, all[,feat])
-cols <- c(colnames(kmeans_df[,3:(ncol(kmeans_df))]))
-fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
-pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
-all$kmeans <- pred[,1]; table(all$kmeans)
+# library(h2o)
+# localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
+# kmeans_df <- as.h2o(localH2O, all[,feat])
+# cols <- c(colnames(kmeans_df[,3:(ncol(kmeans_df))]))
+# fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
+# pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
+# all$kmeans <- pred[,1]; table(all$kmeans)
 
 ######################################
 # Class Distance Calculations ########
 ######################################
 library(caret)
-centroids <- classDist(dt, as.factor(total$flag_class))
+feat <- colnames(all)[c(3:22,47:56)]
+dt <- all[,feat]
+centroids <- classDist(dt, as.factor(all$flag_class))
 distances <- predict(centroids, dt)
 distances <- as.data.frame(distances)
 head(distances)
 
 xyplot(dist.Y ~ dist.N,
        data = distances,
-       groups = as.factor(total$flag_class),
+       groups = as.factor(all$flag_class),
        auto.key = list(columns = 2))
 
+all <- cbind(all, distances[,c(2,3)])
 ##########################
 # 6. GBDT Meta Data ######
 ##########################
@@ -121,12 +128,12 @@ xyplot(dist.Y ~ dist.N,
 # c(101093076,101093194,101093312) 
 # c(101128387,101150348,101152275) 
 # c(101149870,101150716,101153308)
-all <- all[,c(1:56, 59:61, 58, 57)]
+all <- all[,c(1:56, 59:63, 58, 57)]
 
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]
-validation <- total[total$EVENT_ID %in% c(101183757,101183885,101184013),]
-train <- total[!total$EVENT_ID %in% c(101183757,101183885,101184013),]
+validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]
+train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398),]
 dim(train); dim(validation)
 
 ###################
