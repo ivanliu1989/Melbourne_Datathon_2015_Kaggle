@@ -17,12 +17,12 @@ total$flag_class <- as.factor(total$flag_class); levels(total$flag_class) <- c(0
 ######################
 ### Feature Select ###
 ######################
-# total_df <- as.h2o(localH2O, total)
+total_df <- as.h2o(localH2O, total)
 train_df <- as.h2o(localH2O, train)
 validation_df <- as.h2o(localH2O, validation)
-# test_df <- as.h2o(localH2O, test)
+test_df <- as.h2o(localH2O, test)
 
-independent <- c(colnames(train_df[,3:(ncol(train_df)-5)]), 'INVEST')
+independent <- c(colnames(train_df[,3:(ncol(train_df)-2)]))
 dependent <- "flag_class"
 
 # independent <- independent[
@@ -46,37 +46,37 @@ dependent <- "flag_class"
 ### Models ###
 ##############
 # perf <- 0
-for(i in 1:50){
+for(i in 1:100){
 #     
 #     fit <- h2o.gbm(
-#         y = dependent, x = independent, data = train_df, #train_df | total_df
+#         y = dependent, x = independent, data = total_df, #train_df | total_df
 #         n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
 #         shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
 #         importance = F
 #     )
 #     
 #     d0 <- 256; d1 <- 0.01; d2 <- 0.5; d3 <- 0.5
-#     fit <-
-#         h2o.deeplearning(
-#             y = dependent, x = independent, data = train_df, classification = T,
-#             activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout" nfolds = 5, 
-#             hidden = c(256,256,256), adaptive_rate = T, rho = 0.99, 
-#             epsilon = 1e-4, rate = 0.01, rate_decay = 0.9, # rate_annealing = , 
-#             momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
-#             nesterov_accelerated_gradient = T, input_dropout_ratio = 0.5, hidden_dropout_ratios = c(0.5,0.5,0.5), 
-#             l2 = 3e-6, max_w2 = 4, #Rect
-#             loss = 'CrossEntropy', classification_stop = -1,
-#             diagnostics = T, variable_importances = T, ignore_const_cols = T,
-#             force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
-#             sparse = F, epochs = 5 #, reproducible, score_validation_sampling seed = 8, 
-#         )
+    fit <-
+        h2o.deeplearning(
+            y = dependent, x = independent, data = total_df, classification = T,
+            activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout" nfolds = 5, 
+            hidden = c(256,256,256), adaptive_rate = T, rho = 0.99, 
+            epsilon = 1e-4, rate = 0.01, rate_decay = 0.9, # rate_annealing = , 
+            momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
+            nesterov_accelerated_gradient = T, input_dropout_ratio = 0.5, hidden_dropout_ratios = c(0.5,0.5,0.5), 
+            l2 = 3e-6, max_w2 = 4, #Rect
+            loss = 'CrossEntropy', classification_stop = -1,
+            diagnostics = T, variable_importances = F, ignore_const_cols = T,
+            force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
+            sparse = F, epochs = 5 #, reproducible, score_validation_sampling seed = 8, 
+        )
     
 #     d0 <- 100; d1 <- 10; d2 <- 8; d3 <- 0.8
-    fit <-
-        h2o.randomForest(
-            y = dependent, x = independent, data = train_df, #train_df | total_df #validation_frame
-            ntree = 100, depth = 10, mtries = 8, sample.rate = 0.8, nbins = 10, importance = T
-        )
+#     fit <-
+#         h2o.randomForest(
+#             y = dependent, x = independent, data = total_df, #train_df | total_df #validation_frame
+#             ntree = 100, depth = 10, mtries = 8, sample.rate = 0.8, nbins = 10, importance = F
+#         )
     
 #     fit <-
 #         h2o.naiveBayes(
@@ -85,7 +85,7 @@ for(i in 1:50){
 #     
 #     fit <-
 #         h2o.glm(
-#             y = dependent, x = independent, data = train_df, #train_df | total_df
+#             y = dependent, x = independent, data = total_df, #train_df | total_df
 #             family = 'binomial', link = 'logit',alpha = 0.5, # 1 lasso 0 ridge
 #             lambda = 1e-08, lambda_search = T, nlambda = 12, lambda.min.ratio = 0.1,
 #             strong_rules = T, standardize = T, intercept = F, use_all_factor_levels = F,
@@ -123,45 +123,38 @@ for(i in 1:50){
     perf_new2 <- auc(rocobj2, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE)
     perf_new2
     
-    #                 if (perf_new > perf) {
-    #                     perf <- perf_new
-    #                     print (
-    #                         paste0(
-    #                             'hidden: ', d0, ' | input_dropout_ratio: ', d1, ' | hidden_dropout_ratios: ', d2, ' | epochs: ', d3
-    #                         )
-    #                     )
-    #                     print(auc(rocobj)); print(perf_new)
-    #                 }
-    write.csv(as.data.frame(pred),
-              file=paste0('ReadyForBlending/validation/randomforest/2_rf_score', as.numeric(perf_new1),'.csv'),quote = FALSE,row.names = FALSE)
-    # write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/3_gbm_0.155_0.837.csv'),quote = FALSE,row.names = FALSE)
+    # write.csv(as.data.frame(pred),
+              # file=paste0('ReadyForBlending/submission/randomforest/2_rf_score', as.numeric(perf_new1),'.csv'),quote = FALSE,row.names = FALSE)
+    # write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/3_gbm_0.9421_0.8765.csv'),quote = FALSE,row.names = FALSE)
     # write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/2_dl_train.csv'),quote = FALSE,row.names = FALSE)
 
-}
+
     ############
     ### test ###
     ############
     p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
-    test$Y <- p[,3]
-    tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=test, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
-    test <- merge(test, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-    test$INVEST_PERCENT <- test$INVEST/test$TOT_INVEST * (test$Y - 0.5) * 2
-    pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=test, mean, na.rm=F)
-    # pred_fin <- aggregate(Y ~ ACCOUNT_ID, data=test, mean, na.rm=F)
+#     t <- test
+#     t$Y <- p[,3]
+#     tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=t, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
+#     t <- merge(t, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+#     t$INVEST_PERCENT <- t$INVEST/t$TOT_INVEST * (t$Y - 0.5) * 2
+#     pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=t, mean, na.rm=F)
+#     # pred_fin <- aggregate(Y ~ ACCOUNT_ID, data=test, mean, na.rm=F)
+#     
+#     ### Submission
+#     submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
+#     names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')
+#     submit <- merge(submit,pred_fin,all.x = TRUE,all.y = FALSE)
+#     table(is.na(submit$PRED_PROFIT_LOSS))
+#     submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
+#     submit$Prediction <- submit$PRED_PROFIT_LOSS
+#     submit$PRED_PROFIT_LOSS <- NULL
+    write.csv(p,
+              file=paste0('ReadyForBlending/submission/deeplearning/2_dl_score', as.numeric(perf_new1),'.csv'),quote = FALSE,row.names = FALSE)
+#     write.csv(submit,
+#               file=paste0('ReadyForBlending/submission/randomforest/2_rf_score', as.numeric(perf_new1),'.csv'),quote = FALSE,row.names = FALSE)
+    # write.csv(p,'ReadyForBlending/submission/submission_20151105_h2o_gbm_blend.csv',quote = FALSE,row.names = FALSE)
     
-    ### Submission
-    submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
-    names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')
-    submit <- merge(submit,pred_fin,all.x = TRUE,all.y = FALSE)
-    table(is.na(submit$PRED_PROFIT_LOSS))
-    submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
-    submit$Prediction <- submit$PRED_PROFIT_LOSS
-    submit$PRED_PROFIT_LOSS <- NULL
-    
-    write.csv(submit,
-              file=paste0('ReadyForBlending/submission/deeplearning/2_dl_score', as.numeric(perf_new),'.csv'),quote = FALSE,row.names = FALSE)
-    # write.csv(submit,'pred/submission_20151103_h2o_glm_blend.csv',quote = FALSE,row.names = FALSE)
-    
-# }
+}
 
 h2o.shutdown(localH2O)

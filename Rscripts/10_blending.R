@@ -4,28 +4,28 @@ rm(list=ls()); gc()
 library(pROC)
 load('data/9_train_validation_test_20151105.RData');ls()
 # path <- 'ReadyForBlending/validation/test/'
-path <- 'ReadyForBlending/validation/deeplearning/'
+path <- 'ReadyForBlending/submission/final/'
 file.names <- list.files(path)
 ########################
 ### Average Blending ###
 ########################
-# p1 <- read.csv(paste0(path, file.names[1]))[,3]
-# p2 <- read.csv(paste0(path, file.names[2]))[,3]
-# p3 <- read.csv(paste0(path, file.names[3]))[,3]
-# p4 <- read.csv(paste0(path, file.names[4]))[,3]
-# p5 <- read.csv(paste0(path, file.names[5]))
-# X1 <- (p1+p2+p3+p4+p5)/5; names(X1) <- 'X1'
+p1 <- read.csv(paste0(path, file.names[1]))[,3]
+p2 <- read.csv(paste0(path, file.names[2]))[,3]
+p3 <- read.csv(paste0(path, file.names[3]))[,3]
+p4 <- read.csv(paste0(path, file.names[4]))[,3]
+p5 <- read.csv(paste0(path, file.names[5]))
+X1 <- (p1+p2+p3+p4+p5)/5; names(X1) <- 'X1'
 
-for(file in 1:length(file.names)){
-    p <- read.csv(paste0(path, file.names[file]))
-    if(file==1){
-        pred <- p
-    }else{
-        pred[,c(2,3)] <- p[,c(2,3)] + pred[,c(2,3)]
-    }
-    if(file==length(file.names)){ pred[,c(2,3)] <- pred[,c(2,3)]/file}
-}
-X1 <- pred[,3]
+# for(file in 1:length(file.names)){
+#     p <- read.csv(paste0(path, file.names[file]))
+#     if(file==1){
+#         pred <- p
+#     }else{
+#         pred[,c(2,3)] <- p[,c(2,3)] + pred[,c(2,3)]
+#     }
+#     if(file==length(file.names)){ pred[,c(2,3)] <- pred[,c(2,3)]/file}
+# }
+# X1 <- pred[,3]
 
 #####################
 ### Bias Blending ###
@@ -81,4 +81,5 @@ rocobj2 <- roc(v$PRED_PROFIT_LOSS_3, v$X1);rocobj2
 perf_new2 <- auc(rocobj2, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE)
 perf_new2
 
-write.csv(as.data.frame(pred),paste0('ReadyForBlending/validation/deeplearning/2_dl_score', as.numeric(perf_new1),'.csv'),quote = FALSE,row.names = FALSE)
+write.csv(as.data.frame(pred),paste0('ReadyForBlending/validation/2_rf_score', as.numeric(perf_new1),'.csv'),quote = FALSE,row.names = FALSE)
+write.csv(as.data.frame(pred),'ReadyForBlending/submission/submission_20151105_dl_blend.csv',quote = FALSE,row.names = FALSE)

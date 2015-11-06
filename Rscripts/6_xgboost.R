@@ -1,10 +1,10 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
-load('data/9_train_validation_test_kmean.RData');ls()
+load('data/9_train_validation_test_20151105.RData');ls()
 
 ### Test
-# train <- total
+train <- total
 ### Validation
 set.seed(18)
 dim(train); dim(validation)
@@ -84,17 +84,17 @@ feat <- feat[
 ### test ###
 ############
 p <- predict(bst, as.matrix(test[,feat]))
-test$Y <- p
-pred_fin <- aggregate(Y ~ ACCOUNT_ID, data=test, mean, na.rm=F)
+# test$Y <- p
+# pred_fin <- aggregate(Y ~ ACCOUNT_ID, data=test, mean, na.rm=F)
+# 
+# ### Submission
+# submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
+# names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')
+# submit <- merge(submit,pred_fin,all.x = TRUE,all.y = FALSE)
+# table(is.na(submit$PRED_PROFIT_LOSS))
+# submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
+# submit$Prediction <- submit$PRED_PROFIT_LOSS
+# submit$PRED_PROFIT_LOSS <- NULL
 
-### Submission
-submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
-names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')
-submit <- merge(submit,pred_fin,all.x = TRUE,all.y = FALSE)
-table(is.na(submit$PRED_PROFIT_LOSS))
-submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
-submit$Prediction <- submit$PRED_PROFIT_LOSS
-submit$PRED_PROFIT_LOSS <- NULL
-
-write.csv(submit,'pred/submission_20151103_xg_blend.csv',quote = FALSE,row.names = FALSE)
+write.csv(as.data.frame(p),'pred/submission_20151105_xg_blend.csv',quote = FALSE,row.names = FALSE)
 
