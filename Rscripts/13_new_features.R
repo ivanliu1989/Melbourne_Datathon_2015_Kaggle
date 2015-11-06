@@ -4,10 +4,6 @@ source('Rscripts/12_log_transformation.R')
 load('data/1_complete_data_new.RData');
 load('data/2_test_new.RData');ls()
 
-total$win_hist <- ifelse(total$flag_regr > 0, 1, ifelse(total$flag_regr <0, -1, 0)) 
-win_hist <- aggregate(win_hist ~ ACCOUNT_ID, data=total, sum, na.rm = T) 
-event_count <- aggregate(EVENT_ID ~ ACCOUNT_ID, data=total, length); names(event_count) <- c('ACCOUNT_ID', 'EVENT_COUNT') 
-total$win_hist <- NULL
 
 #################################
 # 0. Test feature complete ######
@@ -18,11 +14,16 @@ test$flag_class <- 'M'
 ##########################
 # 1. New past hist #######
 ##########################
-total <- merge(total, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-test <- merge(test, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# total$win_hist <- ifelse(total$flag_regr > 0, 1, ifelse(total$flag_regr <0, -1, 0)) 
+# win_hist <- aggregate(win_hist ~ ACCOUNT_ID, data=total, sum, na.rm = T) 
+# event_count <- aggregate(EVENT_ID ~ ACCOUNT_ID, data=total, length); names(event_count) <- c('ACCOUNT_ID', 'EVENT_COUNT') 
+# total$win_hist <- NULL
 
-total <- merge(total, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-test <- merge(test, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# total <- merge(total, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# test <- merge(test, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# 
+# total <- merge(total, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# test <- merge(test, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 #################################
 # 1.5 Combine Total & Test ######
@@ -53,7 +54,7 @@ all$MARGIN_OUTPLAY[is.na(all$MARGIN_OUTPLAY)] <- median(all$MARGIN_OUTPLAY, na.r
 all$BL_RATIO_INPLAY[is.na(all$BL_RATIO_INPLAY)] <- median(all$BL_RATIO_INPLAY, na.rm=T)
 all$BL_RATIO_OUTPLAY[is.na(all$BL_RATIO_OUTPLAY)] <- median(all$BL_RATIO_OUTPLAY, na.rm=T)
 all$BL_RATIO[is.na(all$BL_RATIO)] <- median(all$BL_RATIO, na.rm=T)
-all$win_hist[is.na(all$win_hist)] <- 0
+# all$win_hist[is.na(all$win_hist)] <- 0
 all$AVG_TAKEN_HOUR_INPLAY[is.na(all$AVG_TAKEN_HOUR_INPLAY)] <- median(all$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
 all$AVG_TAKEN_HOUR_OUTPLAY[is.na(all$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
 
@@ -100,12 +101,13 @@ distances <- predict(centroids, dt)
 distances <- as.data.frame(distances)
 head(distances)
 
-xyplot(dist.Y ~ dist.N,
-       data = distances,
-       groups = as.factor(all$flag_class),
-       auto.key = list(columns = 2))
+# xyplot(dist.Y ~ dist.N,
+#        data = distances,
+#        groups = as.factor(all$flag_class),
+#        auto.key = list(columns = 2))
 
 all <- cbind(all, distances[,c(2,3)])
+
 ##########################
 # 6. GBDT Meta Data ######
 ##########################

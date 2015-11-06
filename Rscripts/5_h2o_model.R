@@ -33,22 +33,22 @@ test_df <- as.h2o(localH2O, testing) # test
 independent <- c(colnames(train_df[,3:(ncol(train_df)-7)]),'dist.N', 'dist.Y')#'INVEST','win_hist','EVENT_COUNT',
 dependent <- "flag_class"
 
-# independent <- independent[
-# !independent %in%
-# c('MAX_BET_SIZE_OUTPLAY_L',
-# 'AVG_PLACED_TAKEN_TIME_INPLAY',
-# 'STDEV_BET_SIZE_OUTPLAY',
-# 'AVG_BET_SIZE_OUTPLAY',
-# 'BL_DIFF_STDEV_BET_SIZE_OUT',
-# 'KURT_PLACED_TAKEN_TIME_INPLAY',
-# 'NET_PROFIT_INPLAY',
-# 'STDEV_BET_SIZE_INPLAY',
-# 'TRANSACTION_COUNT_OUTPLAY_L',
-# 'SKEW_PLACED_TAKEN_TIME_INPLAY',
-# 'TRANSACTION_COUNT_INPLAY',
-# 'BL_DIFF_TRANSACTION_COUNT_IN',
-# 'INPLAY_RATIO',
-# 'win_hist')]
+independent <- independent[
+!independent %in%
+c('MAX_BET_SIZE_OUTPLAY_L',
+'AVG_PLACED_TAKEN_TIME_INPLAY',
+'STDEV_BET_SIZE_OUTPLAY',
+'AVG_BET_SIZE_OUTPLAY',
+'BL_DIFF_STDEV_BET_SIZE_OUT',
+'KURT_PLACED_TAKEN_TIME_INPLAY',
+'NET_PROFIT_INPLAY',
+'STDEV_BET_SIZE_INPLAY',
+'TRANSACTION_COUNT_OUTPLAY_L',
+'SKEW_PLACED_TAKEN_TIME_INPLAY',
+'TRANSACTION_COUNT_INPLAY',
+'BL_DIFF_TRANSACTION_COUNT_IN',
+'INPLAY_RATIO',
+'win_hist')]
 
 ##############
 ### Models ###
@@ -105,12 +105,12 @@ dependent <- "flag_class"
     ##################
     # val <- validation; pred <- h2o.predict(object = fit, newdata = validation_df)
     val <- testing; pred <- h2o.predict(object = fit, newdata = test_df)
-    val <- cbind(val, as.data.frame(pred[,3]))
+    val <- cbind(val, as.data.frame(pred[,3])) #X1=pred[,3]
 
     tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
     val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-    val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * (val$X1 - 0.5) * 2
-    pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=val, mean, na.rm=F)
+    val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$X1#(val$X1 - 0.5) * 2
+    pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=val, sum, na.rm=F)
     pred_fin2 <- aggregate(X1 ~ ACCOUNT_ID, data=val, mean, na.rm=F)
     ### Validation
     val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=val, sum, na.rm=F)

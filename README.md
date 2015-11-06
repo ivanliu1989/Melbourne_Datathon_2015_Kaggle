@@ -40,20 +40,21 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 6. X New Calculation
 
 ##### 6th submission - 0.
-1. Event Counts / Bag of Event
+1. X Event Counts / Bag of Event
 2. GBDT latent factors (meta data)
-3. Subset modeling
-4. Win hist weigeted calculation
-5. Kmeans clustering based imputation
+3. O Subset modeling
+4. O Invest weigeted calculation
 
 ##### 7th submission - 0.
 1. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
 2. Hash tricks
+3. python
 
 ##### 8th submission - 0.
 1. New feature inventation
 2. Separate models (new/existing customers)
 3. Blending strategies
+4. Kmeans clustering based imputation
 
 ##### Ref
 1. https://github.com/Gzsiceberg/kaggle-avito
