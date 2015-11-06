@@ -30,7 +30,7 @@ train_df <- as.h2o(localH2O, training) # train
 validation_df <- as.h2o(localH2O, validation)
 test_df <- as.h2o(localH2O, testing) # test
 
-independent <- c(colnames(train_df[,3:(ncol(train_df)-4)]))
+independent <- c(colnames(train_df[,3:(ncol(train_df)-7)]),'dist.N', 'dist.Y')#'INVEST','win_hist','EVENT_COUNT',
 dependent <- "flag_class"
 
 # independent <- independent[
@@ -56,12 +56,12 @@ dependent <- "flag_class"
 # perf <- 0
 # for(i in 1:100){
 #     
-#     fit <- h2o.gbm(
-#         y = dependent, x = independent, data = total_df, #train_df | total_df
-#         n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
-#         shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
-#         importance = F
-#     )
+    fit <- h2o.gbm(
+        y = dependent, x = independent, data = train_df, #train_df | total_df
+        n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
+        shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
+        importance = F
+    )
 #     
 #     d0 <- 256; d1 <- 0.01; d2 <- 0.5; d3 <- 0.5
 #     fit <-
@@ -80,11 +80,11 @@ dependent <- "flag_class"
 #         )
     
 #     d0 <- 100; d1 <- 10; d2 <- 8; d3 <- 0.8
-    fit <-
-        h2o.randomForest(
-            y = dependent, x = independent, data = train_df, #train_df | total_df #validation_frame
-            ntree = 100, depth = 10, mtries = 8, sample.rate = 0.8, nbins = 10, importance = T
-        )
+#     fit <-
+#         h2o.randomForest(
+#             y = dependent, x = independent, data = train_df, #train_df | total_df #validation_frame
+#             ntree = 100, depth = 10, mtries = 8, sample.rate = 0.8, nbins = 10, importance = F
+#         )
     
 #     fit <-
 #         h2o.naiveBayes(
@@ -103,10 +103,10 @@ dependent <- "flag_class"
     ##################
     ### Prediction ###
     ##################
-    val <- validation; pred <- h2o.predict(object = fit, newdata = validation_df)
-    # val <- testing; pred <- h2o.predict(object = fit, newdata = test_df)
+    # val <- validation; pred <- h2o.predict(object = fit, newdata = validation_df)
+    val <- testing; pred <- h2o.predict(object = fit, newdata = test_df)
     val <- cbind(val, as.data.frame(pred[,3]))
-    
+
     tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
     val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
     val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * (val$X1 - 0.5) * 2
@@ -135,7 +135,12 @@ dependent <- "flag_class"
     # write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/3_gbm_0.9421_0.8765.csv'),quote = FALSE,row.names = FALSE)
     # write.csv(as.data.frame(pred),file=paste0('ReadyForBlending/validation/2_dl_train.csv'),quote = FALSE,row.names = FALSE)
 
-
+    pred_v_1 <- as.data.frame(pred)
+    pred_v_2 <- as.data.frame(pred)
+    pred_v_3 <- as.data.frame(pred)
+    pred_v_4 <- as.data.frame(pred)
+    pred <- pred_v_1
+    pred[,3] <- (pred_v_4[,3] + pred_v_3[,3] + pred_v_2[,3] + pred_v_1[,3])/4
     ############
     ### test ###
     ############
