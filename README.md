@@ -43,6 +43,8 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 1. Event Counts / Bag of Event
 2. GBDT latent factors (meta data)
 3. Subset modeling
+4. Win hist weigeted calculation
+5. Kmeans clustering based imputation
 
 ##### 7th submission - 0.
 1. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
