@@ -48,8 +48,8 @@ fit <- h2o.gbm(
     shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
     importance = F
 )
-p <- as.vector(h2o.predict(object = fit, newdata = test_df))
-all$xgb_rf_meta <- p
+p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+all$h2o_gbm_meta <- as.vector(p$X1)
 
 # deeplearning
 fit <-
@@ -66,6 +66,8 @@ fit <-
         force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
         sparse = F, epochs = 300 #, reproducible, score_validation_sampling seed = 8, 
     )
+p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+all$h2o_dl_meta <- as.vector(p$X1)
 
 # random forest
 fit <-
@@ -73,12 +75,8 @@ fit <-
         y = dependent, x = independent, data = train_df, #train_df | total_df #validation_frame
         ntree = 100, depth = 10, mtries = 8, sample.rate = 0.8, nbins = 10, importance = F
     )
-
-# naive bayes
-fit <-
-    h2o.naiveBayes(
-        y = dependent, x = independent, data = train_df, laplace = 0
-    )
+p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+all$h2o_rf_meta <- as.vector(p$X1)
 
 # glm   
 fit <-
@@ -89,3 +87,12 @@ fit <-
         strong_rules = T, standardize = T, intercept = T, use_all_factor_levels = T,
         epsilon = 1e-4, iter.max = 900, higher_accuracy = T, disable_line_search = F
     )
+p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+all$h2o_glm_meta <- as.vector(p$X1)
+
+# naive bayes
+fit <-
+    h2o.naiveBayes(
+        y = dependent, x = independent, data = train_df, laplace = 0
+    )
+

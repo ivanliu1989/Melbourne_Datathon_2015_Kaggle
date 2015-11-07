@@ -14,16 +14,16 @@ test$flag_class <- 'M'
 ##########################
 # 1. New past hist #######
 ##########################
-# total$win_hist <- ifelse(total$flag_regr > 0, 1, ifelse(total$flag_regr <0, -1, 0)) 
-# win_hist <- aggregate(win_hist ~ ACCOUNT_ID, data=total, sum, na.rm = T) 
-# event_count <- aggregate(EVENT_ID ~ ACCOUNT_ID, data=total, length); names(event_count) <- c('ACCOUNT_ID', 'EVENT_COUNT') 
-# total$win_hist <- NULL
+total$win_hist <- ifelse(total$flag_regr > 0, 1, ifelse(total$flag_regr <0, -1, 0)) 
+win_hist <- aggregate(win_hist ~ ACCOUNT_ID, data=total, sum, na.rm = T) 
+event_count <- aggregate(EVENT_ID ~ ACCOUNT_ID, data=total, length); names(event_count) <- c('ACCOUNT_ID', 'EVENT_COUNT') 
+total$win_hist <- NULL
 
-# total <- merge(total, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-# test <- merge(test, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-# 
-# total <- merge(total, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-# test <- merge(test, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+total <- merge(total, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test <- merge(test, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+
+total <- merge(total, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test <- merge(test, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 #################################
 # 1.5 Combine Total & Test ######
@@ -54,7 +54,8 @@ all$MARGIN_OUTPLAY[is.na(all$MARGIN_OUTPLAY)] <- median(all$MARGIN_OUTPLAY, na.r
 all$BL_RATIO_INPLAY[is.na(all$BL_RATIO_INPLAY)] <- median(all$BL_RATIO_INPLAY, na.rm=T)
 all$BL_RATIO_OUTPLAY[is.na(all$BL_RATIO_OUTPLAY)] <- median(all$BL_RATIO_OUTPLAY, na.rm=T)
 all$BL_RATIO[is.na(all$BL_RATIO)] <- median(all$BL_RATIO, na.rm=T)
-# all$win_hist[is.na(all$win_hist)] <- 0
+all$win_hist[is.na(all$win_hist)] <- 0
+all$EVENT_COUNT[is.na(all$EVENT_COUNT)] <- 0
 all$AVG_TAKEN_HOUR_INPLAY[is.na(all$AVG_TAKEN_HOUR_INPLAY)] <- median(all$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
 all$AVG_TAKEN_HOUR_OUTPLAY[is.na(all$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
 
@@ -65,18 +66,38 @@ all$AVG_TAKEN_HOUR_OUTPLAY[is.na(all$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all$AVG_
 ##########################
 all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANSACTION_COUNT_OUTPLAY * all$AVG_BET_SIZE_OUTPLAY
 
-##############################
-# 4. Log transformation ######
-##############################
-# log_names <- names(all)[c(3:56, 59:60)]
-# for (col in log_names){
-#     all[,col] <- log_trans(all[,col])
-# }
+###########################
+# 4. tsne dimensions ######
+###########################
+feat <- c(3:22,47:56,61)
+feat <- c(57,58)
+library(readr); library(Rtsne); library(ggplot2)
+tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
+              perplexity=30, theta=0.5, dims=2)
+
+embedding <- as.data.frame(tsne$Y)
+embedding$Class <- as.factor(sub("Class_", "", all[,58]))
+
+p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
+    geom_point(size=1.25) +
+    guides(colour = guide_legend(override.aes = list(size=6))) +
+    xlab("") + ylab("") +
+    ggtitle("t-SNE 2D Embedding of Betting Data") +
+    theme_light(base_size=20) +
+    theme(strip.background = element_blank(),
+          strip.text.x     = element_blank(),
+          axis.text.x      = element_blank(),
+          axis.text.y      = element_blank(),
+          axis.ticks       = element_blank(),
+          axis.line        = element_blank(),
+          panel.border     = element_blank())
+p
+tsne_2d_sim <- embedding[,1:2]; names(tsne_2d_sim) <- c('tsne_2d_sim_1', 'tsne_2d_sim_2')
 
 ##########################
 # 5. Kmeans Cluster ######
 ##########################
-feat <- c(3:22,47:56,59)
+feat <- c(3:22,47:56,61)
 names(all[,feat])
 kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
 table(kmean_dt$CLUSTER)

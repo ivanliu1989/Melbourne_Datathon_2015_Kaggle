@@ -46,8 +46,8 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 
 ##### 7th submission - 0.
 1. GBDT latent factors (meta data)
-3. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
-2. Hash tricks
+2. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
+3. Hash tricks
 4. python lasagne
 
 ##### 8th submission - 0.
