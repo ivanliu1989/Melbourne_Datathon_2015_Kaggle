@@ -76,37 +76,37 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 ##########################
 # 5. Kmeans Cluster ######
 ##########################
-# feat <- c(1:2,3:4,7:8,11:12,15:16,19:20,47:56,60)
-# names(all[,feat])
-# kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
-# table(kmean_dt$CLUSTER)
+feat <- c(3:22,47:56,59)
+names(all[,feat])
+kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
+table(kmean_dt$CLUSTER)
 
-# h2o
-# library(h2o)
-# localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
-# kmeans_df <- as.h2o(localH2O, all[,feat])
-# cols <- c(colnames(kmeans_df[,3:(ncol(kmeans_df))]))
-# fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
-# pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
-# all$kmeans <- pred[,1]; table(all$kmeans)
+#h2o
+library(h2o)
+localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
+kmeans_df <- as.h2o(localH2O, all[,feat])
+cols <- c(colnames(kmeans_df[,3:(ncol(kmeans_df))]))
+fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
+pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
+all$kmeans <- pred[,1]; table(all$kmeans)
 
 ######################################
 # Class Distance Calculations ########
 ######################################
-# library(caret)
-# feat <- colnames(all)[c(3:22,47:56)]
-# dt <- all[,feat]
-# centroids <- classDist(dt, as.factor(all$flag_class))
-# distances <- predict(centroids, dt)
-# distances <- as.data.frame(distances)
-# head(distances)
+library(caret)
+feat <- colnames(all)[c(3:22,47:56,59)]
+dt <- all[,feat]
+centroids <- classDist(dt, as.factor(all$flag_class))
+distances <- predict(centroids, dt)
+distances <- as.data.frame(distances)
+head(distances)
 
 # xyplot(dist.Y ~ dist.N,
 #        data = distances,
 #        groups = as.factor(all$flag_class),
 #        auto.key = list(columns = 2))
 
-# all <- cbind(all, distances[,c(2,3)])
+all <- cbind(all, distances[,c(2,3)])
 
 ##########################
 # 6. GBDT Meta Data ######
@@ -130,7 +130,7 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 # c(101093076,101093194,101093312) 
 # c(101128387,101150348,101152275) 
 # c(101149870,101150716,101153308)
-all <- all[,c(1:56,59,58,57)]
+all <- all[,c(1:56,59:62,58,57)]
 
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]
@@ -141,4 +141,4 @@ dim(train); dim(validation)
 ###################
 # 8. Output #######
 ###################
-save(train, validation, total, test, file='data/9_train_validation_test_20151106.RData')
+save(train, validation, total, test, file='data/9_train_validation_test_20151108.RData')
