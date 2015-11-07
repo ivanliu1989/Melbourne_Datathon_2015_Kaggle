@@ -12,10 +12,16 @@ for (i in 1:(length(events) - 2)) {
     feat <- colnames(training)[c(3:57)]
     
     #-------------Basic Training using XGBoost-----------------
+#     bst <-
+#         xgboost(
+#             data = as.matrix(training[,feat]), label = training$flag_class, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, #500,0.15
+#             nthread = 4, objective = "binary:logistic", metrics = 'auc', verbose = 0
+#         )
+    
     bst <-
         xgboost(
-            data = as.matrix(training[,feat]), label = training$flag_class, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, #500,0.15
-            nthread = 4, objective = "binary:logistic", metrics = 'auc', verbose = 0
+            data = as.matrix(training[,feat]), label = training$flag_class, max.depth = 9, num_parallel_tree = 150, subsample = 0.5, colsample_bytree =
+                0.5, nround = 1, objective = "binary:logistic"
         )
     
     #-------------Test prediction-----------------
@@ -28,8 +34,11 @@ for (i in 1:(length(events) - 2)) {
     }
 }
 
-submit <- pred / length(events)
+submit <- pred / (length(events) - 2)
 
 write.csv(
-    as.data.frame(p),'pred/submission_20151105_xg_blend.csv',quote = FALSE,row.names = FALSE
+    as.data.frame(submit),'pred/submission_20151106_xg_gbm.csv',quote = FALSE,row.names = FALSE
+)
+write.csv(
+    as.data.frame(submit),'pred/submission_20151106_xg_rf.csv',quote = FALSE,row.names = FALSE
 )

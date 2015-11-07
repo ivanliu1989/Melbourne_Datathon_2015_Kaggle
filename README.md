@@ -39,16 +39,16 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 5. X Multi-rounds
 6. X New Calculation
 
-##### 6th submission - 0.
+##### 6th submission - 0.63708
 1. X Event Counts / Bag of Event
-2. GBDT latent factors (meta data)
-3. O Subset modeling
-4. O Invest weigeted calculation
+2. O Subset modeling
+3. O Invest weigeted calculation
 
 ##### 7th submission - 0.
-1. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
+1. GBDT latent factors (meta data)
+3. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
 2. Hash tricks
-3. python
+4. python lasagne
 
 ##### 8th submission - 0.
 1. New feature inventation

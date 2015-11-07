@@ -30,25 +30,25 @@ train_df <- as.h2o(localH2O, training) # train
 validation_df <- as.h2o(localH2O, validation)
 test_df <- as.h2o(localH2O, testing) # test
 
-independent <- c(colnames(train_df[,3:(ncol(train_df)-7)]),'dist.N', 'dist.Y')#'INVEST','win_hist','EVENT_COUNT',
+independent <- c(colnames(train_df[,3:(ncol(train_df)-2)]))#'INVEST','win_hist','EVENT_COUNT',
 dependent <- "flag_class"
 
-independent <- independent[
-!independent %in%
-c('MAX_BET_SIZE_OUTPLAY_L',
-'AVG_PLACED_TAKEN_TIME_INPLAY',
-'STDEV_BET_SIZE_OUTPLAY',
-'AVG_BET_SIZE_OUTPLAY',
-'BL_DIFF_STDEV_BET_SIZE_OUT',
-'KURT_PLACED_TAKEN_TIME_INPLAY',
-'NET_PROFIT_INPLAY',
-'STDEV_BET_SIZE_INPLAY',
-'TRANSACTION_COUNT_OUTPLAY_L',
-'SKEW_PLACED_TAKEN_TIME_INPLAY',
-'TRANSACTION_COUNT_INPLAY',
-'BL_DIFF_TRANSACTION_COUNT_IN',
-'INPLAY_RATIO',
-'win_hist')]
+# independent <- independent[
+# !independent %in%
+# c('MAX_BET_SIZE_OUTPLAY_L',
+# 'AVG_PLACED_TAKEN_TIME_INPLAY',
+# 'STDEV_BET_SIZE_OUTPLAY',
+# 'AVG_BET_SIZE_OUTPLAY',
+# 'BL_DIFF_STDEV_BET_SIZE_OUT',
+# 'KURT_PLACED_TAKEN_TIME_INPLAY',
+# 'NET_PROFIT_INPLAY',
+# 'STDEV_BET_SIZE_INPLAY',
+# 'TRANSACTION_COUNT_OUTPLAY_L',
+# 'SKEW_PLACED_TAKEN_TIME_INPLAY',
+# 'TRANSACTION_COUNT_INPLAY',
+# 'BL_DIFF_TRANSACTION_COUNT_IN',
+# 'INPLAY_RATIO',
+# 'win_hist')]
 
 ##############
 ### Models ###
@@ -56,12 +56,12 @@ c('MAX_BET_SIZE_OUTPLAY_L',
 # perf <- 0
 # for(i in 1:100){
 #     
-    fit <- h2o.gbm(
-        y = dependent, x = independent, data = train_df, #train_df | total_df
-        n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
-        shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
-        importance = F
-    )
+#     fit <- h2o.gbm(
+#         y = dependent, x = independent, data = train_df, #train_df | total_df
+#         n.trees = 200, interaction.depth = 8, n.minobsinnode = 1,
+#         shrinkage = 0.25, distribution = "bernoulli", n.bins = 20,  #AUTO
+#         importance = F
+#     )
 #     
 #     d0 <- 256; d1 <- 0.01; d2 <- 0.5; d3 <- 0.5
 #     fit <-
@@ -80,11 +80,11 @@ c('MAX_BET_SIZE_OUTPLAY_L',
 #         )
     
 #     d0 <- 100; d1 <- 10; d2 <- 8; d3 <- 0.8
-#     fit <-
-#         h2o.randomForest(
-#             y = dependent, x = independent, data = train_df, #train_df | total_df #validation_frame
-#             ntree = 100, depth = 10, mtries = 8, sample.rate = 0.8, nbins = 10, importance = F
-#         )
+    fit <-
+        h2o.randomForest(
+            y = dependent, x = independent, data = train_df, #train_df | total_df #validation_frame
+            ntree = 100, depth = 10, mtries = 8, sample.rate = 0.8, nbins = 10, importance = F
+        )
     
 #     fit <-
 #         h2o.naiveBayes(

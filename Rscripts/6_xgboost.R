@@ -27,22 +27,19 @@ feat <- colnames(training)[c(3:56,58:61)]
     
     #-------------Basic Training using XGBoost-----------------
     bst <-
-        xgboost(  # c(3:22,42,43,47:56) | 3:56
+        xgboost( 
             data = as.matrix(training[,feat]), label = training$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F, #500,0.15
             nthread = 4, objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 10, metrics = 'auc'
         )
-    
-    #-------------Tuning using XGBoost-----------------
-    #     bst <- xgb.cv(data = as.matrix(train[,3:46]), label = train$flag_class, nround = 5000, max.depth = 6, eta = 0.02, nfold = 5,
-    #                   prediction = F, showsd = T, stratified = T, objective = "binary:logistic", #metrics = 'auc',# 'rmse', 'logloss', 'error', 'auc'
-    #                   verbose = 1, early.stop.round = 50, print.every.n = 5, maximize = F)
-    
+#     bst <-
+#         xgboost(
+#             data = as.matrix(training[,feat]), label = training$flag_class, max.depth = 9, num_parallel_tree = 150, subsample = 0.5, colsample_bytree =
+#                 0.5, nround = 1, objective = "binary:logistic"
+#         )
+
     #--------------------basic prediction using xgboost--------------
     val <- validation
     # val <- testing
-    # for (col in names(val[,-c(1:22,42,43,47:59)])){
-    #     val[, col] <- median(all[,col], na.rm = T)
-    # }  
     p <- predict(bst, as.matrix(val[,feat])) 
     # p <- predict(bst, as.matrix(train[,feat])) 
     val$Y <- p
@@ -72,6 +69,10 @@ feat <- colnames(training)[c(3:56,58:61)]
     pred_v_3 <- p
     pred_v_4 <- p
     p <- (pred_v_4 + pred_v_3 + pred_v_2 + pred_v_1)/4
+    
+    p_rf <- p
+    p_gbm <- p
+    p <- (p_rf + p_gbm)/2
     
     #################################
     ### Plot & feature importance ###
