@@ -2,42 +2,33 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
 load('data/9_train_validation_test_20151105.RData');ls()
+# c(101183757,101183885,101184013) - last 3 event
+# c(101150834,101153072,101149398) - validation
+# c(101093076,101093194,101093312) 
+# c(101128387,101150348,101152275) 
+# c(101149870,101150716,101153308)
 
 ### Test
-train <- total
+# train <- total
 ### Validation
-set.seed(18)
-dim(train); dim(validation)
-train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
-feat <- colnames(train)[c(3:56,58:59)]
+training <- train#[!train$EVENT_ID %in% c(101149870,101150716,101153308),]
+testing <- train[train$EVENT_ID %in% c(101149870,101150716,101153308),]
+dim(training); dim(testing)
+training$flag_class <- ifelse(training$flag_class == 'Y', 1, 0)
+feat <- colnames(training)[c(3:56,58:61)]
 
 # feat <- feat[
 #     !feat %in%
-#         c('MAX_BET_SIZE_OUTPLAY_L',
-#           'AVG_PLACED_TAKEN_TIME_INPLAY',
-#           'STDEV_BET_SIZE_OUTPLAY',
-#           'AVG_BET_SIZE_OUTPLAY',
-#           'BL_DIFF_STDEV_BET_SIZE_OUT',
-#           'KURT_PLACED_TAKEN_TIME_INPLAY',
-#           'NET_PROFIT_INPLAY',
-#           'STDEV_BET_SIZE_INPLAY',
-#           'TRANSACTION_COUNT_OUTPLAY_L',
-#           'SKEW_PLACED_TAKEN_TIME_INPLAY',
-#           'TRANSACTION_COUNT_INPLAY',
-#           'BL_DIFF_TRANSACTION_COUNT_IN',
-#           'INPLAY_RATIO',
-#           'win_hist')]
+#         c('STDEV_BET_SIZE_OUTPLAY_L','BL_DIFF_TRANSACTION_COUNT_OUT','TRANSACTION_COUNT_OUTPLAY_L',
+#           'BL_DIFF_STDEV_BET_SIZE_OUT','BL_DIFF_MIN_BET_SIZE_OUT','AVG_TAKEN_HOUR_INPLAY')]
 
-feat <- feat[
-    !feat %in%
-        c('kmeans')]
 # for(d in c(0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12,0.13,0.14,0.15)){
     # print (paste0('Parameter: ', d))
     
     #-------------Basic Training using XGBoost-----------------
     bst <-
         xgboost(  # c(3:22,42,43,47:56) | 3:56
-            data = as.matrix(train[,feat]), label = train$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F,
+            data = as.matrix(training[,feat]), label = training$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F, #500,0.15
             nthread = 4, objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 10, metrics = 'auc'
         )
     
@@ -48,6 +39,7 @@ feat <- feat[
     
     #--------------------basic prediction using xgboost--------------
     val <- validation
+    # val <- testing
     # for (col in names(val[,-c(1:22,42,43,47:59)])){
     #     val[, col] <- median(all[,col], na.rm = T)
     # }  
@@ -57,7 +49,7 @@ feat <- feat[
     
     tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
     val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-    val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * (val$Y - 0.5) * 2
+    val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$Y#(val$Y - 0.5) * 2
     pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=val, mean, na.rm=F)
     pred_fin2 <- aggregate(Y ~ ACCOUNT_ID, data=val, mean, na.rm=F)
     
@@ -74,6 +66,25 @@ feat <- feat[
     print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
     rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$Y);print(auc(rocobj)) # Average Possibility
     print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
+    
+    pred_v_1 <- p
+    pred_v_2 <- p
+    pred_v_3 <- p
+    pred_v_4 <- p
+    p <- (pred_v_4 + pred_v_3 + pred_v_2 + pred_v_1)/4
+    
+    #################################
+    ### Plot & feature importance ###
+    #################################
+    model <- xgb.dump(bst, with.stats = T)
+    model[1:10]
+    # Get the feature real names
+    names <- dimnames(as.matrix(train[,feat]))[[2]]
+    # Compute feature importance matrix
+    importance_matrix <- xgb.importance(names, model = bst)
+    # Nice graph
+    xgb.plot.importance(importance_matrix)
+    xgb.plot.tree(feature_names = names, model = bst, n_first_tree = 1)
     
     # roc(val$flag_class, p)
     write.csv(as.data.frame(p),file=paste0('ReadyForBlending/validation/1_xg_0.9635_0.9334.csv'),quote = FALSE,row.names = FALSE)

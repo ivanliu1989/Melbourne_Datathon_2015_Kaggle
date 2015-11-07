@@ -1,7 +1,7 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(h2o);library(pROC);library(doMC)
-load('data/9_train_validation_test_20151105.RData');ls()
+load('data/9_train_validation_test_20151106.RData');ls()
 # c(101183757,101183885,101184013) - last 3 event
 # c(101150834,101153072,101149398) - validation
 # c(101093076,101093194,101093312) 

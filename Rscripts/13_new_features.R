@@ -93,20 +93,20 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 ######################################
 # Class Distance Calculations ########
 ######################################
-library(caret)
-feat <- colnames(all)[c(3:22,47:56)]
-dt <- all[,feat]
-centroids <- classDist(dt, as.factor(all$flag_class))
-distances <- predict(centroids, dt)
-distances <- as.data.frame(distances)
-head(distances)
+# library(caret)
+# feat <- colnames(all)[c(3:22,47:56)]
+# dt <- all[,feat]
+# centroids <- classDist(dt, as.factor(all$flag_class))
+# distances <- predict(centroids, dt)
+# distances <- as.data.frame(distances)
+# head(distances)
 
 # xyplot(dist.Y ~ dist.N,
 #        data = distances,
 #        groups = as.factor(all$flag_class),
 #        auto.key = list(columns = 2))
 
-all <- cbind(all, distances[,c(2,3)])
+# all <- cbind(all, distances[,c(2,3)])
 
 ##########################
 # 6. GBDT Meta Data ######
@@ -130,7 +130,7 @@ all <- cbind(all, distances[,c(2,3)])
 # c(101093076,101093194,101093312) 
 # c(101128387,101150348,101152275) 
 # c(101149870,101150716,101153308)
-all <- all[,c(1:56, 59:63, 58, 57)]
+all <- all[,c(1:56,59,58,57)]
 
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]
@@ -141,4 +141,4 @@ dim(train); dim(validation)
 ###################
 # 8. Output #######
 ###################
-save(train, validation, total, test, file='data/9_train_validation_test_20151105.RData')
+save(train, validation, total, test, file='data/9_train_validation_test_20151106.RData')
