@@ -236,4 +236,27 @@ feat <- c(3:59)
 preProcValues <- preProcess(x = total[,feat],method = c("center", "scale"))
 total[,feat] <- predict(preProcValues, total[,feat])
 
-fit <- knn(train= total[,feat],  test=total[,feat], cl=total$flag_class, k=2, prob=T, use.all=T)
+fit <- knn(train= total[,feat],  test=total[,feat], cl=total$flag_class, k=2, prob=T, use.all=F)
+all$knn_2_meta_raw <- attr(fit, 'prob')
+fit <- knn(train= total[,feat],  test=total[,feat], cl=total$flag_class, k=4, prob=T, use.all=F)
+all$knn_4_meta_raw <- attr(fit, 'prob')
+fit <- knn(train= total[,feat],  test=total[,feat], cl=total$flag_class, k=8, prob=T, use.all=F)
+all$knn_8_meta_raw <- attr(fit, 'prob')
+fit <- knn(train= total[,feat],  test=total[,feat], cl=total$flag_class, k=16, prob=T, use.all=F)
+all$knn_16_meta_raw <- attr(fit, 'prob')
+fit <- knn(train= total[,feat],  test=total[,feat], cl=total$flag_class, k=32, prob=T, use.all=F)
+all$knn_32_meta_raw <- attr(fit, 'prob')
+fit <- knn(train= total[,feat],  test=total[,feat], cl=total$flag_class, k=64, prob=T, use.all=F)
+all$knn_64_meta_raw <- attr(fit, 'prob')
+fit <- knn(train= total[,feat],  test=total[,feat], cl=total$flag_class, k=128, prob=T, use.all=F)
+all$knn_128_meta_raw <- attr(fit, 'prob')
+fit <- knn(train= total[,feat],  test=total[,feat], cl=total$flag_class, k=256, prob=T, use.all=F)
+all$knn_256_meta_raw <- attr(fit, 'prob')
+
+
+all <- all[,c(1:76, 79:92, 77:78)]
+test <- all[all$flag_class == 'M', ]
+total <- all[all$flag_class != 'M', ]
+validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]
+train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398),]
+dim(train); dim(validation)
