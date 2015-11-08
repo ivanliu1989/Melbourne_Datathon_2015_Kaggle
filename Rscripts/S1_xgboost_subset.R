@@ -9,7 +9,7 @@ for (i in 1:(length(events) - 2)) {
     train <- total
     training <- train#[!train$EVENT_ID %in% events[i:(i + 2)],]
     training$flag_class <- ifelse(training$flag_class == 'Y', 1, 0)
-    feat <- colnames(training)[c(3:90)]
+    feat <- colnames(training)[c(3:56,59:61,64:66)]
     
     #-------------Basic Training using XGBoost-----------------
     bst <-

@@ -60,7 +60,7 @@ all$EVENT_COUNT[is.na(all$EVENT_COUNT)] <- 0
 all$AVG_TAKEN_HOUR_INPLAY[is.na(all$AVG_TAKEN_HOUR_INPLAY)] <- median(all$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
 all$AVG_TAKEN_HOUR_OUTPLAY[is.na(all$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
 
-apply(all,2, function(x) mean(is.na(x)))
+# apply(all,2, function(x) mean(is.na(x)))
 
 ##########################
 # 3. Invest feature ######
