@@ -96,3 +96,57 @@ fit <-
         y = dependent, x = independent, data = train_df, laplace = 0
     )
 
+
+############################
+# 3. sofia features ########
+############################
+library(RSofia);library(caret)
+### Center Scale
+prep <- preProcess(total[, c(3:60)], method = c('center',"scale"), verbose =T)
+tot <- total
+tot[, c(3:60)] <- predict(prep, tot[, c(3:60)])
+tot$flag_class <- ifelse(tot$flag_class == 'Y', 1, -1)
+feat <- c(3:61)
+
+fit <- sofia(flag_class ~ ., data=tot[,feat], lambda = 1e-3, iiterations = 1e+25, random_seed = 13560,
+             learner_type = 'logreg-pegasos', #c("pegasos", "sgd-svm","passive-aggressive", "margin-perceptron", "romma", "logreg-pegasos"),
+             eta_type = 'pegasos', #c("pegasos", "basic", "constant"), 
+             loop_type = 'balanced-stochastic', #c("stochastic","balanced-stochastic", "rank", "roc", "query-norm-rank","combined-ranking", "combined-roc"),
+             rank_step_probability = 0.5,
+             passive_aggressive_c = 1e+07, passive_aggressive_lambda = 1e+1, dimensionality = 60,
+             perceptron_margin_size = 1, training_objective = F, hash_mask_bits = 0,
+             verbose = T, reserve = 1
+)
+p <- predict(fit, newdata=tot[,feat], prediction_type = "logistic")
+all$sofia_bal_meta <- as.vector(p)
+
+fit <- sofia(flag_class ~ ., data=tot[,feat], lambda = 1e-3, iiterations = 1e+25, random_seed = 13560,
+             learner_type = 'logreg-pegasos', #c("pegasos", "sgd-svm","passive-aggressive", "margin-perceptron", "romma", "logreg-pegasos"),
+             eta_type = 'pegasos', #c("pegasos", "basic", "constant"), 
+             loop_type = 'combined-roc', #c("stochastic","balanced-stochastic", "rank", "roc", "query-norm-rank","combined-ranking", "combined-roc"),
+             rank_step_probability = 0.5,
+             passive_aggressive_c = 1e+07, passive_aggressive_lambda = 1e+1, dimensionality = 60,
+             perceptron_margin_size = 1, training_objective = F, hash_mask_bits = 0,
+             verbose = T, reserve = 1
+)
+p <- predict(fit, newdata=tot[,feat], prediction_type = "logistic")
+total$sofia_roc_meta <- as.vector(p)
+
+
+#######################
+# 4. caret KNN ########
+#######################
+total$flag_class <- ifelse(total$flag_class == 1, 'Y', 'N')
+fitControl <- trainControl(method = "none",
+                           classProbs = TRUE,
+                           summaryFunction = twoClassSummary)
+Grid <-  expand.grid(k=10) # 2, 4, 6, 8, 16, 32, 64, 128, 256, 512, 1024 
+fit <- train(flag_class ~ ., data=train[,-c(1,2,103)], # classification
+             method = "knn",
+             trControl = fitControl,
+             tuneGrid = Grid,
+             preProcess = c('center', 'scale'),
+             metric ='ROC',
+             verbose = T)
+p <- predict(fit, newdata=total, type = 'prob')
+total$caret_knn2_meta <- as.vector(p)

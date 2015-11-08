@@ -70,10 +70,10 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 # 4. tsne dimensions ######
 ###########################
 feat <- c(3:22,47:56,61)
-feat <- c(57,58)
+# feat <- c(57,58)
 library(readr); library(Rtsne); library(ggplot2)
 tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
-              perplexity=30, theta=0.5, dims=2)
+              perplexity=30, theta=0.5, dims=3)
 
 embedding <- as.data.frame(tsne$Y)
 embedding$Class <- as.factor(sub("Class_", "", all[,58]))
@@ -93,6 +93,8 @@ p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
           panel.border     = element_blank())
 p
 tsne_2d_sim <- embedding[,1:2]; names(tsne_2d_sim) <- c('tsne_2d_sim_1', 'tsne_2d_sim_2')
+tsne_2d_comp <- embedding[,1:2]; names(tsne_2d_sim) <- c('tsne_2d_comp_1', 'tsne_2d_comp_2')
+save(tsne_2d_comp, tsne_2d_sim, file='tsne_dimemsions.RData')
 
 ##########################
 # 5. Kmeans Cluster ######
