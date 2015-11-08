@@ -44,8 +44,8 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 2. O Subset modeling
 3. O Invest weigeted calculation
 
-##### 7th submission - 0.
-1. Meta features
+##### 7th submission - 0.64421
+1. X Meta features
 	- xgboost (gbm, rf)
 	- h2o (gbm, rf, nb, glm, dl)
 	- spfia (svm, glm)
@@ -53,15 +53,19 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 	- k means cluster
 	- fm
 	- knn
-2. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
-3. python lasagne
+2. O New customers 0.43/-5
 
 ##### 8th submission - 0.
+1. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
+2. python lasagne
+3. O Separate models (new/existing customers)
+
+##### 9th submission - 0.
 1. New feature inventation
-2. Separate models (new/existing customers)
-3. Blending strategies
-4. Kmeans clustering based imputation
+2. Blending strategies
+3. Kmeans clustering based imputation
 
 ##### Ref
 1. https://github.com/Gzsiceberg/kaggle-avito
 2. entropy based features
+3. Bad features: win_hist / DL metafeatures
