@@ -45,10 +45,16 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 3. O Invest weigeted calculation
 
 ##### 7th submission - 0.
-1. GBDT latent factors (meta data)
+1. Meta features
+	- xgboost (gbm, rf)
+	- h2o (gbm, rf, nb, glm, dl)
+	- spfia (svm, glm)
+	- tsne cluster
+	- k means cluster
+	- fm
+	- knn
 2. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
-3. Hash tricks
-4. python lasagne
+3. python lasagne
 
 ##### 8th submission - 0.
 1. New feature inventation
