@@ -41,4 +41,32 @@ submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
 # write.csv(submit,'ReadyForBlending/submission/submission_20151103_h2o_dl_blend.csv',quote = FALSE,row.names = FALSE)
-write.csv(submit,'pred/submission_20151106_calc3.csv',quote = FALSE,row.names = FALSE)
+write.csv(submit,'pred/submission_20151108_calc3_v2.csv',quote = FALSE,row.names = FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+head(submit[submit$Account_ID %in% new_list, ])
+submit[submit$Account_ID %in% new_list, 'Prediction'] <- 0.4367089
+    
+# -36, 43
+# -5
+# 0.4367089
+
+submit2 <- read.csv('pred/submission_20151103_blend_v1.csv')
+submit2[submit2$Account_ID %in% new_list, 'Prediction'] <- 0.4367089
+write.csv(submit2,'submission_20151103_blend_v2.csv',quote = FALSE,row.names = FALSE)

@@ -1,7 +1,7 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
-load('data/9_train_validation_test_20151105.RData');ls()
+load('data/9_train_validation_test_20151108_feat.RData');ls()
 # c(101183757,101183885,101184013) - last 3 event
 # c(101150834,101153072,101149398) - validation
 # c(101093076,101093194,101093312) 
@@ -11,11 +11,11 @@ load('data/9_train_validation_test_20151105.RData');ls()
 ### Test
 # train <- total
 ### Validation
-training <- train#[!train$EVENT_ID %in% c(101149870,101150716,101153308),]
+training <- train[!train$EVENT_ID %in% c(101149870,101150716,101153308),]
 testing <- train[train$EVENT_ID %in% c(101149870,101150716,101153308),]
 dim(training); dim(testing)
 training$flag_class <- ifelse(training$flag_class == 'Y', 1, 0)
-feat <- colnames(training)[c(3:56,58:61)]
+feat <- colnames(training)[c(3:90)]
 
 # feat <- feat[
 #     !feat %in%
@@ -38,8 +38,8 @@ feat <- colnames(training)[c(3:56,58:61)]
 #         )
 
     #--------------------basic prediction using xgboost--------------
-    val <- validation
-    # val <- testing
+    # val <- validation
+    val <- testing
     p <- predict(bst, as.matrix(val[,feat])) 
     # p <- predict(bst, as.matrix(train[,feat])) 
     val$Y <- p
@@ -52,7 +52,7 @@ feat <- colnames(training)[c(3:56,58:61)]
     
     ### Validation
     val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=val, sum, na.rm=F)
-    val_fin$PRED_PROFIT_LOSS_3 <- ifelse(val_fin$flag_regr > 0, 1, ifelse(val_fin$flag_regr < 0, 0, 0.5))
+    val_fin$PRED_PROFIT_LOSS_3 <- ifelse(val_fin$flag_regr > 0, 1, 0)
     
     #########################
     ### Model Performance ###
@@ -64,15 +64,8 @@ feat <- colnames(training)[c(3:56,58:61)]
     rocobj <- roc(v$PRED_PROFIT_LOSS_3, v$Y);print(auc(rocobj)) # Average Possibility
     print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
     
-    pred_v_1 <- p
-    pred_v_2 <- p
-    pred_v_3 <- p
-    pred_v_4 <- p
-    p <- (pred_v_4 + pred_v_3 + pred_v_2 + pred_v_1)/4
-    
-    p_rf <- p
-    p_gbm <- p
-    p <- (p_rf + p_gbm)/2
+    prediction <- as.factor(ifelse(v$INVEST_PERCENT >=0.5, 1, 0))
+    confusionMatrix(as.factor(v$PRED_PROFIT_LOSS_3), prediction)
     
     #################################
     ### Plot & feature importance ###

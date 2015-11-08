@@ -1,16 +1,16 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list = ls()); gc()
 library(RSofia);library(pROC);library(caret)
-load('data/9_train_validation_test_20151108.RData');ls()
+load('data/9_train_validation_test_20151108_feat.RData');ls()
 
 ### Center Scale
-prep <- preProcess(train[, c(3:60)], method = c('center',"scale"), verbose =T)
-train[, c(3:60)] <- predict(prep, train[, c(3:60)])
-validation[, c(3:60)] <- predict(prep, validation[, c(3:60)])
-
+feat <- c(3:76) #3:59
+prep <- preProcess(train[, feat], method = c('center',"scale"), verbose =T)
+train[, feat] <- predict(prep, train[, feat])
+validation[, feat] <- predict(prep, validation[, feat])
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, -1)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, -1)
-feat <- c(3:61)
+feat <- c(3:77)
 
 #--------------------parse--------------
 # dt <- parse_formula(flag_class ~ ., train[,feat])
