@@ -4,8 +4,8 @@ rm(list=ls()); gc(); library(caret)
 load('data/1_complete_data_new.RData');
 load('data/2_test_new.RData');ls()
 
-new_list <- all[is.na(all$PREV_WIN_RATE), 'ACCOUNT_ID']
-save(new_list, file='data/9_new_customers_list.RData')
+# new_list <- all[is.na(all$PREV_WIN_RATE), 'ACCOUNT_ID']
+# save(new_list, file='data/9_new_customers_list.RData')
 #################################
 # 0. Test feature complete ######
 #################################
@@ -17,19 +17,22 @@ test$flag_class <- 'M'
 ##########################
 total$win_hist <- ifelse(total$flag_regr > 0, 1, ifelse(total$flag_regr <0, -1, 0)) 
 win_hist <- aggregate(win_hist ~ ACCOUNT_ID, data=total, sum, na.rm = T) 
-event_count <- aggregate(EVENT_ID ~ ACCOUNT_ID, data=total, length); names(event_count) <- c('ACCOUNT_ID', 'EVENT_COUNT') 
+# event_count <- aggregate(EVENT_ID ~ ACCOUNT_ID, data=total, length); names(event_count) <- c('ACCOUNT_ID', 'EVENT_COUNT') 
 total$win_hist <- NULL
 
 total <- merge(total, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 test <- merge(test, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
-total <- merge(total, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-test <- merge(test, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# total <- merge(total, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# test <- merge(test, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 #################################
 # 1.5 Combine Total & Test ######
 #################################
-all <- rbind(total, test); str(all)
+all_n <- rbind(total, test[is.na(test$AVG_PLACED_TAKEN_TIME_INPLAY),])
+all_n$COUNTRY_OF_RESIDENCE_NAME <- NULL
+
+all <- rbind(total, test[!is.na(test$AVG_PLACED_TAKEN_TIME_INPLAY),])
 all$COUNTRY_OF_RESIDENCE_NAME <- NULL
 
 ########################
@@ -60,45 +63,54 @@ all$EVENT_COUNT[is.na(all$EVENT_COUNT)] <- 0
 all$AVG_TAKEN_HOUR_INPLAY[is.na(all$AVG_TAKEN_HOUR_INPLAY)] <- median(all$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
 all$AVG_TAKEN_HOUR_OUTPLAY[is.na(all$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
 
-# apply(all,2, function(x) mean(is.na(x)))
+apply(all,2, function(x) mean(is.na(x)))
 
 ##########################
 # 3. Invest feature ######
 ##########################
 all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANSACTION_COUNT_OUTPLAY * all$AVG_BET_SIZE_OUTPLAY
+all_n$INVEST <- all_n$TRANSACTION_COUNT_INPLAY * all_n$AVG_BET_SIZE_INPLAY + all_n$TRANSACTION_COUNT_OUTPLAY * all_n$AVG_BET_SIZE_OUTPLAY
+
+null_list <- apply(all_n,2, function(x) mean(is.na(x)))
+all_n <- all_n[,colnames(all_n) %in% names(null_list[null_list==0])]
 
 ###########################
 # 4. tsne dimensions ######
 ###########################
-# feat <- c(3:22,47:56,61)
-# feat <- c(57,58)
-# library(readr); library(Rtsne); library(ggplot2)
-# tsne <- Rtsne(as.matrix(all[,-feat]), check_duplicates = FALSE, pca = TRUE, 
-#               perplexity=30, theta=0.5, dims=3)
-# 
-# embedding <- as.data.frame(tsne$Y)
-# embedding$Class <- as.factor(sub("Class_", "", all[,58]))
-# 
-# p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
-#     geom_point(size=1.25) +
-#     guides(colour = guide_legend(override.aes = list(size=6))) +
-#     xlab("") + ylab("") +
-#     ggtitle("t-SNE 2D Embedding of Betting Data") +
-#     theme_light(base_size=20) +
-#     theme(strip.background = element_blank(),
-#           strip.text.x     = element_blank(),
-#           axis.text.x      = element_blank(),
-#           axis.text.y      = element_blank(),
-#           axis.ticks       = element_blank(),
-#           axis.line        = element_blank(),
-#           panel.border     = element_blank())
-# p
-# tsne_2d_sim <- embedding[,1:2]; names(tsne_2d_sim) <- c('tsne_2d_sim_1', 'tsne_2d_sim_2')
-# tsne_2d_comp <- embedding[,1:2]; names(tsne_2d_comp) <- c('tsne_2d_comp_1', 'tsne_2d_comp_2')
-# tsne_3d_sim <- embedding[,1:3]; names(tsne_3d_sim) <- c('tsne_3d_sim_1', 'tsne_3d_sim_2', 'tsne_3d_sim_3')
-# tsne_3d_comp <- embedding[,1:3]; names(tsne_3d_comp) <- c('tsne_3d_comp_1', 'tsne_3d_comp_2', 'tsne_3d_comp_3')
-load('tsne_dimemsions.RData')
-# save(tsne_2d_comp, tsne_2d_sim, tsne_3d_sim, tsne_3d_comp, file='tsne_dimemsions.RData')
+feat <- c(3:30, 33:56,59:60)
+feat_n <- c(3:34,37)
+
+library(readr); library(Rtsne); library(ggplot2)
+tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
+              perplexity=30, theta=0.5, dims=3)
+
+# tsne <- Rtsne(as.matrix(all_n[,feat_n]), check_duplicates = FALSE, pca = TRUE, 
+#               perplexity=30, theta=0.5, dims=2)
+
+embedding <- as.data.frame(tsne$Y)
+embedding$Class <- as.factor(sub("Class_", "", all[,58])) # 36, 58
+
+p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
+    geom_point(size=1.25) +
+    guides(colour = guide_legend(override.aes = list(size=6))) +
+    xlab("") + ylab("") +
+    ggtitle("t-SNE 2D Embedding of Betting Data") +
+    theme_light(base_size=20) +
+    theme(strip.background = element_blank(),
+          strip.text.x     = element_blank(),
+          axis.text.x      = element_blank(),
+          axis.text.y      = element_blank(),
+          axis.ticks       = element_blank(),
+          axis.line        = element_blank(),
+          panel.border     = element_blank())
+p
+# tsne_2d_new <- embedding[,1:2]; names(tsne_2d_new) <- c('tsne_2d_new_1', 'tsne_2d_new_2')
+# tsne_3d_new <- embedding[,1:3]; names(tsne_3d_new) <- c('tsne_3d_new_1', 'tsne_3d_new_2', 'tsne_3d_new_3')
+# tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_2d_1', 'tsne_2d_2')
+# tsne_3d <- embedding[,1:3]; names(tsne_3d) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
+
+# load('tsne_dimemsions.RData')
+save(tsne_3d_new, tsne_2d_new, file='tsne_dimemsions_new.RData')
 
 all <- cbind(all, tsne_2d_sim, tsne_2d_comp, tsne_3d_sim, tsne_3d_comp)
 
