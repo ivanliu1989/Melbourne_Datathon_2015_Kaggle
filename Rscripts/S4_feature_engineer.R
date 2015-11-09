@@ -82,7 +82,7 @@ feat_n <- c(3:34,37)
 
 library(readr); library(Rtsne); library(ggplot2)
 tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
-              perplexity=30, theta=0.5, dims=3)
+              perplexity=30, theta=0.5, dims=2)
 
 # tsne <- Rtsne(as.matrix(all_n[,feat_n]), check_duplicates = FALSE, pca = TRUE, 
 #               perplexity=30, theta=0.5, dims=2)
@@ -106,11 +106,11 @@ p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
 p
 # tsne_2d_new <- embedding[,1:2]; names(tsne_2d_new) <- c('tsne_2d_new_1', 'tsne_2d_new_2')
 # tsne_3d_new <- embedding[,1:3]; names(tsne_3d_new) <- c('tsne_3d_new_1', 'tsne_3d_new_2', 'tsne_3d_new_3')
-# tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_2d_1', 'tsne_2d_2')
+tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_2d_1', 'tsne_2d_2')
 # tsne_3d <- embedding[,1:3]; names(tsne_3d) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
 
 # load('tsne_dimemsions.RData')
-save(tsne_3d_new, tsne_2d_new, file='tsne_dimemsions_new.RData')
+save(tsne_3d_new, tsne_2d_new, tsne_3d,tsne_2d, file='tsne_dimemsions_new.RData')
 
 all <- cbind(all, tsne_2d_sim, tsne_2d_comp, tsne_3d_sim, tsne_3d_comp)
 
