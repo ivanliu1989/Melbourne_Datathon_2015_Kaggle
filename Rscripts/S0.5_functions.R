@@ -206,15 +206,11 @@ feat.eng <- function(d){
     mbr.event <- merge(mbr.event, m_all, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
     
     # 13. diff BET TAKEN (*)
-    MAX_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID + EVENT_ID ,data=d, max, na.rm=T) ; names(MAX_BET_TAKEN) <- c('ACCOUNT_ID', 'EVENT_ID', 'MAX_BET_TAKEN')
-    MIN_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID + EVENT_ID ,data=d, min, na.rm=T) ; names(MIN_BET_TAKEN) <- c('ACCOUNT_ID', 'EVENT_ID', 'MIN_BET_TAKEN')
-    SD_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID + EVENT_ID ,data=d, sd, na.rm=T) ; names(SD_BET_TAKEN) <- c('ACCOUNT_ID', 'EVENT_ID', 'SD_BET_TAKEN')
-    AVG_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID + EVENT_ID ,data=d, mean, na.rm=T) ; names(AVG_BET_TAKEN) <- c('ACCOUNT_ID', 'EVENT_ID', 'AVG_BET_TAKEN')
+    SD_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID ,data=d, sd, na.rm=T) ; names(SD_BET_TAKEN) <- c('ACCOUNT_ID', 'SD_BET_TAKEN')
+    AVG_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID ,data=d, mean, na.rm=T) ; names(AVG_BET_TAKEN) <- c('ACCOUNT_ID', 'AVG_BET_TAKEN')
     
-    mbr.event <- merge(mbr.event, MAX_BET_TAKEN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-    mbr.event <- merge(mbr.event, MIN_BET_TAKEN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-    mbr.event <- merge(mbr.event, SD_BET_TAKEN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-    mbr.event <- merge(mbr.event, AVG_BET_TAKEN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, SD_BET_TAKEN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+    mbr.event <- merge(mbr.event, AVG_BET_TAKEN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
     
     # MERGE AND RETURN Member base
     mbr.event <- merge(mbr.event, TRANSACTION_COUNT[TRANSACTION_COUNT$INPLAY_BET == 'Y', c('ACCOUNT_ID', 'EVENT_ID', 'TRANSACTION_COUNT')], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
@@ -278,7 +274,7 @@ feat.eng <- function(d){
     
     names(mbr.event) <- c('ACCOUNT_ID','EVENT_ID',
                           'PREV_WIN_RATE_IN', 'PREV_WIN_RATE_OUT', 'PREV_WIN_RATE_ALL', 'NET_PROFIT_IN', 'NET_PROFIT_OUT','MARGIN_IN', 'MARGIN_OUT',
-                          'MAX_PLACED_TAKEN', 'MIN_PLACED_TAKEN', 'SD_PLACED_TAKEN', 'AVG_PLACED_TAKEN',
+                          'SD_PLACED_TAKEN', 'AVG_PLACED_TAKEN',
                           
                           'TRANSACTION_COUNT_INPLAY','TRANSACTION_COUNT_OUTPLAY','TRANSACTION_COUNT_OUTPLAY_L','TRANSACTION_COUNT_OUTPLAY_C',
                           'AVG_BET_SIZE_INPLAY','AVG_BET_SIZE_OUTPLAY','AVG_BET_SIZE_OUTPLAY_L','AVG_BET_SIZE_OUTPLAY_C',
@@ -293,7 +289,7 @@ feat.eng <- function(d){
                           'STDEV_TAKEN_HOUR_INPLAY','STDEV_TAKEN_HOUR_OUTPLAY',
                           'IS_COUNTRY', 'BET_COUNTRY', 'BET_COUNTRY_ONE_SIZE', 'BET_COUNTRY_TWO_SIZE', 'BET_COUNTRY_SIZE_DIFF'
     )
-    mbr.event[, names(mbr.event)[6:50]][is.na(mbr.event[, names(mbr.event)[6:50]])] <- 0
+    mbr.event[, names(mbr.event)[6:48]][is.na(mbr.event[, names(mbr.event)[6:48]])] <- 0
     mbr.event$AVG_TAKEN_HOUR_INPLAY <- floor(mbr.event$AVG_TAKEN_HOUR_INPLAY)
     mbr.event$AVG_TAKEN_HOUR_OUTPLAY <- floor(mbr.event$AVG_TAKEN_HOUR_OUTPLAY)
     
@@ -302,7 +298,7 @@ feat.eng <- function(d){
     
     # 16. INPLAY_RATIO
     mbr.event$INPLAY_RATIO <- mbr.event$TRANSACTION_COUNT_INPLAY/(mbr.event$TRANSACTION_COUNT_INPLAY + mbr.event$TRANSACTION_COUNT_OUTPLAY)
-    mbr.event[,c(51:52)][is.na(mbr.event[,c(51:52)])] <- 0
+    mbr.event[,c(49:50)][is.na(mbr.event[,c(49:50)])] <- 0
     
     # 18. BL_RATIO
     BL_RATIO_INPLAY_B <- aggregate(PROFIT_LOSS ~ ACCOUNT_ID + EVENT_ID + BID_TYP + INPLAY_BET ,data=d[d$BID_TYP == 'B' & d$INPLAY_BET == 'Y',], length)

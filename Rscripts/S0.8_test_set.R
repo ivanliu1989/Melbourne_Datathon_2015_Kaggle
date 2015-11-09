@@ -48,10 +48,9 @@ test <- test_clean
 test_dt <- test[!duplicated(test[,c(1,2)]),c(1,2)]
 # PREV_WIN_RATE_IN PREV_WIN_RATE_OUT PREV_WIN_RATE_ALL NET_PROFIT_IN NET_PROFIT_OUT   MARGIN_IN MARGIN_OUT MAX_PLACED_TAKEN MIN_PLACED_TAKEN SD_PLACED_TAKEN AVG_PLACED_TAKEN
 dt$OFF_DT <- strptime(dt$OFF_DT, "%d/%m/%Y %I:%M:%S %p")
-mbr_event <- dt[order(dt$ACCOUNT_ID, dt$OFF_DT, ), ]
-mbr_event[!duplicated(mbr_event[,c('ACCOUNT_ID', 'EVENT_ID') ]), ]
-
-mbr_event <- aggregate(OFF_DT ~ ACCOUNT_ID + EVENT_ID, data=dt, max, na.rm=T)
+mbr_event <- dt[order(dt$ACCOUNT_ID, dt$OFF_DT, decreasing = T), ]
+mbr_event <- mbr_event[!duplicated(mbr_event[,c('ACCOUNT_ID')]), c('ACCOUNT_ID', 'EVENT_ID')]
+mbr_event <- merge(mbr_event, total[,1:11], all.x = TRUE, all.y = F, by = c('ACCOUNT_ID', 'EVENT_ID'))
 
 # PREV_WIN_RATE_INPLAY <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','PREV_WIN_RATE_INPLAY')]),c('ACCOUNT_ID','PREV_WIN_RATE_INPLAY')]
 # PREV_WIN_RATE_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','PREV_WIN_RATE_OUTPLAY')]),c('ACCOUNT_ID','PREV_WIN_RATE_OUTPLAY')]
