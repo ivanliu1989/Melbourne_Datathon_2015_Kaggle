@@ -2,7 +2,9 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 # setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 
-load('data/1_complete_data_new.RData');ls()
+load('data/1_complete_data_new.RData');
+load('data/2_test_new.RData');ls(); test_raw <- test
+# load('../Datathon_Full_Dataset/cleaned_raw_data.RData')
 
 mbr.event <- total
 submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
@@ -44,31 +46,20 @@ test_clean <- merge(test_clean, VAR, all.x = TRUE, all.y = FALSE, by = c('ACCOUN
 
 test <- test_clean
 
-# START 
+# START  **********
 test_dt <- test[!duplicated(test[,c(1,2)]),c(1,2)]
 # PREV_WIN_RATE_IN PREV_WIN_RATE_OUT PREV_WIN_RATE_ALL NET_PROFIT_IN NET_PROFIT_OUT   MARGIN_IN MARGIN_OUT MAX_PLACED_TAKEN MIN_PLACED_TAKEN SD_PLACED_TAKEN AVG_PLACED_TAKEN
-dt$OFF_DT <- strptime(dt$OFF_DT, "%d/%m/%Y %I:%M:%S %p")
-mbr_event <- dt[order(dt$ACCOUNT_ID, dt$OFF_DT, decreasing = T), ]
-mbr_event <- mbr_event[!duplicated(mbr_event[,c('ACCOUNT_ID')]), c('ACCOUNT_ID', 'EVENT_ID')]
-mbr_event <- merge(mbr_event, total[,1:11], all.x = TRUE, all.y = F, by = c('ACCOUNT_ID', 'EVENT_ID'))
+# dt$OFF_DT <- strptime(dt$OFF_DT, "%d/%m/%Y %I:%M:%S %p")
+# mbr_event <- dt[order(dt$ACCOUNT_ID, dt$OFF_DT, decreasing = T), ]
+# mbr_event <- mbr_event[!duplicated(mbr_event[,c('ACCOUNT_ID')]), c('ACCOUNT_ID', 'EVENT_ID')]
+# mbr_event <- merge(mbr_event, total, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID', 'EVENT_ID'))
+# save(mbr_event,file='data/S_latest_mbr_info.RData')
+load('data/S_latest_mbr_info.RData')
 
-# PREV_WIN_RATE_INPLAY <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','PREV_WIN_RATE_INPLAY')]),c('ACCOUNT_ID','PREV_WIN_RATE_INPLAY')]
-# PREV_WIN_RATE_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','PREV_WIN_RATE_OUTPLAY')]),c('ACCOUNT_ID','PREV_WIN_RATE_OUTPLAY')]
-# test_dt <- merge(test_dt, PREV_WIN_RATE_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-# test_dt <- merge(test_dt, PREV_WIN_RATE_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-# 
-# PREV_WIN_RATE <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','PREV_WIN_RATE')]),c('ACCOUNT_ID','PREV_WIN_RATE')]
-# test_dt <- merge(test_dt, PREV_WIN_RATE, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-# 
-# NET_PROFIT_INPLAY <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','NET_PROFIT_INPLAY')]),c('ACCOUNT_ID','NET_PROFIT_INPLAY')]
-# NET_PROFIT_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','NET_PROFIT_OUTPLAY')]),c('ACCOUNT_ID','NET_PROFIT_OUTPLAY')]
-# test_dt <- merge(test_dt, NET_PROFIT_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-# test_dt <- merge(test_dt, NET_PROFIT_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-# 
-# MARGIN_INPLAY <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','MARGIN_INPLAY')]),c('ACCOUNT_ID','MARGIN_INPLAY')]
-# MARGIN_OUTPLAY <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','MARGIN_OUTPLAY')]),c('ACCOUNT_ID','MARGIN_OUTPLAY')]
-# test_dt <- merge(test_dt, MARGIN_INPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-# test_dt <- merge(test_dt, MARGIN_OUTPLAY, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# !!!!!!!! Need to Improve !!!!!!!!
+test_dt <- merge(test_dt, test_raw[,c(1:2, 35:41)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
+test_dt <- merge(test_dt, mbr_event[,c(1, 10:11)], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+
 
 ### MERGE AND RETURN Member base
 # Event specific
@@ -98,9 +89,10 @@ test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'L', c
 test_dt <- merge(test_dt, test[test$INPLAY_BET == 'N' & test$STATUS_ID == 'C', c('ACCOUNT_ID', 'EVENT_ID', 'STDEV_BET_SIZE')], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID', 'EVENT_ID'))
 
 names(test_dt) <- c('ACCOUNT_ID','EVENT_ID',
-                    'PREV_WIN_RATE_IN', 'PREV_WIN_RATE_OUT', 'PREV_WIN_RATE_ALL', 'NET_PROFIT_IN', 'NET_PROFIT_OUT','MARGIN_IN', 'MARGIN_OUT',
-                    'MAX_PLACED_TAKEN', 'MIN_PLACED_TAKEN', 'SD_PLACED_TAKEN', 'AVG_PLACED_TAKEN',
-                    
+                    "PREV_WIN_RATE_IN"    ,           
+                    "PREV_WIN_RATE_OUT"             ,  "PREV_WIN_RATE_ALL"   ,            "NET_PROFIT_IN"    ,              
+                    "NET_PROFIT_OUT"             ,     "MARGIN_IN"        ,               "MARGIN_OUT"         ,            
+                    "SD_PLACED_TAKEN"           ,      "AVG_PLACED_TAKEN",
                     'TRANSACTION_COUNT_INPLAY','TRANSACTION_COUNT_OUTPLAY','TRANSACTION_COUNT_OUTPLAY_L','TRANSACTION_COUNT_OUTPLAY_C',
                     'AVG_BET_SIZE_INPLAY','AVG_BET_SIZE_OUTPLAY','AVG_BET_SIZE_OUTPLAY_L','AVG_BET_SIZE_OUTPLAY_C',
                     'MAX_BET_SIZE_INPLAY','MAX_BET_SIZE_OUTPLAY','MAX_BET_SIZE_OUTPLAY_L','MAX_BET_SIZE_OUTPLAY_C',
@@ -141,9 +133,10 @@ test_dt <- merge(test_dt, STDEV_TAKEN_HOUR_OUTPLAY, all.x = TRUE, all.y = FALSE,
 
 
 names(test_dt) <- c('ACCOUNT_ID','EVENT_ID',
-                    'PREV_WIN_RATE_IN', 'PREV_WIN_RATE_OUT', 'PREV_WIN_RATE_ALL', 'NET_PROFIT_IN', 'NET_PROFIT_OUT','MARGIN_IN', 'MARGIN_OUT',
-                    'MAX_PLACED_TAKEN', 'MIN_PLACED_TAKEN', 'SD_PLACED_TAKEN', 'AVG_PLACED_TAKEN',
-                    
+                    "PREV_WIN_RATE_IN"    ,           
+                    "PREV_WIN_RATE_OUT"             ,  "PREV_WIN_RATE_ALL"   ,            "NET_PROFIT_IN"    ,              
+                    "NET_PROFIT_OUT"             ,     "MARGIN_IN"        ,               "MARGIN_OUT"         ,            
+                    "SD_PLACED_TAKEN"           ,      "AVG_PLACED_TAKEN",
                     'TRANSACTION_COUNT_INPLAY','TRANSACTION_COUNT_OUTPLAY','TRANSACTION_COUNT_OUTPLAY_L','TRANSACTION_COUNT_OUTPLAY_C',
                     'AVG_BET_SIZE_INPLAY','AVG_BET_SIZE_OUTPLAY','AVG_BET_SIZE_OUTPLAY_L','AVG_BET_SIZE_OUTPLAY_C',
                     'MAX_BET_SIZE_INPLAY','MAX_BET_SIZE_OUTPLAY','MAX_BET_SIZE_OUTPLAY_L','MAX_BET_SIZE_OUTPLAY_C',

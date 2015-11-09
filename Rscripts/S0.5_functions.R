@@ -257,20 +257,34 @@ feat.eng <- function(d){
     mbr.event <- merge(mbr.event, STDEV_TAKEN_HOUR[STDEV_TAKEN_HOUR$INPLAY_BET == 'N', c('ACCOUNT_ID','STDEV_TAKEN_HOUR')], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
     
     # bet_country_size
-    IS_COUNTRY <- aggregate(IS_COUNTRY ~ ACCOUNT_ID + EVENT_ID,data=d, mean, na.rm = T) 
-    BET_COUNTRY <- aggregate(BET_COUNTRY ~ ACCOUNT_ID + EVENT_ID,data=d, mean, na.rm = T) 
+    # IS_COUNTRY <- aggregate(IS_COUNTRY ~ ACCOUNT_ID + EVENT_ID,data=d, mean, na.rm = T) 
+    # BET_COUNTRY <- aggregate(BET_COUNTRY ~ ACCOUNT_ID + EVENT_ID,data=d, mean, na.rm = T) 
     # BET_OP_COUNTRY <- aggregate(BET_OP_COUNTRY ~ ACCOUNT_ID + EVENT_ID,data=d, mean, na.rm = T) 
     
         BET_COUNTRY_ONE_SIZE <- aggregate(BET_COUNTRY_ONE_SIZE ~ ACCOUNT_ID + EVENT_ID,data=d, sum, na.rm = T) 
         BET_COUNTRY_TWO_SIZE <- aggregate(BET_COUNTRY_TWO_SIZE ~ ACCOUNT_ID + EVENT_ID,data=d, sum, na.rm = T) 
         BET_COUNTRY_SIZE_DIFF <- merge(BET_COUNTRY_ONE_SIZE, BET_COUNTRY_TWO_SIZE, all.x = TRUE, all.y = TRUE, by = c('ACCOUNT_ID', 'EVENT_ID'))
-    BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_SIZE_DIFF <- abs(BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_ONE_SIZE-BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_TWO_SIZE)/(BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_ONE_SIZE+BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_TWO_SIZE)
-        BET_COUNTRY_DIFF$BET_COUNTRY_ONE_SIZE <- NULL
-        BET_COUNTRY_DIFF$BET_COUNTRY_TWO_SIZE <- NULL
+        BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_SIZE_DIFF <- abs(BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_ONE_SIZE-BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_TWO_SIZE)/(BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_ONE_SIZE+BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_TWO_SIZE)
+        BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_ONE_SIZE <- NULL
+        BET_COUNTRY_SIZE_DIFF$BET_COUNTRY_TWO_SIZE <- NULL
+    BET_COUNTRY_DIFF_mean <- aggregate(BET_COUNTRY_SIZE_DIFF ~ ACCOUNT_ID,data=BET_COUNTRY_SIZE_DIFF, mean, na.rm = T) 
+    BET_COUNTRY_DIFF_SD <- aggregate(BET_COUNTRY_SIZE_DIFF ~ ACCOUNT_ID,data=BET_COUNTRY_SIZE_DIFF, sd, na.rm = T)
+    BET_COUNTRY_DIFF_SKEW <- aggregate(BET_COUNTRY_SIZE_DIFF ~ ACCOUNT_ID,data=BET_COUNTRY_SIZE_DIFF, skewness, na.rm = T) 
+    BET_COUNTRY_DIFF_KURT <- aggregate(BET_COUNTRY_SIZE_DIFF ~ ACCOUNT_ID,data=BET_COUNTRY_SIZE_DIFF, kurtosis, na.rm = T) 
     
-    mbr.event <- merge(mbr.event, IS_COUNTRY, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID', 'EVENT_ID'))
-    mbr.event <- merge(mbr.event, BET_COUNTRY, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID', 'EVENT_ID'))
-    mbr.event <- merge(mbr.event, BET_COUNTRY_SIZE_DIFF, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    SKEW_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID ,data=d, skewness, na.rm=T) 
+    KURT_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID ,data=d, kurtosis, na.rm=T)
+    
+    # mbr.event <- merge(mbr.event, SD_BET_TAKEN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+    # mbr.event <- merge(mbr.event, AVG_BET_TAKEN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+    # mbr.event <- merge(mbr.event, IS_COUNTRY, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    # mbr.event <- merge(mbr.event, BET_COUNTRY, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID', 'EVENT_ID'))
+    mbr.event <- merge(mbr.event, BET_COUNTRY_DIFF_mean, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID'))
+    mbr.event <- merge(mbr.event, BET_COUNTRY_DIFF_SD, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID'))
+    mbr.event <- merge(mbr.event, BET_COUNTRY_DIFF_SKEW, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID'))
+    mbr.event <- merge(mbr.event, BET_COUNTRY_DIFF_KURT, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID'))
+    mbr.event <- merge(mbr.event, SKEW_BET_TAKEN, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID'))
+    mbr.event <- merge(mbr.event, KURT_BET_TAKEN, all.x = TRUE, all.y = F, by = c('ACCOUNT_ID'))
     
     names(mbr.event) <- c('ACCOUNT_ID','EVENT_ID',
                           'PREV_WIN_RATE_IN', 'PREV_WIN_RATE_OUT', 'PREV_WIN_RATE_ALL', 'NET_PROFIT_IN', 'NET_PROFIT_OUT','MARGIN_IN', 'MARGIN_OUT',
@@ -287,9 +301,10 @@ feat.eng <- function(d){
                           'KURT_PLACED_TAKEN_TIME_INPLAY','KURT_PLACED_TAKEN_TIME_OUTPLAY',
                           'AVG_TAKEN_HOUR_INPLAY','AVG_TAKEN_HOUR_OUTPLAY',
                           'STDEV_TAKEN_HOUR_INPLAY','STDEV_TAKEN_HOUR_OUTPLAY',
-                          'IS_COUNTRY', 'BET_COUNTRY', 'BET_COUNTRY_ONE_SIZE', 'BET_COUNTRY_TWO_SIZE', 'BET_COUNTRY_SIZE_DIFF'
+                          'BET_COUNTRY_DIFF_MEAN', 'BET_COUNTRY_DIFF_SD','BET_COUNTRY_DIFF_SKEW','BET_COUNTRY_DIFF_KURT',
+                          'SKEW_BET_TAKEN','KURT_BET_TAKEN'
     )
-    mbr.event[, names(mbr.event)[6:48]][is.na(mbr.event[, names(mbr.event)[6:48]])] <- 0
+    mbr.event[, names(mbr.event)[6:49]][is.na(mbr.event[, names(mbr.event)[6:49]])] <- 0
     mbr.event$AVG_TAKEN_HOUR_INPLAY <- floor(mbr.event$AVG_TAKEN_HOUR_INPLAY)
     mbr.event$AVG_TAKEN_HOUR_OUTPLAY <- floor(mbr.event$AVG_TAKEN_HOUR_OUTPLAY)
     
@@ -298,7 +313,7 @@ feat.eng <- function(d){
     
     # 16. INPLAY_RATIO
     mbr.event$INPLAY_RATIO <- mbr.event$TRANSACTION_COUNT_INPLAY/(mbr.event$TRANSACTION_COUNT_INPLAY + mbr.event$TRANSACTION_COUNT_OUTPLAY)
-    mbr.event[,c(49:50)][is.na(mbr.event[,c(49:50)])] <- 0
+    mbr.event[,c(50:51)][is.na(mbr.event[,c(50:51)])] <- 0
     
     # 18. BL_RATIO
     BL_RATIO_INPLAY_B <- aggregate(PROFIT_LOSS ~ ACCOUNT_ID + EVENT_ID + BID_TYP + INPLAY_BET ,data=d[d$BID_TYP == 'B' & d$INPLAY_BET == 'Y',], length)

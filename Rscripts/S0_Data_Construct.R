@@ -8,9 +8,9 @@ load('../Datathon_Full_Dataset/cleaned_raw_data.RData')
 ls()
 
 ### Feature generating
-source('Rscripts/9_functions.R')
+source('Rscripts/S0.5_functions.r')
 total <- feat.eng(dt)
-total <- mbr.event
+# total <- mbr.event
 apply(total,2, function(x) mean(is.na(x)))
 
 ### output
