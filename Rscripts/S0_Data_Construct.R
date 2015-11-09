@@ -10,6 +10,7 @@ ls()
 ### Feature generating
 source('Rscripts/9_functions.R')
 total <- feat.eng(dt)
+total <- mbr.event
 apply(total,2, function(x) mean(is.na(x)))
 
 ### output
