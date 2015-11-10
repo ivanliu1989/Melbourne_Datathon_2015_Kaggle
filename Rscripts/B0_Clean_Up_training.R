@@ -39,9 +39,9 @@ feat.eng <- function(d){
     d$PLACED_TAKEN_TIME <- as.numeric(d$TAKEN_DATE - d$PLACED_DATE)
     
     #diff bet and taken
-    d$diff_bt <- abs(d$PRICE_TAKEN - d$BET_PRICE)/(d$BET_PRICE + d$PRICE_TAKEN)
+    d$diff_bt <- (d$PRICE_TAKEN - d$BET_PRICE)/(d$BET_PRICE)
     
-    #bet country
+    d$diff_bt #bet country
     d$BET_COUNTRY_SIZE <- ifelse(d$BET_COUNTRY == 1, d$BET_SIZE, 0)
     d$BET_OP_COUNTRY_SIZE <- ifelse(d$BET_OP_COUNTRY == 1, d$BET_SIZE, 0)
     d$BET_COUNTRY_ONE_SIZE <- ifelse(d$BET_COUNTRY_ONE == 1, d$BET_SIZE, 0)
@@ -136,11 +136,11 @@ feat.eng <- function(d){
     MARGIN_ALL$MARGIN_ALL <- NET_PROFIT_ALL$NET_PROFIT_ALL/MARGIN_ALL$MARGIN_ALL
     
     # 13. diff BET TAKEN (*)
-    SD_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID + INPLAY_BET, data=d, sd, na.rm=T) ; names(SD_BET_TAKEN) <- c('ACCOUNT_ID', 'SD_BET_TAKEN')
+    SD_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID + INPLAY_BET, data=d, sd, na.rm=T) ; names(SD_BET_TAKEN) <- c('ACCOUNT_ID','INPLAY_BET', 'SD_BET_TAKEN')
     SD_BET_TAKEN_ALL <- aggregate(diff_bt ~ ACCOUNT_ID, data=d, sd, na.rm=T) ; names(SD_BET_TAKEN_ALL) <- c('ACCOUNT_ID', 'SD_BET_TAKEN_ALL')
-    AVG_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID + INPLAY_BET, data=d, mean, na.rm=T) ; names(AVG_BET_TAKEN) <- c('ACCOUNT_ID', 'AVG_BET_TAKEN')
+    AVG_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID + INPLAY_BET, data=d, mean, na.rm=T) ; names(AVG_BET_TAKEN) <- c('ACCOUNT_ID','INPLAY_BET', 'AVG_BET_TAKEN')
     AVG_BET_TAKEN_ALL <- aggregate(diff_bt ~ ACCOUNT_ID, data=d, mean, na.rm=T) ; names(AVG_BET_TAKEN_ALL) <- c('ACCOUNT_ID', 'AVG_BET_TAKEN_ALL')
-    MEDIAN_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID + INPLAY_BET, data=d, median, na.rm=T) ; names(MEDIAN_BET_TAKEN) <- c('ACCOUNT_ID', 'MEDIAN_BET_TAKEN')
+    MEDIAN_BET_TAKEN <- aggregate(diff_bt ~ ACCOUNT_ID + INPLAY_BET, data=d, median, na.rm=T) ; names(MEDIAN_BET_TAKEN) <- c('ACCOUNT_ID','INPLAY_BET', 'MEDIAN_BET_TAKEN')
     MEDIAN_BET_TAKEN_ALL <- aggregate(diff_bt ~ ACCOUNT_ID, data=d, median, na.rm=T) ; names(MEDIAN_BET_TAKEN_ALL) <- c('ACCOUNT_ID', 'MEDIAN_BET_TAKEN_ALL')
     
     # MERGE AND RETURN Member base

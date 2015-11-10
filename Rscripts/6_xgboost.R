@@ -15,7 +15,7 @@ training <- train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 testing <- train[train$EVENT_ID %in% c(101183757,101183885,101184013),]
 dim(training); dim(testing)
 training$flag_class <- ifelse(training$flag_class == 'Y', 1, 0)
-feat <- colnames(training)[c(3:52,55,56)]#c(3:72) #3:13,16,17,20,21,24,25,28,29,32,44:72
+feat <- colnames(training)[c(3:70)]#c(3:72) #3:13,16,17,20,21,24,25,28,29,32,44:72
 
 # feat <- feat[
 #     !feat %in%

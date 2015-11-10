@@ -248,5 +248,7 @@ test_dt[,c('BL_DIFF_TRANSACTION_COUNT_IN', 'BL_DIFF_AVG_BET_SIZE_IN',
 test <- test_dt
 
 apply(test,2, function(x) mean(is.na(x)))
+apply(test,2, function(x) length(unique(x)))
+
 save(test, file='data/S_complete_data_clean_up_test.RData')
 

@@ -12,24 +12,23 @@ test$flag_class <- 'M'
 ##########################
 # 1. New past hist #######
 ##########################
+
 event_count <- aggregate(EVENT_ID ~ ACCOUNT_ID, data=total, length); names(event_count) <- c('ACCOUNT_ID', 'EVENT_COUNT') 
 
 total <- merge(total, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 test <- merge(test, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
-total$SD_BET_TAKEN_INPLAY <- NULL
-total$SD_BET_TAKEN_OUTPLAY <- NULL
-total$AVG_BET_TAKEN_INPLAY <- NULL
-total$MEDIAN_BET_TAKEN_OUTPLAY <- NULL
-total$MEDIAN_BET_TAKEN_INPLAY <- NULL
-total$AVG_BET_TAKEN_OUTPLAY <- NULL
+load('data/NEW_FEATURE.RData');ls()
+total <- merge(total, NEW_FEATURE_train, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+test <- merge(test, NEW_FEATURE_test[,-2], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
-test$SD_BET_TAKEN_INPLAY <- NULL
-test$SD_BET_TAKEN_OUTPLAY <- NULL
-test$AVG_BET_TAKEN_INPLAY <- NULL
-test$MEDIAN_BET_TAKEN_OUTPLAY <- NULL
-test$MEDIAN_BET_TAKEN_INPLAY <- NULL
-test$AVG_BET_TAKEN_OUTPLAY <- NULL
+total$NET_PROFIT_IN_PER_EVENT <- total$NET_PROFIT_INPLAY / total$EVENT_COUNT
+total$NET_PROFIT_OUT_PER_EVENT <- total$NET_PROFIT_INPLAY / total$EVENT_COUNT
+total$NET_PROFIT_ALL_PER_EVENT <- total$NET_PROFIT_INPLAY / total$EVENT_COUNT
+
+test$NET_PROFIT_IN_PER_EVENT <- test$NET_PROFIT_INPLAY / test$EVENT_COUNT
+test$NET_PROFIT_OUT_PER_EVENT <- test$NET_PROFIT_INPLAY / test$EVENT_COUNT
+test$NET_PROFIT_ALL_PER_EVENT <- test$NET_PROFIT_INPLAY / test$EVENT_COUNT
 
 #################################
 # 1.5 Combine Total & Test ######
@@ -47,7 +46,7 @@ apply(all,2, function(x) mean(is.na(x)))
 all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANSACTION_COUNT_OUTPLAY * all$AVG_BET_SIZE_OUTPLAY
 all_n$INVEST <- all_n$TRANSACTION_COUNT_INPLAY * all_n$AVG_BET_SIZE_INPLAY + all_n$TRANSACTION_COUNT_OUTPLAY * all_n$AVG_BET_SIZE_OUTPLAY
 
-all_n <- all_n[,-c(16:42,53:55)]
+all_n <- all_n[,c(1:15,49:60)]
 apply(all_n,2, function(x) mean(is.na(x)))
 
 ###########################
@@ -113,9 +112,9 @@ all <- cbind(all, tsne_2d_sim, tsne_2d_comp, tsne_3d_sim, tsne_3d_comp)
 # Class Distance Calculations ########
 ######################################
 library(caret)
-feat <- colnames(all)[c(3:52,55,56)]
+feat <- colnames(all)[c(3:58)]
 dt <- all[,feat]
-centroids <- classDist(dt, as.factor(all$flag_class))
+centroids <- classDist(as.matrix(dt), as.factor(all$flag_class))
 distances <- predict(centroids, dt)
 distances <- as.data.frame(distances)
 head(distances)
@@ -135,7 +134,7 @@ all <- cbind(all, distances[,c(2,3)])
 # c(101093076,101093194,101093312) 
 # c(101128387,101150348,101152275) 
 # c(101149870,101150716,101153308)
-all <- all[,c(1:52,55,56,53,54)]
+all <- all[,c(1:58,61:72,59:60)]
 
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]

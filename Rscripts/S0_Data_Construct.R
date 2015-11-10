@@ -10,8 +10,9 @@ ls()
 ### Feature generating
 source('Rscripts/S0.5_functions.r')
 total <- feat.eng(dt)
-# total <- mbr.event 
+total <- mbr.event 
 apply(total,2, function(x) mean(is.na(x)))
+apply(total,2, function(x) length(unique(x)))
 
 ### output
 save(total, file='data/1_complete_data_new.RData')
