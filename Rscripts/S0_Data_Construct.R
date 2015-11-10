@@ -10,11 +10,12 @@ ls()
 ### Feature generating
 source('Rscripts/S0.5_functions.r')
 total <- feat.eng(dt)
-# total <- mbr.event
+# total <- mbr.event 
 apply(total,2, function(x) mean(is.na(x)))
 
 ### output
 save(total, file='data/1_complete_data_new.RData')
+save(total, file='data/S_complete_data_clean_up.RData')
 
 ### new features
 library(dplyr); library(tidyr)
