@@ -15,53 +15,40 @@ test$flag_class <- 'M'
 ##########################
 # 1. New past hist #######
 ##########################
-total$win_hist <- ifelse(total$flag_regr > 0, 1, ifelse(total$flag_regr <0, -1, 0)) 
-win_hist <- aggregate(win_hist ~ ACCOUNT_ID, data=total, sum, na.rm = T) 
+# total$win_hist <- ifelse(total$flag_regr > 0, 1, ifelse(total$flag_regr <0, -1, 0)) 
+# win_hist <- aggregate(win_hist ~ ACCOUNT_ID, data=total, sum, na.rm = T) 
 # event_count <- aggregate(EVENT_ID ~ ACCOUNT_ID, data=total, length); names(event_count) <- c('ACCOUNT_ID', 'EVENT_COUNT') 
-total$win_hist <- NULL
+# total$win_hist <- NULL
 
-total <- merge(total, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-test <- merge(test, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# total <- merge(total, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# test <- merge(test, win_hist, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 # total <- merge(total, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 # test <- merge(test, event_count, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+
+##########################
+# 1. New features  #######
+##########################
+load('data/NEW_FEATURE.RData');ls()
+total <- merge(total, NEW_FEATURE_train, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID','EVENT_ID'))
+test <- merge(test, NEW_FEATURE_test[,-2], all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 #################################
 # 1.5 Combine Total & Test ######
 #################################
 all_n <- rbind(total, test[is.na(test$AVG_PLACED_TAKEN_TIME_INPLAY),])
-all_n$COUNTRY_OF_RESIDENCE_NAME <- NULL
+# all_n$COUNTRY_OF_RESIDENCE_NAME <- NULL
 
 all <- rbind(total, test[!is.na(test$AVG_PLACED_TAKEN_TIME_INPLAY),])
-all$COUNTRY_OF_RESIDENCE_NAME <- NULL
+# all$COUNTRY_OF_RESIDENCE_NAME <- NULL
 
 ########################
 # 2. Imputation 1 ######
 ########################
-all$AVG_PLACED_TAKEN_TIME_INPLAY[is.na(all$AVG_PLACED_TAKEN_TIME_INPLAY)] <- median(all$AVG_PLACED_TAKEN_TIME_INPLAY, na.rm=T)
-all$AVG_PLACED_TAKEN_TIME_OUTPLAY[is.na(all$AVG_PLACED_TAKEN_TIME_OUTPLAY)] <- median(all$AVG_PLACED_TAKEN_TIME_OUTPLAY, na.rm=T)
-all$STDEV_PLACED_TAKEN_TIME_INPLAY[is.na(all$STDEV_PLACED_TAKEN_TIME_INPLAY)] <- median(all$STDEV_PLACED_TAKEN_TIME_INPLAY, na.rm=T)
-all$STDEV_PLACED_TAKEN_TIME_OUTPLAY[is.na(all$STDEV_PLACED_TAKEN_TIME_OUTPLAY)] <- median(all$STDEV_PLACED_TAKEN_TIME_OUTPLAY, na.rm=T)
-all$SKEW_PLACED_TAKEN_TIME_INPLAY[is.na(all$SKEW_PLACED_TAKEN_TIME_INPLAY)] <- median(all$SKEW_PLACED_TAKEN_TIME_INPLAY, na.rm=T)
-all$SKEW_PLACED_TAKEN_TIME_OUTPLAY[is.na(all$SKEW_PLACED_TAKEN_TIME_OUTPLAY)] <- median(all$SKEW_PLACED_TAKEN_TIME_OUTPLAY, na.rm=T)
-all$KURT_PLACED_TAKEN_TIME_INPLAY[is.na(all$KURT_PLACED_TAKEN_TIME_INPLAY)] <- median(all$KURT_PLACED_TAKEN_TIME_INPLAY, na.rm=T)
-all$KURT_PLACED_TAKEN_TIME_OUTPLAY[is.na(all$KURT_PLACED_TAKEN_TIME_OUTPLAY)] <- median(all$KURT_PLACED_TAKEN_TIME_OUTPLAY, na.rm=T)
-all$STDEV_TAKEN_HOUR_INPLAY[is.na(all$STDEV_TAKEN_HOUR_INPLAY)] <- median(all$STDEV_TAKEN_HOUR_INPLAY, na.rm=T)
-all$STDEV_TAKEN_HOUR_OUTPLAY[is.na(all$STDEV_TAKEN_HOUR_OUTPLAY)] <- median(all$STDEV_TAKEN_HOUR_OUTPLAY, na.rm=T)
-all$PREV_WIN_RATE_INPLAY[is.na(all$PREV_WIN_RATE_INPLAY)] <- median(all$PREV_WIN_RATE_INPLAY, na.rm=T)
-all$PREV_WIN_RATE_OUTPLAY[is.na(all$PREV_WIN_RATE_OUTPLAY)] <- median(all$PREV_WIN_RATE_OUTPLAY, na.rm=T)
-all$PREV_WIN_RATE[is.na(all$PREV_WIN_RATE)] <- median(all$PREV_WIN_RATE, na.rm=T)
-all$NET_PROFIT_INPLAY[is.na(all$NET_PROFIT_INPLAY)] <- median(all$NET_PROFIT_INPLAY, na.rm=T)
-all$NET_PROFIT_OUTPLAY[is.na(all$NET_PROFIT_OUTPLAY)] <- median(all$NET_PROFIT_OUTPLAY, na.rm=T)
-all$MARGIN_INPLAY[is.na(all$MARGIN_INPLAY)] <- median(all$MARGIN_INPLAY, na.rm=T)
-all$MARGIN_OUTPLAY[is.na(all$MARGIN_OUTPLAY)] <- median(all$MARGIN_OUTPLAY, na.rm=T)
-all$BL_RATIO_INPLAY[is.na(all$BL_RATIO_INPLAY)] <- median(all$BL_RATIO_INPLAY, na.rm=T)
-all$BL_RATIO_OUTPLAY[is.na(all$BL_RATIO_OUTPLAY)] <- median(all$BL_RATIO_OUTPLAY, na.rm=T)
-all$BL_RATIO[is.na(all$BL_RATIO)] <- median(all$BL_RATIO, na.rm=T)
-all$win_hist[is.na(all$win_hist)] <- 0
-all$EVENT_COUNT[is.na(all$EVENT_COUNT)] <- 0
-all$AVG_TAKEN_HOUR_INPLAY[is.na(all$AVG_TAKEN_HOUR_INPLAY)] <- median(all$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
-all$AVG_TAKEN_HOUR_OUTPLAY[is.na(all$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
+all$SD_PLACED_TAKEN[is.na(all$SD_PLACED_TAKEN)] <- 0
+all$AVG_PLACED_TAKEN[is.na(all$AVG_PLACED_TAKEN)] <- 0
+all$CANCEL_RATIO_OUTPLAY[is.na(all$CANCEL_RATIO_OUTPLAY)] <- 0
+all$INPLAY_RATIO[is.na(all$INPLAY_RATIO)] <- 0
 
 apply(all,2, function(x) mean(is.na(x)))
 
@@ -77,7 +64,7 @@ all_n <- all_n[,colnames(all_n) %in% names(null_list[null_list==0])]
 ###########################
 # 4. tsne dimensions ######
 ###########################
-feat <- c(3:30, 33:56,59:60)
+feat <- c(3:64,67:74)
 feat_n <- c(3:34,37)
 
 library(readr); library(Rtsne); library(ggplot2)
@@ -106,7 +93,7 @@ p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
 p
 # tsne_2d_new <- embedding[,1:2]; names(tsne_2d_new) <- c('tsne_2d_new_1', 'tsne_2d_new_2')
 # tsne_3d_new <- embedding[,1:3]; names(tsne_3d_new) <- c('tsne_3d_new_1', 'tsne_3d_new_2', 'tsne_3d_new_3')
-tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_2d_1', 'tsne_2d_2')
+# tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_2d_1', 'tsne_2d_2')
 # tsne_3d <- embedding[,1:3]; names(tsne_3d) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
 
 # load('tsne_dimemsions.RData')
@@ -117,47 +104,47 @@ all <- cbind(all, tsne_2d_sim, tsne_2d_comp, tsne_3d_sim, tsne_3d_comp)
 ##########################
 # 5. Kmeans Cluster ######
 ##########################
-feat <- c(3:22,47:56,61)
-names(all[,feat])
-# kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
-# table(kmean_dt$CLUSTER)
-
-#h2o
-library(h2o)
-localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
-kmeans_df <- as.h2o(localH2O, all[,feat])
-cols <- c(colnames(kmeans_df))
-fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
-pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
-all$kmeans_trans <- pred[,1]; table(all$kmeans_trans)
-
-# kmeans_tsne_2d_sim
-kmeans_df <- as.h2o(localH2O, all[,62:63]) #62:63, 64:65, 66:68, 69:71
-cols <- c(colnames(kmeans_df))
-fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
-pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
-all$kmeans_tsne_2d_sim <- pred[,1]; table(all$kmeans_tsne_2d_sim)
-
-# kmeans_tsne_2d_comp
-kmeans_df <- as.h2o(localH2O, all[,64:65]) #62:63, 64:65, 66:68, 69:71
-cols <- c(colnames(kmeans_df))
-fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
-pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
-all$kmeans_tsne_2d_comp <- pred[,1]; table(all$kmeans_tsne_2d_comp)
-
-# kmeans_tsne_3d_sim
-kmeans_df <- as.h2o(localH2O, all[,66:68]) #62:63, 64:65, 66:68, 69:71
-cols <- c(colnames(kmeans_df))
-fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
-pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
-all$kmeans_tsne_3d_sim <- pred[,1]; table(all$kmeans_tsne_3d_sim)
-
-# kmeans_tsne_3d_comp
-kmeans_df <- as.h2o(localH2O, all[,69:71]) #62:63, 64:65, 66:68, 69:71
-cols <- c(colnames(kmeans_df))
-fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
-pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
-all$kmeans_tsne_3d_comp <- pred[,1]; table(all$kmeans_tsne_3d_comp)
+# feat <- c(3:22,47:56,61)
+# names(all[,feat])
+# # kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
+# # table(kmean_dt$CLUSTER)
+# 
+# #h2o
+# library(h2o)
+# localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
+# kmeans_df <- as.h2o(localH2O, all[,feat])
+# cols <- c(colnames(kmeans_df))
+# fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
+# pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
+# all$kmeans_trans <- pred[,1]; table(all$kmeans_trans)
+# 
+# # kmeans_tsne_2d_sim
+# kmeans_df <- as.h2o(localH2O, all[,62:63]) #62:63, 64:65, 66:68, 69:71
+# cols <- c(colnames(kmeans_df))
+# fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
+# pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
+# all$kmeans_tsne_2d_sim <- pred[,1]; table(all$kmeans_tsne_2d_sim)
+# 
+# # kmeans_tsne_2d_comp
+# kmeans_df <- as.h2o(localH2O, all[,64:65]) #62:63, 64:65, 66:68, 69:71
+# cols <- c(colnames(kmeans_df))
+# fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
+# pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
+# all$kmeans_tsne_2d_comp <- pred[,1]; table(all$kmeans_tsne_2d_comp)
+# 
+# # kmeans_tsne_3d_sim
+# kmeans_df <- as.h2o(localH2O, all[,66:68]) #62:63, 64:65, 66:68, 69:71
+# cols <- c(colnames(kmeans_df))
+# fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
+# pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
+# all$kmeans_tsne_3d_sim <- pred[,1]; table(all$kmeans_tsne_3d_sim)
+# 
+# # kmeans_tsne_3d_comp
+# kmeans_df <- as.h2o(localH2O, all[,69:71]) #62:63, 64:65, 66:68, 69:71
+# cols <- c(colnames(kmeans_df))
+# fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
+# pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
+# all$kmeans_tsne_3d_comp <- pred[,1]; table(all$kmeans_tsne_3d_comp)
 
 ######################################
 # Class Distance Calculations ########

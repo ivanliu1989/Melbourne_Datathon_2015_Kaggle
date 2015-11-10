@@ -178,6 +178,22 @@ test_dt[, c('TRANSACTION_COUNT_INPLAY','TRANSACTION_COUNT_OUTPLAY','TRANSACTION_
 )])] <- 0
 
 head(test_dt)
+
+# "BET_COUNTRY_DIFF_MEAN"           "BET_COUNTRY_DIFF_SD"             "BET_COUNTRY_DIFF_SKEW"           "BET_COUNTRY_DIFF_KURT"           "SKEW_BET_TAKEN"                  "KURT_BET_TAKEN"
+BET_COUNTRY_DIFF_MEAN <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','BET_COUNTRY_DIFF_MEAN')]),c('ACCOUNT_ID','BET_COUNTRY_DIFF_MEAN')]
+BET_COUNTRY_DIFF_SD <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','BET_COUNTRY_DIFF_SD')]),c('ACCOUNT_ID','BET_COUNTRY_DIFF_SD')]
+BET_COUNTRY_DIFF_SKEW <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','BET_COUNTRY_DIFF_SKEW')]),c('ACCOUNT_ID','BET_COUNTRY_DIFF_SKEW')]
+BET_COUNTRY_DIFF_KURT <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','BET_COUNTRY_DIFF_KURT')]),c('ACCOUNT_ID','BET_COUNTRY_DIFF_KURT')]
+SKEW_BET_TAKEN <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','SKEW_BET_TAKEN')]),c('ACCOUNT_ID','SKEW_BET_TAKEN')]
+KURT_BET_TAKEN <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID','KURT_BET_TAKEN')]),c('ACCOUNT_ID','KURT_BET_TAKEN')]
+
+test_dt <- merge(test_dt, BET_COUNTRY_DIFF_MEAN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test_dt <- merge(test_dt, BET_COUNTRY_DIFF_SD, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test_dt <- merge(test_dt, BET_COUNTRY_DIFF_SKEW, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test_dt <- merge(test_dt, BET_COUNTRY_DIFF_KURT, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test_dt <- merge(test_dt, SKEW_BET_TAKEN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+test_dt <- merge(test_dt, KURT_BET_TAKEN, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+
 # 10. CANCEL_RATIO
 test_dt$CANCEL_RATIO_OUTPLAY <- test_dt$TRANSACTION_COUNT_OUTPLAY_C/(test_dt$TRANSACTION_COUNT_OUTPLAY_C+test_dt$TRANSACTION_COUNT_OUTPLAY+test_dt$TRANSACTION_COUNT_OUTPLAY_L)
 
@@ -185,9 +201,9 @@ test_dt$CANCEL_RATIO_OUTPLAY <- test_dt$TRANSACTION_COUNT_OUTPLAY_C/(test_dt$TRA
 test_dt$INPLAY_RATIO <- test_dt$TRANSACTION_COUNT_INPLAY/(test_dt$TRANSACTION_COUNT_INPLAY + test_dt$TRANSACTION_COUNT_OUTPLAY)
 test_dt[,c(42:43)][is.na(test_dt[,c(42:43)])] <- 0
 
-# 12. Country
-country <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID', 'COUNTRY_OF_RESIDENCE_NAME')]),c('ACCOUNT_ID', 'COUNTRY_OF_RESIDENCE_NAME')]
-test_dt <- merge(test_dt, country, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
+# # 12. Country
+# country <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID', 'COUNTRY_OF_RESIDENCE_NAME')]),c('ACCOUNT_ID', 'COUNTRY_OF_RESIDENCE_NAME')]
+# test_dt <- merge(test_dt, country, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 
 # 13. BL_RATIO
 BL_RATIO_INPLAY <- mbr.event[!duplicated(mbr.event[,c('ACCOUNT_ID', 'BL_RATIO_INPLAY')]),c('ACCOUNT_ID', 'BL_RATIO_INPLAY')]
