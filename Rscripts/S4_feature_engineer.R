@@ -186,7 +186,7 @@ all <- cbind(all, distances[,c(2,3)])
 # c(101093076,101093194,101093312) 
 # c(101128387,101150348,101152275) 
 # c(101149870,101150716,101153308)
-all <- all[,c(1:56,59:78,58,57)]
+all <- all[,c(1:64,67:74,65,66)]
 
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]
@@ -194,7 +194,14 @@ validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]
 train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398),]
 dim(train); dim(validation)
 
-###################
-# 8. Output #######
-###################
-save(train, validation, total, test, file='data/9_train_validation_test_20151108_feat.RData')
+save(train, validation, total, test, file='data/S9_train_validation_test_20151110.RData')
+
+# test
+all_n <- all_n[,c(1:34, 37, 35,36)]
+test <- all_n[all_n$flag_class == 'M', ]
+total <- all_n[all_n$flag_class != 'M', ]
+validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]
+train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398),]
+dim(train); dim(validation)
+
+save(train, validation, total, test, file='data/S9_train_validation_test_20151110_test.RData')
