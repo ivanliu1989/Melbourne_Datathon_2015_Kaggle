@@ -15,7 +15,7 @@ training <- train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 testing <- train[train$EVENT_ID %in% c(101183757,101183885,101184013),]
 dim(training); dim(testing)
 training$flag_class <- ifelse(training$flag_class == 'Y', 1, 0)
-feat <- colnames(training)[c(3:72)]
+feat <- colnames(training)[c(65:71)]#c(3:72) #3:13,16,17,20,21,24,25,28,29,32,44:72
 
 # feat <- feat[
 #     !feat %in%
@@ -28,7 +28,7 @@ feat <- colnames(training)[c(3:72)]
     #-------------Basic Training using XGBoost-----------------
     bst <-
         xgboost( 
-            data = as.matrix(training[,feat]), label = training$flag_class, max.depth = 6, eta = 0.02, nround = 1500, maximize = F, #500,0.15
+            data = as.matrix(training[,feat]), label = training$flag_class, max.depth = 6, eta = 0.15, nround = 500, maximize = F, #500,0.15
             nthread = 4, objective = "binary:logistic", verbose = 1, early.stop.round = 10, print.every.n = 10, metrics = 'auc'
         )
 #     bst <-
@@ -38,8 +38,8 @@ feat <- colnames(training)[c(3:72)]
 #         )
 
     #--------------------basic prediction using xgboost--------------
-    # val <- validation
-    val <- testing
+    val <- validation
+    # val <- testing
     p <- predict(bst, as.matrix(val[,feat])) 
     # p <- predict(bst, as.matrix(train[,feat])) 
     val$Y <- p
