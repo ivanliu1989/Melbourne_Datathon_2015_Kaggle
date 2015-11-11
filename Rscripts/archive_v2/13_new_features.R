@@ -1,8 +1,8 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc(); library(caret)
 # source('Rscripts/12_log_transformation.R')
-load('data/1_complete_data.RData');
-load('data/2_test.RData');ls()
+load('data/v1/1_complete_data.RData');
+load('data/v1/2_test.RData');ls()
 
 
 #################################
@@ -134,8 +134,8 @@ all <- all[,c(1:56,59,58,57)]
 
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]
-validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]
-train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398),]
+validation <- total[total$EVENT_ID %in% c(101183757,101183885,101184013),]
+train <- total[!total$EVENT_ID %in% c(101183757,101183885,101184013),]
 dim(train); dim(validation)
 
 ###################

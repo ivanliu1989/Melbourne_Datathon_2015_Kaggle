@@ -53,7 +53,7 @@ apply(all_n,2, function(x) mean(is.na(x)))
 # 4. tsne dimensions ######
 ###########################
 # feat <- c(3:58,61:75)
-feat_n <- c(3:25)
+feat_n <- c(3:76)
 
 library(readr); library(Rtsne); library(ggplot2)
 # tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
@@ -111,7 +111,7 @@ all_n <- cbind(all_n, tsne_3d_test)
 # Class Distance Calculations ########
 ######################################
 library(caret)
-feat <- colnames(all)[c(3:58)]
+feat <- colnames(all)[c(3:76)]
 dt <- all[,feat]
 centroids <- classDist(as.matrix(dt), as.factor(all$flag_class))
 distances <- predict(centroids, dt)
