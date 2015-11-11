@@ -52,18 +52,18 @@ apply(all_n,2, function(x) mean(is.na(x)))
 ###########################
 # 4. tsne dimensions ######
 ###########################
-feat <- c(3:64,67:74)
-feat_n <- c(3:34,37)
+# feat <- c(3:58,61:75)
+feat_n <- c(3:25)
 
 library(readr); library(Rtsne); library(ggplot2)
-tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
-              perplexity=30, theta=0.5, dims=2)
+# tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
+#               perplexity=30, theta=0.5, dims=3)
 
-# tsne <- Rtsne(as.matrix(all_n[,feat_n]), check_duplicates = FALSE, pca = TRUE, 
-#               perplexity=30, theta=0.5, dims=2)
+tsne <- Rtsne(as.matrix(all_n[,feat_n]), check_duplicates = FALSE, pca = TRUE, 
+              perplexity=30, theta=0.5, dims=3)
 
 embedding <- as.data.frame(tsne$Y)
-embedding$Class <- as.factor(sub("Class_", "", all[,58])) # 36, 58
+embedding$Class <- as.factor(sub("Class_", "", all_n[,27])) # 27, 60
 
 p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
     geom_point(size=1.25) +
@@ -79,15 +79,14 @@ p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
           axis.line        = element_blank(),
           panel.border     = element_blank())
 p
-# tsne_2d_new <- embedding[,1:2]; names(tsne_2d_new) <- c('tsne_2d_new_1', 'tsne_2d_new_2')
-# tsne_3d_new <- embedding[,1:3]; names(tsne_3d_new) <- c('tsne_3d_new_1', 'tsne_3d_new_2', 'tsne_3d_new_3')
-# tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_2d_1', 'tsne_2d_2')
-# tsne_3d <- embedding[,1:3]; names(tsne_3d) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
+# tsne_3d_test <- embedding[,1:3]; names(tsne_3d_test) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
+tsne_3d <- embedding[,1:3]; names(tsne_3d) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
 
 # load('tsne_dimemsions.RData')
-save(tsne_3d_new, tsne_2d_new, tsne_3d,tsne_2d, file='tsne_dimemsions_new.RData')
+save(tsne_3d, tsne_3d_test, file='S_tsne_dimemsions_new.RData')
 
-all <- cbind(all, tsne_2d_sim, tsne_2d_comp, tsne_3d_sim, tsne_3d_comp)
+all <- cbind(all, tsne_3d)
+all_c <- cbind(all_c, tsne_3d_test)
 
 ##########################
 # 5. Kmeans Cluster ######
@@ -134,7 +133,7 @@ all <- cbind(all, distances[,c(2,3)])
 # c(101093076,101093194,101093312) 
 # c(101128387,101150348,101152275) 
 # c(101149870,101150716,101153308)
-all <- all[,c(1:58,61:72,59:60)]
+all <- all[,c(1:58,61:78,59:60)]
 
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]

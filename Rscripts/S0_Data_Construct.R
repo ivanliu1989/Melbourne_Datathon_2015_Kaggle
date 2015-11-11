@@ -28,6 +28,10 @@ PREV_WIN_SKEW <- tbl_df(read.csv('New features/PREV_WIN_SKEW.csv'))
 MARGIN_SKEW <- tbl_df(read.csv('New features/MARGIN_SKEW.csv'))
 MARGIN_TOTAL <- tbl_df(read.csv('New features/TOTAL_MARGIN.csv'))
 
+WIN_HIST_LAG1 <- tbl_df(read.csv('New features/win_hist_lag_1.csv'))
+WIN_HIST_LAG2 <- tbl_df(read.csv('New features/win_hist_lag_2.csv'))
+WIN_HIST_LAG3 <- tbl_df(read.csv('New features/win_hist_lag_3.csv'))
+
 PREV_FREQ <- gather(PREV_FREQ, ACCOUNT_ID); names(PREV_FREQ) <- c('ACCOUNT_ID', 'EVENT_ID', 'PREV_FREQ')
 PREV_FREQ_SKEW <- gather(PREV_FREQ_SKEW, ACCOUNT_ID); names(PREV_FREQ_SKEW) <- c('ACCOUNT_ID', 'EVENT_ID', 'PREV_FREQ_SKEW')
 PREV_WIN <- gather(PREV_WIN, ACCOUNT_ID); names(PREV_WIN) <- c('ACCOUNT_ID', 'EVENT_ID', 'PREV_WIN')
@@ -35,6 +39,10 @@ PREV_WIN_RATE <- gather(PREV_WIN_RATE, ACCOUNT_ID); names(PREV_WIN_RATE) <- c('A
 PREV_WIN_SKEW <- gather(PREV_WIN_SKEW, ACCOUNT_ID); names(PREV_WIN_SKEW) <- c('ACCOUNT_ID', 'EVENT_ID', 'PREV_WIN_SKEW')
 MARGIN_SKEW <- gather(MARGIN_SKEW, Row.Labels); names(MARGIN_SKEW) <- c('ACCOUNT_ID', 'EVENT_ID', 'MARGIN_SKEW')
 MARGIN_TOTAL <- gather(MARGIN_TOTAL, Row.Labels); names(MARGIN_TOTAL) <- c('ACCOUNT_ID', 'EVENT_ID', 'MARGIN_TOTAL')
+WIN_HIST_LAG1 <- gather(WIN_HIST_LAG1, ACCOUNT_ID); names(WIN_HIST_LAG1) <- c('ACCOUNT_ID', 'EVENT_ID', 'WIN_HIST_LAG1')
+WIN_HIST_LAG2 <- gather(WIN_HIST_LAG2, ACCOUNT_ID); names(WIN_HIST_LAG2) <- c('ACCOUNT_ID', 'EVENT_ID', 'WIN_HIST_LAG2')
+WIN_HIST_LAG3 <- gather(WIN_HIST_LAG3, ACCOUNT_ID); names(WIN_HIST_LAG3) <- c('ACCOUNT_ID', 'EVENT_ID', 'WIN_HIST_LAG3')
+
 dim(PREV_WIN_SKEW); dim(PREV_WIN_RATE); dim(PREV_WIN); dim(PREV_FREQ_SKEW); dim(PREV_FREQ); dim(MARGIN_SKEW); dim(MARGIN_TOTAL)
 
 NEW_FEATURE <- merge(PREV_FREQ, PREV_FREQ_SKEW, all.x = TRUE, all.y = T, by = c('ACCOUNT_ID', 'EVENT_ID'))
@@ -43,6 +51,10 @@ NEW_FEATURE <- merge(NEW_FEATURE, PREV_WIN_RATE, all.x = TRUE, all.y = T, by = c
 NEW_FEATURE <- merge(NEW_FEATURE, PREV_WIN_SKEW, all.x = TRUE, all.y = T, by = c('ACCOUNT_ID', 'EVENT_ID'))
 NEW_FEATURE <- merge(NEW_FEATURE, MARGIN_SKEW, all.x = TRUE, all.y = T, by = c('ACCOUNT_ID', 'EVENT_ID'))
 NEW_FEATURE <- merge(NEW_FEATURE, MARGIN_TOTAL, all.x = TRUE, all.y = T, by = c('ACCOUNT_ID', 'EVENT_ID'))
+NEW_FEATURE <- merge(NEW_FEATURE, WIN_HIST_LAG1, all.x = TRUE, all.y = T, by = c('ACCOUNT_ID', 'EVENT_ID'))
+NEW_FEATURE <- merge(NEW_FEATURE, WIN_HIST_LAG2, all.x = TRUE, all.y = T, by = c('ACCOUNT_ID', 'EVENT_ID'))
+NEW_FEATURE <- merge(NEW_FEATURE, WIN_HIST_LAG3, all.x = TRUE, all.y = T, by = c('ACCOUNT_ID', 'EVENT_ID'))
+
 dim(NEW_FEATURE); head(NEW_FEATURE)
 
 NEW_FEATURE$EVENT_ID <- gsub('X', '',NEW_FEATURE$EVENT_ID)
