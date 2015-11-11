@@ -1,8 +1,8 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc(); library(caret)
-source('Rscripts/12_log_transformation.R')
-load('data/1_complete_data_new.RData');
-load('data/2_test_new.RData');ls()
+# source('Rscripts/12_log_transformation.R')
+load('data/1_complete_data.RData');
+load('data/2_test.RData');ls()
 
 
 #################################
@@ -130,7 +130,7 @@ all <- cbind(all, distances[,c(2,3)])
 # c(101093076,101093194,101093312) 
 # c(101128387,101150348,101152275) 
 # c(101149870,101150716,101153308)
-all <- all[,c(1:56,59:62,58,57)]
+all <- all[,c(1:56,59,58,57)]
 
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]

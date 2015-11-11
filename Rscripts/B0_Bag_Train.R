@@ -1,8 +1,9 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);library(caret)
-load('../S9_train_validation_test_20151110.RData');ls()
+# load('../S9_train_validation_test_20151110.RData');ls()
 # load('data/S9_train_validation_test_20151110_test.RData')
+load('data/9_train_validation_test_20151108.RData')
 
 ### Test
 # train <- total
@@ -11,11 +12,11 @@ training <- train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 testing <- train[train$EVENT_ID %in% c(101183757,101183885,101184013),]
 dim(training); dim(testing)
 training$flag_class <- ifelse(training$flag_class == 'Y', 1, 0)
-feat <- colnames(training)[c(3:76)]
-
+# feat <- colnames(training)[c(3:76)]
+feat <- colnames(training)[c(3:57)]
 
 param <- list("objective" = "binary:logistic",
-              "eval_metric" = "error", #auc logloss error
+              "eval_metric" = "auc", #auc logloss error
               "num_class" = 2,
               "nthread" = 4)
 

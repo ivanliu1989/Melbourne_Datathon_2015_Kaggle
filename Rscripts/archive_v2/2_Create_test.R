@@ -2,7 +2,7 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 # setwd('C:\\Users\\iliu2\\Documents\\datathon\\Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 
-load('data/1_complete_data_new.RData');ls()
+load('data/1_complete_data.RData');ls()
 
 mbr.event <- total
 submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
@@ -265,5 +265,5 @@ test_dt <- merge(test_dt, BL_RATIO, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT
 test <- test_dt
 
 apply(test,2, function(x) mean(is.na(x)))
-save(test, file='data/2_test_new.RData')
+save(test, file='data/2_test.RData')
 
