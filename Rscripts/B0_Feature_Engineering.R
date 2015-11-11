@@ -79,14 +79,14 @@ p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
           axis.line        = element_blank(),
           panel.border     = element_blank())
 p
-# tsne_3d_test <- embedding[,1:3]; names(tsne_3d_test) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
+tsne_3d_test <- embedding[,1:3]; names(tsne_3d_test) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
 tsne_3d <- embedding[,1:3]; names(tsne_3d) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
 
 # load('tsne_dimemsions.RData')
 save(tsne_3d, tsne_3d_test, file='S_tsne_dimemsions_new.RData')
 
 all <- cbind(all, tsne_3d)
-all_c <- cbind(all_c, tsne_3d_test)
+all_n <- cbind(all_n, tsne_3d_test)
 
 ##########################
 # 5. Kmeans Cluster ######
@@ -144,7 +144,7 @@ dim(train); dim(validation)
 save(train, validation, total, test, file='data/S9_train_validation_test_20151110.RData')
 
 # test
-all_n <- all_n[,c(1:34, 37, 35,36)]
+all_n <- all_n[,c(1:25, 28:30, 26,27)]
 test <- all_n[all_n$flag_class == 'M', ]
 total <- all_n[all_n$flag_class != 'M', ]
 validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]

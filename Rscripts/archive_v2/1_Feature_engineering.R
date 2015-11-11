@@ -14,7 +14,7 @@ rm(list = c('dt_1', 'dt_2', 'dt_3', 'dt_4', 'dt_5'))
 head(dt)
 
 ### Feature generating
-source('Rscripts/9_functions.R')
+source('Rscripts/archive_v2/9_functions.R')
 total <- feat.eng(dt)
 apply(total,2, function(x) mean(is.na(x)))
 

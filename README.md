@@ -56,14 +56,17 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 2. O New customers 0.43/-5
 
 ##### 8th submission - 0.
-1. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
-2. python lasagne
-3. O Separate models (new/existing customers)
+1. New Feature
+2. Regression + Classification
+3. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
+4. O Separate models (new/existing customers)
+5. Past value
 
 ##### 9th submission - 0.
 1. New feature inventation
 2. Blending strategies
 3. Kmeans clustering based imputation
+4. python lasagne
 
 ##### Ref
 1. https://github.com/Gzsiceberg/kaggle-avito
