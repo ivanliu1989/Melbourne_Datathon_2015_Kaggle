@@ -25,12 +25,18 @@ feat <- colnames(training)[c(3:(ncol(training)-2))]
     watchlist <- list(eval = dtest, train = dtrain)
 
 ### tree
+#     bst <-
+#         xgb.train(
+#             data = dtrain, max.depth = 6, eta = 0.15, nround = 500, maximize = F, watchlist = watchlist, min_child_weight = 4, colsample_bytree = 0.8,
+#             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
+#         )
+
     bst <-
         xgb.train(
-            data = dtrain, max.depth = 6, eta = 0.15, nround = 500, maximize = F, watchlist = watchlist, min_child_weight = 4, colsample_bytree = 0.8,
-            nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
+            data = dtrain, max.depth = 9, eta = 0.15, nround = 1, maximize = F, watchlist = watchlist, min_child_weight = 4, colsample_bytree = 0.8,
+            nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1000, gamma = 0.1
         )
-
+    
 ### generalized linear model
 #     bst <- xgb.train(
 #         data = dtrain, nround = 1500, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.1,

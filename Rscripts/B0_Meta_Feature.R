@@ -11,33 +11,36 @@ feat <- colnames(total)[c(3:76)]
 ###################################
 total$flag_class <- ifelse(total$flag_class == 'Y', 1, 0)
 # gbm - raw
+dtrain <- xgb.DMatrix(as.matrix(total[,feat]), label = total$flag_class)
+dtest <- xgb.DMatrix(as.matrix(all[,feat]), label = all$flag_class)
+### tree
 bst <-
-    xgboost( 
-        data = as.matrix(total[,feat]), label = total$flag_class, max.depth = 6, eta = 0.15, nround = 500,
-        nthread = 4, objective = "binary:logistic", verbose = 0, metrics = 'auc'
+    xgb.train(
+        data = dtrain, max.depth = 6, eta = 0.15, nround = 500, maximize = F, watchlist = watchlist, min_child_weight = 4, colsample_bytree = 0.8,
+        nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
     )
-
-p <- predict(bst, as.matrix(all[,feat]))  
-all$xgb_gbm_meta_raw <- p
-
+p <- predict(bst, dtest)  
+all$xgb_gbm_meta <- p
 pred_with_leaf = predict(bst, dtest, ntreelimit = 2, predleaf = TRUE)
 head(pred_with_leaf)
 
+### generalized linear model
+#     bst <- xgb.train(
+#         data = dtrain, nround = 1500, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.1,
+#         nthread = 4, alpha = 1e-3, lambda = 1e-6, print.every.n = 10
+#     )
+p <- predict(bst, dtest)  
+all$xgb_glm_meta <- p
+
 # rf - old
 bst <-
-    xgboost(
-        data = as.matrix(total[,feat]), label = total$flag_class, max.depth = 9, num_parallel_tree = 1000, subsample = 0.5, colsample_bytree =
-            0.5, nround = 1, objective = "binary:logistic"
+    xgb.train(
+        data = dtrain, max.depth = 9, eta = 0.15, nround = 1, maximize = F, watchlist = watchlist, min_child_weight = 4, colsample_bytree = 0.8,
+        nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1000, gamma = 0.1
     )
-p <- predict(bst, as.matrix(all[,feat]))  
-all$xgb_rf_meta_raw <- p
+p <- predict(bst, dtest)  
+all$xgb_rf_meta <- p
 
-# regression
-bst <-
-    xgboost( 
-        data = as.matrix(total[,feat]), label = total$flag_regr, max.depth = 6, eta = 0.15, nround = 500, 
-        nthread = 4, objective = "reg:linear"
-    )
 
 save(all, file='../9_train_validation_test_20151108_meta_xgb_v1.RData')
 
