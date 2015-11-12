@@ -57,15 +57,13 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 
 ##### 8th submission - 0.
 1. New Feature
-2. Regression + Classification
-3. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
-4. O Separate models (new/existing customers)
-5. Past value
+2. Meta bagged modeling
+3. O Separate models (new/existing customers)
 
 ##### 9th submission - 0.
-1. New feature inventation
-2. Blending strategies
-3. Kmeans clustering based imputation
+1. Past value (cumsum)
+2. Factorization Machines (http://www.csie.ntu.edu.tw/~r01922136/libffm/)
+3. Regression + Classification
 4. python lasagne
 
 ##### Ref

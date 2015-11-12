@@ -2,7 +2,7 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret)
 load('../S9_train_validation_test_20151110.RData');ls()
-options(scipen=999);set.seed(1004)
+options(scipen=999);set.seed(19890624)
 
 train <- train
 test <- validation
@@ -21,9 +21,10 @@ watchlist <- list(eval = dtest, train = dtrain)
 # # Train the model
     bst <-
         xgb.train(
-            data = dtrain, max.depth = 6, eta = 0.15, nround = 500, maximize = F, watchlist = watchlist, min_child_weight = 4, colsample_bytree = 0.8,
+            data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 3, colsample_bytree = 0.8,
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
-        )
+            #,watchlist = watchlist
+            )
 
 # # Make prediction
 testPredictions = predict(bst,dtest)
@@ -32,7 +33,7 @@ testPredictions = predict(bst,dtest)
 ### Meta bagging Model ##########
 #################################
 # testPredictions <- matrix(0, nrow = nrow(test), ncol = 1)
-bootRounds = 1:10
+bootRounds = 1:200
 
 for (j in bootRounds) {
   print(j)
@@ -46,11 +47,12 @@ for (j in bootRounds) {
   bagTestPredictions = predict(OOBModel, test, type="prob")
   
   # Build the Bag model
-  dtrain <- xgb.DMatrix(as.matrix(train[baggedIndex,feat]), label = train$flag_class[baggedIndex])
+  dtrain <- xgb.DMatrix(as.matrix(cbind(train[baggedIndex,feat],bagPredictions)), label = train$flag_class[baggedIndex])
   dtest <- xgb.DMatrix(as.matrix(cbind(test[,feat],bagTestPredictions)), label = test$flag_class)
   watchlist <- list(eval = dtest, train = dtrain)
   
-  BagModel <- xgb.train(data = dtrain, max.depth = 6, eta = 0.15, nround = 500, watchlist = watchlist, #min_child_weight = 4, colsample_bytree = 0.8,
+  BagModel <- xgb.train(data = dtrain, max.depth = 6, eta = 0.46, nround = 60, #watchlist = watchlist, 
+                        colsample_bytree = 0.8, min_child_weight = 10, verbose = 0, 
                         nthread = 4, objective = "binary:logistic"#, metrics = 'auc', gamma = 0.1
   )
   
