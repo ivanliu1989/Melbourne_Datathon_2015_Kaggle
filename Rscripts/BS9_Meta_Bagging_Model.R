@@ -1,8 +1,9 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
-library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia)
+library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
 load('../S9_train_validation_test_20151110.RData');ls()
 options(scipen=999);set.seed(19890624)
+localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 
 train <- train
 test <- validation
@@ -34,7 +35,7 @@ testPredictions_nn = predict(bst,dtest)
 ### Meta bagging Model ##########
 #################################
 # testPredictions <- matrix(0, nrow = nrow(test), ncol = 1)
-bootRounds = 1:50
+bootRounds = 1:20
 
 for (j in bootRounds) {
   print(j)
@@ -42,50 +43,76 @@ for (j in bootRounds) {
   baggedIndex = sample(nrow(train), size = nrow(train), replace = T)
   OOBIndex = setdiff(1:nrow(train), baggedIndex)
   
-  # Build the OOB model
+  # 1. Build the OOB model ############
     # randomforest
   OOBModel = randomForest(x=train[OOBIndex,feat], y=as.factor(train$flag_class[OOBIndex]), replace=F, ntree=100, do.trace=T, mtry=7)
   bagPredictions_rf = predict(OOBModel, train[baggedIndex,], type="prob")
   bagTestPredictions_rf = predict(OOBModel, test, type="prob")
+  
     # sofia svm
-  train_svm <- train[OOBIndex, feat]; test_svm <- test[,feat]
+  train_svm <- train[baggedIndex, feat];
+  train_svm_t <- train[OOBIndex, feat]; test_svm <- test[,feat]
   prep <- preProcess(train_svm, method = c('center',"scale"), verbose =T)
-  train_svm <- cbind(predict(prep, train_svm),train$flag_class[baggedIndex])
-  test_svm <- predict(prep, test_svm)
-  fit <- sofia(flag_class ~ ., data=train_svm, lambda = 1e-3, iiterations = 1e+25, random_seed = 13560,
+  train_svm <- cbind(predict(prep, train_svm),flag_class=train$flag_class[baggedIndex])
+  train_svm_t <- cbind(predict(prep, train_svm_t),flag_class=train$flag_class[OOBIndex])
+  test_svm <- cbind(predict(prep, test_svm),flag_class=test$flag_class)
+  fit <- sofia(flag_class ~ ., data=train_svm_t, lambda = 1e-3, iiterations = 1e+25, random_seed = 13560,
                learner_type = 'logreg-pegasos', eta_type = 'pegasos', loop_type = 'balanced-stochastic', 
                rank_step_probability = 0.5, passive_aggressive_c = 1e+07, passive_aggressive_lambda = 1e+1, dimensionality = 60,
                perceptron_margin_size = 1, training_objective = F, hash_mask_bits = 0
   )
   bagPredictions_svm <- predict(fit, newdata=train_svm, prediction_type = "logistic")
   bagTestPredictions_svm <- predict(fit, newdata=test_svm, prediction_type = "logistic")
+  
     # xg glm
-  dtrain <- xgb.DMatrix(as.matrix(train[baggedIndex,feat]), label = train$flag_class[baggedIndex])
+  dtrain <- xgb.DMatrix(as.matrix(train[OOBIndex,feat]), label = train$flag_class[OOBIndex])
+  dtrain_t <- xgb.DMatrix(as.matrix(train[baggedIndex,feat]), label = train$flag_class[baggedIndex])
   dtest <- xgb.DMatrix(as.matrix(test[,feat]), label = test$flag_class)
   bst <- xgb.train(
       data = dtrain, nround = 500, objective = "binary:logistic", booster = "gblinear", eta = 0.1,
       nthread = 4, alpha = 1e-3, lambda = 1e-6, verbose = 0
   )
-  bagPredictions_glm = predict(bst, dtrain)
+  bagPredictions_glm = predict(bst, dtrain_t)
   bagTestPredictions_glm = predict(bst, dtest)
   
-  # Build the Bag model
-  dtrain <- xgb.DMatrix(as.matrix(cbind(train[baggedIndex,feat],bagPredictions_rf,bagPredictions_svm,bagPredictions_glm)), 
+  # 2. Build the Bag model ############
+     # xgboost
+  dtrain <- xgb.DMatrix(as.matrix(cbind(train[baggedIndex,feat],bagPredictions_rf,svm=bagPredictions_svm,glm=bagPredictions_glm)), 
                         label = train$flag_class[baggedIndex])
-  dtest <- xgb.DMatrix(as.matrix(cbind(test[,feat],bagTestPredictions_rf,bagTestPredictions_svm,bagTestPredictions_glm)), 
+  dtest <- xgb.DMatrix(as.matrix(cbind(test[,feat],bagTestPredictions_rf,svm=bagTestPredictions_svm,glm=bagTestPredictions_glm)), 
                        label = test$flag_class)
   # watchlist <- list(eval = dtest, train = dtrain)
-  
   BagModel <- xgb.train(data = dtrain, max.depth = 6, eta = 0.25, nround = 250, #watchlist = watchlist, 
                         colsample_bytree = 0.8, min_child_weight = 10, verbose = 0, 
                         nthread = 4, objective = "binary:logistic"#, metrics = 'auc', gamma = 0.1
   )
-  
   # Make test predictions and reshape them
   tmpPredictions = predict(BagModel,dtest)
   testPredictions_xb = testPredictions_xb + tmpPredictions
+  
+#       # deep learning
+#   test_df <- as.h2o(localH2O, cbind(test[,feat],bagTestPredictions_rf,svm=bagTestPredictions_svm,glm=bagTestPredictions_glm))
+#   train_df <- as.h2o(localH2O, cbind(train[baggedIndex,feat],bagPredictions_rf,svm=bagPredictions_svm,glm=bagPredictions_glm))
+#   BagModel <-
+#       h2o.deeplearning(
+#           y = 'flag_class', x = names(train_df), data = train_df, classification = T,
+#           activation = "RectifierWithDropout",
+#           hidden = c(256,256,256), adaptive_rate = T, rho = 0.99, 
+#           epsilon = 1e-4, rate = 0.01, rate_decay = 0.9, # rate_annealing = , 
+#           momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
+#           nesterov_accelerated_gradient = T, input_dropout_ratio = 0.5, hidden_dropout_ratios = c(0.5,0.5,0.5), 
+#           l2 = 3e-6, max_w2 = 4, 
+#           loss = 'CrossEntropy', classification_stop = -1,
+#           diagnostics = T, variable_importances = T, ignore_const_cols = T,
+#           force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
+#           sparse = F, epochs = 300 
+#       )
+#   tmpPredictions <- as.data.frame(h2o.predict(object = BagModel, newdata = test_df))
+#   testPredictions_nn = testPredictions_nn + tmpPredictions
+#   
 }
 testPredictions_xb = testPredictions_xb/(j+1)
+# testPredictions_nn = testPredictions_nn/(j+1)
 
 #########################
 ### Validation ##########

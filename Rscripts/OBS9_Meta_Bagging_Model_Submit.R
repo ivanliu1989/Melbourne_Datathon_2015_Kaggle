@@ -1,6 +1,6 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
-library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret)
+library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia)
 load('../S9_train_validation_test_20151110.RData');ls()
 options(scipen=999);set.seed(19890624)
 
@@ -24,13 +24,14 @@ bst <-
     )
 
 # # Make prediction
-testPredictions = predict(bst,dtest)
+testPredictions_xb = predict(bst,dtest)
+testPredictions_nn = predict(bst,dtest)
 
 #################################
 ### Meta bagging Model ##########
 #################################
 # testPredictions <- matrix(0, nrow = nrow(test), ncol = 1)
-bootRounds = 1:200
+bootRounds = 1:50
 
 for (j in bootRounds) {
     print(j)
@@ -39,22 +40,52 @@ for (j in bootRounds) {
     OOBIndex = setdiff(1:nrow(train), baggedIndex)
     
     # Build the OOB model
+    # randomforest
     OOBModel = randomForest(x=train[OOBIndex,feat], y=as.factor(train$flag_class[OOBIndex]), replace=F, ntree=100, do.trace=T, mtry=7)
-    bagPredictions = predict(OOBModel, train[baggedIndex,], type="prob")
-    bagTestPredictions = predict(OOBModel, test, type="prob")
+    bagPredictions_rf = predict(OOBModel, train[baggedIndex,], type="prob")
+    bagTestPredictions_rf = predict(OOBModel, test, type="prob")
+    
+    # sofia svm
+    train_svm <- train[baggedIndex, feat];
+    train_svm_t <- train[OOBIndex, feat]; test_svm <- test[,feat]
+    prep <- preProcess(train_svm, method = c('center',"scale"), verbose =T)
+    train_svm <- cbind(predict(prep, train_svm),flag_class=train$flag_class[baggedIndex])
+    train_svm_t <- cbind(predict(prep, train_svm_t),flag_class=train$flag_class[OOBIndex])
+    test_svm <- cbind(predict(prep, test_svm),flag_class=test$flag_class)
+    fit <- sofia(flag_class ~ ., data=train_svm_t, lambda = 1e-3, iiterations = 1e+25, random_seed = 13560,
+                 learner_type = 'logreg-pegasos', eta_type = 'pegasos', loop_type = 'balanced-stochastic', 
+                 rank_step_probability = 0.5, passive_aggressive_c = 1e+07, passive_aggressive_lambda = 1e+1, dimensionality = 60,
+                 perceptron_margin_size = 1, training_objective = F, hash_mask_bits = 0
+    )
+    bagPredictions_svm <- predict(fit, newdata=train_svm, prediction_type = "logistic")
+    bagTestPredictions_svm <- predict(fit, newdata=test_svm, prediction_type = "logistic")
+    
+    # xg glm
+    dtrain <- xgb.DMatrix(as.matrix(train[OOBIndex,feat]), label = train$flag_class[OOBIndex])
+    dtrain_t <- xgb.DMatrix(as.matrix(train[baggedIndex,feat]), label = train$flag_class[baggedIndex])
+    dtest <- xgb.DMatrix(as.matrix(test[,feat]), label = test$flag_class)
+    bst <- xgb.train(
+        data = dtrain, nround = 500, objective = "binary:logistic", booster = "gblinear", eta = 0.1,
+        nthread = 4, alpha = 1e-3, lambda = 1e-6, verbose = 0
+    )
+    bagPredictions_glm = predict(bst, dtrain_t)
+    bagTestPredictions_glm = predict(bst, dtest)
     
     # Build the Bag model
-    dtrain <- xgb.DMatrix(as.matrix(cbind(train[baggedIndex,feat],bagPredictions)), label = train$flag_class[baggedIndex])
-    dtest <- xgb.DMatrix(as.matrix(cbind(test[,feat],bagTestPredictions)), label = test$flag_class)
+    dtrain <- xgb.DMatrix(as.matrix(cbind(train[baggedIndex,feat],bagPredictions_rf,svm=bagPredictions_svm,glm=bagPredictions_glm)), 
+                          label = train$flag_class[baggedIndex])
+    dtest <- xgb.DMatrix(as.matrix(cbind(test[,feat],bagTestPredictions_rf,svm=bagTestPredictions_svm,glm=bagTestPredictions_glm)), 
+                         label = test$flag_class)
+    # watchlist <- list(eval = dtest, train = dtrain)
     
-    BagModel <- xgb.train(data = dtrain, max.depth = 6, eta = 0.46, nround = 60, #watchlist = watchlist, 
+    BagModel <- xgb.train(data = dtrain, max.depth = 6, eta = 0.25, nround = 250, #watchlist = watchlist, 
                           colsample_bytree = 0.8, min_child_weight = 10, verbose = 0, 
                           nthread = 4, objective = "binary:logistic"#, metrics = 'auc', gamma = 0.1
     )
     
     # Make test predictions and reshape them
     tmpPredictions = predict(BagModel,dtest)
-    testPredictions = testPredictions + tmpPredictions
+    testPredictions_xb = testPredictions_xb + tmpPredictions
 }
 testPredictions = testPredictions/(j+1)
 
