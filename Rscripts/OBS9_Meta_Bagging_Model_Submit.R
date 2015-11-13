@@ -89,24 +89,30 @@ for (j in bootRounds) {
     tmpPredictions = predict(BagModel,dtest)
     testPredictions_xb = testPredictions_xb + tmpPredictions
 }
-testPredictions = testPredictions/(j+1)
+testPredictions_xb = testPredictions_xb/(j+1)
+
 
 #########################
 ### Submission ##########
 #########################
 t <- test
-t$Y <- testPredictions
+t$Y <- testPredictions_xb
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=t, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 t <- merge(t, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 t$INVEST_PERCENT <- t$INVEST/t$TOT_INVEST * t$Y
 pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=t, sum, na.rm=F)
+names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')
+
+pred_tra <- pred_fin
+save(pred_tra, file='ReadyForBlending/train_result_meta_bagging.RData')
+load('ReadyForBlending/train_result_meta_bagging.RData'); load('ReadyForBlending/test_result_meta_bagging.RData')
+pred_fin <- rbind(pred_t, pred_tra)
 
 submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
-names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')
 submit <- merge(submit,pred_fin,all.x = TRUE,all.y = FALSE)
 table(is.na(submit$PRED_PROFIT_LOSS))
 submit$PRED_PROFIT_LOSS[is.na(submit$PRED_PROFIT_LOSS)] <- 0
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-write.csv(submit,'pred/submit_20151112_meta_bagged_model_with_new_feat_part1.csv',quote = FALSE,row.names = FALSE)
+write.csv(submit,'pred/submit_20151114_meta_bagged_model_with_new_feat_part2.csv',quote = FALSE,row.names = FALSE)
