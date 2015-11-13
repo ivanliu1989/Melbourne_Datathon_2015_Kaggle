@@ -1,14 +1,16 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia)
-load('../S9_train_validation_test_20151110.RData');ls()
+# load('../S9_train_validation_test_20151110.RData');ls()
+load('data/S9_train_validation_test_20151110_test.RData');ls()
 options(scipen=999);set.seed(19890624)
 
 train <- total
 test <- test
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
-feat <- colnames(train)[c(3:(ncol(train)-2))]
-# x = 1/(1+exp(-sqrt(x)))
+test$flag_class <- 0
+# feat <- colnames(train)[c(3:(ncol(train)-2))] # train
+feat <- colnames(train)[c(3:(ncol(train)-3), ncol(train))] # test
 
 #############################
 ### Raw prediction ##########
@@ -25,7 +27,7 @@ bst <-
 
 # # Make prediction
 testPredictions_xb = predict(bst,dtest)
-testPredictions_nn = predict(bst,dtest)
+# testPredictions_nn = predict(bst,dtest)
 
 #################################
 ### Meta bagging Model ##########
@@ -54,7 +56,7 @@ for (j in bootRounds) {
     test_svm <- cbind(predict(prep, test_svm),flag_class=test$flag_class)
     fit <- sofia(flag_class ~ ., data=train_svm_t, lambda = 1e-3, iiterations = 1e+25, random_seed = 13560,
                  learner_type = 'logreg-pegasos', eta_type = 'pegasos', loop_type = 'balanced-stochastic', 
-                 rank_step_probability = 0.5, passive_aggressive_c = 1e+07, passive_aggressive_lambda = 1e+1, dimensionality = 60,
+                 rank_step_probability = 0.5, passive_aggressive_c = 1e+07, passive_aggressive_lambda = 1e+1, dimensionality = 78,
                  perceptron_margin_size = 1, training_objective = F, hash_mask_bits = 0
     )
     bagPredictions_svm <- predict(fit, newdata=train_svm, prediction_type = "logistic")
@@ -78,7 +80,7 @@ for (j in bootRounds) {
                          label = test$flag_class)
     # watchlist <- list(eval = dtest, train = dtrain)
     
-    BagModel <- xgb.train(data = dtrain, max.depth = 6, eta = 0.25, nround = 250, #watchlist = watchlist, 
+    BagModel <- xgb.train(data = dtrain, max.depth = 6, eta = 0.15, nround = 500, #watchlist = watchlist, 
                           colsample_bytree = 0.8, min_child_weight = 10, verbose = 0, 
                           nthread = 4, objective = "binary:logistic"#, metrics = 'auc', gamma = 0.1
     )
