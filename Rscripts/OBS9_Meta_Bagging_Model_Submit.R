@@ -21,7 +21,7 @@ dtest <- xgb.DMatrix(as.matrix(test[,feat]), label = test$flag_class)
 # # Train the model
 bst <-
     xgb.train(
-        data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 3, colsample_bytree = 0.8,
+        data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = , colsample_bytree = 0.8,
         nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
     )
 
@@ -33,7 +33,7 @@ testPredictions_xb = predict(bst,dtest)
 ### Meta bagging Model ##########
 #################################
 # testPredictions <- matrix(0, nrow = nrow(test), ncol = 1)
-bootRounds = 1:50
+bootRounds = 1:100
 
 for (j in bootRounds) {
     print(j)

@@ -23,7 +23,7 @@ dtest <- xgb.DMatrix(as.matrix(test[,feat]), label = test$flag_class)
 # # Train the model
     bst <-
         xgb.train(
-            data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 3, colsample_bytree = 0.8,
+            data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.8,
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
             #,watchlist = watchlist
             )
@@ -57,7 +57,7 @@ for (j in bootRounds) {
   train_svm <- cbind(predict(prep, train_svm),flag_class=train$flag_class[baggedIndex])
   train_svm_t <- cbind(predict(prep, train_svm_t),flag_class=train$flag_class[OOBIndex])
   test_svm <- cbind(predict(prep, test_svm),flag_class=test$flag_class)
-  fit <- sofia(flag_class ~ ., data=train_svm_t, lambda = 1e-3, iiterations = 1e+25, random_seed = 13560,
+  fit <- sofia(flag_class ~ ., data=train_svm_t, lambda = 1e-3, iiterations = 1e+10, random_seed = 13560,
                learner_type = 'logreg-pegasos', eta_type = 'pegasos', loop_type = 'balanced-stochastic', 
                rank_step_probability = 0.5, passive_aggressive_c = 1e+07, passive_aggressive_lambda = 1e+1, dimensionality = 78,
                perceptron_margin_size = 1, training_objective = F, hash_mask_bits = 0
@@ -70,47 +70,49 @@ for (j in bootRounds) {
   dtrain_t <- xgb.DMatrix(as.matrix(train[baggedIndex,feat]), label = train$flag_class[baggedIndex])
   dtest <- xgb.DMatrix(as.matrix(test[,feat]), label = test$flag_class)
   bst <- xgb.train(
-      data = dtrain, nround = 500, objective = "binary:logistic", booster = "gblinear", eta = 0.1,
+      data = dtrain, nround = 500, objective = "binary:logistic", booster = "gblinear", eta = 0.15,
       nthread = 4, alpha = 1e-3, lambda = 1e-6, verbose = 0
   )
   bagPredictions_glm = predict(bst, dtrain_t)
   bagTestPredictions_glm = predict(bst, dtest)
   
+    # deep learning
+  test_df <- as.h2o(localH2O, cbind(test[,feat], flag_class=test$flag_class))
+  train_df <- as.h2o(localH2O, cbind(train[OOBIndex,feat],flag_class=train$flag_class[OOBIndex]))
+  train_df_t <- as.h2o(localH2O, cbind(train[baggedIndex,feat],flag_class=train$flag_class[baggedIndex]))
+  BagModel <-
+      h2o.deeplearning(
+          y = 'flag_class', x = names(train_df), data = train_df, classification = T,
+          activation = "RectifierWithDropout",
+          hidden = c(128,64), adaptive_rate = T, rho = 0.99, 
+          epsilon = 1e-4, rate = 0.15, rate_decay = 0.9, # rate_annealing = , 
+          momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
+          nesterov_accelerated_gradient = T, input_dropout_ratio = 0, hidden_dropout_ratios = c(0.5,0.5), 
+          l2 = 3e-6, max_w2 = 4, 
+          loss = 'CrossEntropy', classification_stop = -1,
+          diagnostics = T, variable_importances = F, ignore_const_cols = T,
+          force_load_balance = T, sparse = F, epochs = 90 
+      )
+  bagPredictions_nn = as.data.frame(h2o.predict(object = BagModel, newdata = train_df_t))
+  bagTestPredictions_nn = as.data.frame(h2o.predict(object = BagModel, newdata = test_df))
+  
   # 2. Build the Bag model ############
      # xgboost
-  dtrain <- xgb.DMatrix(as.matrix(cbind(train[baggedIndex,feat],bagPredictions_rf,svm=bagPredictions_svm,glm=bagPredictions_glm)), 
-                        label = train$flag_class[baggedIndex])
-  dtest <- xgb.DMatrix(as.matrix(cbind(test[,feat],bagTestPredictions_rf,svm=bagTestPredictions_svm,glm=bagTestPredictions_glm)), 
-                       label = test$flag_class)
+  dtrain <- xgb.DMatrix(as.matrix(cbind(train[baggedIndex,feat],rf_n=bagPredictions_rf[,1],rf_y=bagPredictions_rf[,2],
+                                        svm=bagPredictions_svm,glm=bagPredictions_glm,
+                                        nn_n = bagPredictions_nn$X0, nn_y=bagPredictions_nn$X1)), label = train$flag_class[baggedIndex])
+  dtest <- xgb.DMatrix(as.matrix(cbind(test[,feat],rf_n=bagTestPredictions_rf[,1],rf_y=bagTestPredictions_rf[,2],
+                                       svm=bagTestPredictions_svm,glm=bagTestPredictions_glm,
+                                       nn_n = bagTestPredictions_nn$X0, nn_y=bagTestPredictions_nn$X1)),label = test$flag_class)
   # watchlist <- list(eval = dtest, train = dtrain)
-  BagModel <- xgb.train(data = dtrain, max.depth = 6, eta = 0.25, nround = 250, #watchlist = watchlist, 
-                        colsample_bytree = 0.8, min_child_weight = 10, verbose = 0, 
+  BagModel <- xgb.train(data = dtrain, max.depth = 6, eta = 0.15, nround = 500, #watchlist = watchlist, 
+                        colsample_bytree = 0.8, min_child_weight = 4, verbose = 0, 
                         nthread = 4, objective = "binary:logistic"#, metrics = 'auc', gamma = 0.1
   )
   # Make test predictions and reshape them
   tmpPredictions = predict(BagModel,dtest)
   testPredictions_xb = testPredictions_xb + tmpPredictions
   
-#       # deep learning
-#   test_df <- as.h2o(localH2O, cbind(test[,feat],bagTestPredictions_rf,svm=bagTestPredictions_svm,glm=bagTestPredictions_glm))
-#   train_df <- as.h2o(localH2O, cbind(train[baggedIndex,feat],bagPredictions_rf,svm=bagPredictions_svm,glm=bagPredictions_glm))
-#   BagModel <-
-#       h2o.deeplearning(
-#           y = 'flag_class', x = names(train_df), data = train_df, classification = T,
-#           activation = "RectifierWithDropout",
-#           hidden = c(256,256,256), adaptive_rate = T, rho = 0.99, 
-#           epsilon = 1e-4, rate = 0.01, rate_decay = 0.9, # rate_annealing = , 
-#           momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
-#           nesterov_accelerated_gradient = T, input_dropout_ratio = 0.5, hidden_dropout_ratios = c(0.5,0.5,0.5), 
-#           l2 = 3e-6, max_w2 = 4, 
-#           loss = 'CrossEntropy', classification_stop = -1,
-#           diagnostics = T, variable_importances = T, ignore_const_cols = T,
-#           force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
-#           sparse = F, epochs = 300 
-#       )
-#   tmpPredictions <- as.data.frame(h2o.predict(object = BagModel, newdata = test_df))
-#   testPredictions_nn = testPredictions_nn + tmpPredictions
-#   
 }
 testPredictions_xb = testPredictions_xb/(j+1)
 # testPredictions_nn = testPredictions_nn/(j+1)
