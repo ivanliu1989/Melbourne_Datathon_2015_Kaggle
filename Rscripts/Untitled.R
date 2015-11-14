@@ -40,3 +40,8 @@ hist(total[total$flag_class == 'Y',feat])
 AVG_BET_SIZE_OUTPLAY
 AVG_BET_SIZE_ALL
 INVEST
+
+
+total_interaction <- model.matrix(~.^2,train[,3:(ncol(train)-2)])
+dim(total_interaction)
+train <- cbind(train[,1:2], total_interaction, train[,77:78])
