@@ -55,7 +55,7 @@ An AUC of 0.5 is random guessing and 1 is a prefect solution.
 	- knn
 2. O New customers 0.43/-5
 
-##### 8th submission - 0.
+##### 8th submission - 0.63971
 1. New Feature
 2. Meta bagged modeling
 3. O Separate models (new/existing customers)

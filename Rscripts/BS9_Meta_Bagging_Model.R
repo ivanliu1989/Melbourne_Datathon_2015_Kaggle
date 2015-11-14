@@ -4,7 +4,7 @@ library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data
 load('../S9_train_validation_test_20151110.RData');ls()
 # load('data/S9_train_validation_test_20151110_test.RData');ls()
 options(scipen=999);set.seed(19890624)
-localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
+# localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 
 train <- train
 test <- validation
@@ -23,7 +23,7 @@ dtest <- xgb.DMatrix(as.matrix(test[,feat]), label = test$flag_class)
 # # Train the model
     bst <-
         xgb.train(
-            data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.8,
+            data = dtrain, max.depth = 6, eta = 0.25, nround = 250, maximize = F, min_child_weight = 2, colsample_bytree = 0.8,
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
             #,watchlist = watchlist
             )
@@ -138,3 +138,13 @@ print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.corr
 
 prediction <- as.factor(ifelse(pred_fin[,2] >=0.5, 1, 0))
 confusionMatrix(as.factor(val_fin$PRED_PROFIT_LOSS_3), prediction)
+
+### New Calc
+rocobj <- roc(val$flag_class, val$Y);print(auc(rocobj)) 
+print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
+
+val$SINGLE_INVEST <- val$INVEST * ifelse(val$Y>=0.5, 1,-1)
+pred_fin3 <- aggregate(SINGLE_INVEST ~ ACCOUNT_ID, data=val, sum, na.rm=F)
+pred_fin3$Y <- ifelse(pred_fin3$SINGLE_INVEST >=0, 1,0)
+rocobj <- roc(val_fin$PRED_PROFIT_LOSS_3, pred_fin3$Y);print(auc(rocobj)) # Invest * Possibility
+print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
