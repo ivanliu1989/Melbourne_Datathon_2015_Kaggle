@@ -4,6 +4,7 @@ library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data
 load('../S9_train_validation_test_20151110.RData');ls()
 # load('data/S9_train_validation_test_20151110_test.RData');ls()
 options(scipen=999);set.seed(19890624)
+localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 
 train <- total
 test <- test
@@ -21,7 +22,7 @@ dtest <- xgb.DMatrix(as.matrix(test[,feat]), label = test$flag_class)
 # # Train the model
 bst <-
     xgb.train(
-        data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = , colsample_bytree = 0.8,
+        data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.8,
         nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
     )
 
@@ -73,15 +74,38 @@ for (j in bootRounds) {
     bagPredictions_glm = predict(bst, dtrain_t)
     bagTestPredictions_glm = predict(bst, dtest)
     
-    # Build the Bag model
-    dtrain <- xgb.DMatrix(as.matrix(cbind(train[baggedIndex,feat],bagPredictions_rf,svm=bagPredictions_svm,glm=bagPredictions_glm)), 
-                          label = train$flag_class[baggedIndex])
-    dtest <- xgb.DMatrix(as.matrix(cbind(test[,feat],bagTestPredictions_rf,svm=bagTestPredictions_svm,glm=bagTestPredictions_glm)), 
-                         label = test$flag_class)
+    # deep learning
+    test_df <- as.h2o(localH2O, cbind(test[,feat], flag_class=test$flag_class))
+    train_df <- as.h2o(localH2O, cbind(train[OOBIndex,feat],flag_class=train$flag_class[OOBIndex]))
+    train_df_t <- as.h2o(localH2O, cbind(train[baggedIndex,feat],flag_class=train$flag_class[baggedIndex]))
+    BagModel <-
+        h2o.deeplearning(
+            y = 'flag_class', x = names(train_df), data = train_df, classification = T,
+            activation = "RectifierWithDropout",
+            hidden = c(128,64), adaptive_rate = T, rho = 0.99, 
+            epsilon = 1e-4, rate = 0.15, rate_decay = 0.9, # rate_annealing = , 
+            momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
+            nesterov_accelerated_gradient = T, input_dropout_ratio = 0, hidden_dropout_ratios = c(0.5,0.5), 
+            l2 = 3e-6, max_w2 = 4, 
+            loss = 'CrossEntropy', classification_stop = -1,
+            diagnostics = T, variable_importances = F, ignore_const_cols = T,
+            force_load_balance = T, sparse = F, epochs = 90 
+        )
+    bagPredictions_nn = as.data.frame(h2o.predict(object = BagModel, newdata = train_df_t))
+    bagTestPredictions_nn = as.data.frame(h2o.predict(object = BagModel, newdata = test_df))
+    
+    # 2. Build the Bag model ############
+    # xgboost
+    dtrain <- xgb.DMatrix(as.matrix(cbind(train[baggedIndex,feat],rf_n=bagPredictions_rf[,1],rf_y=bagPredictions_rf[,2],
+                                          svm=bagPredictions_svm,glm=bagPredictions_glm,
+                                          nn_n = bagPredictions_nn$X0, nn_y=bagPredictions_nn$X1)), label = train$flag_class[baggedIndex])
+    dtest <- xgb.DMatrix(as.matrix(cbind(test[,feat],rf_n=bagTestPredictions_rf[,1],rf_y=bagTestPredictions_rf[,2],
+                                         svm=bagTestPredictions_svm,glm=bagTestPredictions_glm,
+                                         nn_n = bagTestPredictions_nn$X0, nn_y=bagTestPredictions_nn$X1)),label = test$flag_class)
     # watchlist <- list(eval = dtest, train = dtrain)
     
     BagModel <- xgb.train(data = dtrain, max.depth = 6, eta = 0.15, nround = 500, #watchlist = watchlist, 
-                          colsample_bytree = 0.8, min_child_weight = 10, verbose = 0, 
+                          colsample_bytree = 0.8, min_child_weight = 4, verbose = 0, 
                           nthread = 4, objective = "binary:logistic"#, metrics = 'auc', gamma = 0.1
     )
     
@@ -103,10 +127,10 @@ t$INVEST_PERCENT <- t$INVEST/t$TOT_INVEST * t$Y
 pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=t, sum, na.rm=F)
 names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')
 
-pred_tra <- pred_fin
-save(pred_tra, file='ReadyForBlending/train_result_meta_bagging.RData')
-load('ReadyForBlending/train_result_meta_bagging.RData'); load('ReadyForBlending/test_result_meta_bagging.RData')
-pred_fin <- rbind(pred_t, pred_tra)
+pred_train <- pred_fin; save(pred_train, file='ReadyForBlending/train_result_meta_bagging_20151114.RData')
+pred_test <- pred_fin; save(pred_test, file='ReadyForBlending/test_result_meta_bagging_20151114.RData')
+load('ReadyForBlending/train_result_meta_bagging_20151114.RData'); load('ReadyForBlending/test_result_meta_bagging_20151114.RData')
+pred_fin <- rbind(pred_train, pred_test)
 
 submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
 submit <- merge(submit,pred_fin,all.x = TRUE,all.y = FALSE)
