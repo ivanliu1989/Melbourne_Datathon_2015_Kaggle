@@ -56,14 +56,14 @@ apply(all_n,2, function(x) mean(is.na(x)))
 feat_n <- c(3:76)
 
 library(readr); library(Rtsne); library(ggplot2)
-# tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
+tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
+              perplexity=30, theta=0.5, dims=2)
+
+# tsne <- Rtsne(as.matrix(all_n[,feat_n]), check_duplicates = FALSE, pca = TRUE, 
 #               perplexity=30, theta=0.5, dims=3)
 
-tsne <- Rtsne(as.matrix(all_n[,feat_n]), check_duplicates = FALSE, pca = TRUE, 
-              perplexity=30, theta=0.5, dims=3)
-
 embedding <- as.data.frame(tsne$Y)
-embedding$Class <- as.factor(sub("Class_", "", all_n[,27])) # 27, 60
+embedding$Class <- as.factor(sub("Class_", "", all[,28])) # 27, 60
 
 p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
     geom_point(size=1.25) +
@@ -80,12 +80,12 @@ p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
           panel.border     = element_blank())
 p
 tsne_3d_test <- embedding[,1:3]; names(tsne_3d_test) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
-tsne_3d <- embedding[,1:3]; names(tsne_3d) <- c('tsne_3d_1', 'tsne_3d_2', 'tsne_3d_3')
+tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_3d_1', 'tsne_3d_2')
 
 # load('tsne_dimemsions.RData')
 save(tsne_3d, tsne_3d_test, file='S_tsne_dimemsions_new.RData')
 
-all <- cbind(all, tsne_3d)
+all <- cbind(all, tsne_2d)
 all_n <- cbind(all_n, tsne_3d_test)
 
 ##########################

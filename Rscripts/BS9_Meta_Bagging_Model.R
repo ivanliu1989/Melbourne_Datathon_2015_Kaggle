@@ -10,8 +10,10 @@ test <- train[train$EVENT_ID %in% c(101150834,101153072,101149398),]#validation
 train <- train[!train$EVENT_ID %in% c(101150834,101153072,101149398),]
 train$flag_class <- ifelse(train$flag_class == 1, 1, 0)
 test$flag_class <- ifelse(test$flag_class == 1, 1, 0)
-feat <- colnames(train)[c(3:(ncol(train)-2))] # train
+feat <- colnames(train)[c(3:(ncol(train)-4),29,30)] # train
 # feat <- colnames(train)[c(3:(ncol(train)-3), ncol(train))] # test
+
+feat <- feat[!feat %in% c('FREQUENCY','WIN_HIST','BACK_RATIO_BET')]
 
 #############################
 ### Raw prediction ##########
@@ -23,7 +25,7 @@ watchlist <- list(eval = dtest, train = dtrain)
 # # Train the model
     bst <-
         xgb.train(
-            data = dtrain, max.depth = 6, eta = 0.02, nround = 1000, maximize = F, min_child_weight = 2, colsample_bytree = 0.8,
+            data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.8,
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
             ,watchlist = watchlist
             )
