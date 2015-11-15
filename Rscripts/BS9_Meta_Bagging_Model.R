@@ -6,10 +6,10 @@ load('../S9_train_validation_test_20151110.RData');ls()
 options(scipen=999);set.seed(19890624)
 # localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 
-train <- train
-test <- validation
-train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
-test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
+test <- train[train$EVENT_ID %in% c(101150834,101153072,101149398),]#validation
+train <- train[!train$EVENT_ID %in% c(101150834,101153072,101149398),]
+train$flag_class <- ifelse(train$flag_class == 1, 1, 0)
+test$flag_class <- ifelse(test$flag_class == 1, 1, 0)
 feat <- colnames(train)[c(3:(ncol(train)-2))] # train
 # feat <- colnames(train)[c(3:(ncol(train)-3), ncol(train))] # test
 
@@ -18,14 +18,14 @@ feat <- colnames(train)[c(3:(ncol(train)-2))] # train
 #############################
 dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
 dtest <- xgb.DMatrix(as.matrix(test[,feat]), label = test$flag_class)
-# watchlist <- list(eval = dtest, train = dtrain)
+watchlist <- list(eval = dtest, train = dtrain)
 
 # # Train the model
     bst <-
         xgb.train(
-            data = dtrain, max.depth = 6, eta = 0.25, nround = 250, maximize = F, min_child_weight = 2, colsample_bytree = 0.8,
+            data = dtrain, max.depth = 6, eta = 0.02, nround = 1000, maximize = F, min_child_weight = 2, colsample_bytree = 0.8,
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
-            #,watchlist = watchlist
+            ,watchlist = watchlist
             )
 
 # # Make prediction
@@ -122,9 +122,9 @@ testPredictions_xb = testPredictions_xb/(j+1)
 #########################
 val <- test
 val$Y <- testPredictions_xb
-tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
+tot_invest <- aggregate(TOTAL_BET_SIZE ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$Y
+val$INVEST_PERCENT <- val$TOTAL_BET_SIZE/val$TOT_INVEST * val$Y
 pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=val, sum, na.rm=F)
 pred_fin2 <- aggregate(Y ~ ACCOUNT_ID, data=val, mean, na.rm=F)
 val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=val, sum, na.rm=F)
@@ -143,8 +143,13 @@ confusionMatrix(as.factor(val_fin$PRED_PROFIT_LOSS_3), prediction)
 rocobj <- roc(val$flag_class, val$Y);print(auc(rocobj)) 
 print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
 
-val$SINGLE_INVEST <- val$INVEST * ifelse(val$Y>=0.5, 1,-1)
-pred_fin3 <- aggregate(SINGLE_INVEST ~ ACCOUNT_ID, data=val, sum, na.rm=F)
-pred_fin3$Y <- ifelse(pred_fin3$SINGLE_INVEST >=0, 1,0)
-rocobj <- roc(val_fin$PRED_PROFIT_LOSS_3, pred_fin3$Y);print(auc(rocobj)) # Invest * Possibility
-print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
+### Plot & feature importance ###
+model <- xgb.dump(bst, with.stats = T)
+model[1:10]
+# Get the feature real names
+names <- dimnames(as.matrix(train[,feat]))[[2]]
+# Compute feature importance matrix
+importance_matrix <- xgb.importance(names, model = bst)
+# Nice graph
+xgb.plot.importance(importance_matrix)
+xgb.plot.tree(feature_names = names, model = bst, n_first_tree = 1)

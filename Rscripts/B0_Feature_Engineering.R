@@ -112,8 +112,8 @@ all_n <- cbind(all_n, tsne_3d_test)
 ######################################
 library(caret)
 feat <- colnames(all)[c(3:76)]
-dt <- all[,feat]
-centroids <- classDist(as.matrix(dt), as.factor(all$flag_class))
+dt <- train[,feat]
+centroids <- classDist(as.matrix(dt), as.factor(train$flag_class))
 distances <- predict(centroids, dt)
 distances <- as.data.frame(distances)
 head(distances)

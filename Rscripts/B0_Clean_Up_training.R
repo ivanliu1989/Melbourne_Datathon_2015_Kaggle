@@ -4,8 +4,10 @@ feat.eng <- function(d){
     d$BID_TYP <- trimws(d$BID_TYP)
     
     #the columns of interest 
-    requiredColumns <- c('ACCOUNT_ID','EVENT_ID','BID_TYP','STATUS_ID','PLACED_DATE','TAKEN_DATE','BET_PRICE','OFF_DT',
-                         'PRICE_TAKEN','INPLAY_BET','BET_SIZE','PROFIT_LOSS','IS_COUNTRY', 'BET_COUNTRY', 'BET_OP_COUNTRY', 'BET_COUNTRY_ONE', 'BET_COUNTRY_TWO')
+    requiredColumns <- c('ACCOUNT_ID','EVENT_ID','BID_TYP','INPLAY_BET','STATUS_ID',
+                         'PLACED_DATE','TAKEN_DATE','BET_PRICE','PRICE_TAKEN','BET_SIZE','PROFIT_LOSS',
+                         'OFF_DT','SETTLED_DATE','CANCELLED_DATE',
+                         'IS_COUNTRY', 'BET_COUNTRY', 'BET_OP_COUNTRY', 'BET_COUNTRY_ONE', 'BET_COUNTRY_TWO')
     
     #rows of interest - just the settled bets
     requiredRows <- which(d$STATUS_ID == 'S')
@@ -36,7 +38,34 @@ feat.eng <- function(d){
     d$PLACED_DATE <- strptime(d$PLACED_DATE, "%d/%m/%Y %I:%M:%S %p")
     d$TAKEN_DATE <- strptime(d$TAKEN_DATE, "%d/%m/%Y %I:%M:%S %p")
     d$OFF_DT <- strptime(d$OFF_DT, "%d/%m/%Y %I:%M:%S %p")
+    d$SETTLED_DATE <- strptime(d$SETTLED_DATE, "%d/%m/%Y %I:%M:%S %p")
     d$PLACED_TAKEN_TIME <- as.numeric(d$TAKEN_DATE - d$PLACED_DATE)
+    d$MATCH_DURATION <- as.numeric(d$SETTLED_DATE - d$OFF_DT)
+    d$PLACED_DATE <- NULL
+    d$TAKEN_DATE <- NULL
+    d$OFF_DT <- NULL
+    d$CANCELLED_DATE <- NULL
+    
+    dc$PLACED_DATE <- strptime(dc$PLACED_DATE, "%d/%m/%Y %I:%M:%S %p")
+    dc$CANCELLED_DATE <- strptime(dc$CANCELLED_DATE, "%d/%m/%Y %I:%M:%S %p")
+    dc$CANCELLED_INTERVAL <- as.numeric(dc$CANCELLED_DATE - dc$PLACED_DATE)
+    dc$CANCELLED_DATE <- NULL
+    dc$PLACED_DATE <- NULL
+    dc$OFF_DT <- NULL
+    dc$CANCELLED_DATE <- NULL
+    dc$SETTLED_DATE <- NULL
+    dc$PRICE_TAKEN <- NULL
+    dc$TAKEN_DATE <- NULL
+    dc$PROFIT_LOSS <- NULL
+    
+    dl$CANCELLED_DATE <- NULL
+    dl$PLACED_DATE <- NULL
+    dl$OFF_DT <- NULL
+    dl$CANCELLED_DATE <- NULL
+    dl$SETTLED_DATE <- NULL
+    dl$PRICE_TAKEN <- NULL
+    dl$TAKEN_DATE <- NULL
+    dl$PROFIT_LOSS <- NULL
     
     #diff bet and taken
     d$diff_bt <- (d$PRICE_TAKEN - d$BET_PRICE)/(d$BET_PRICE)

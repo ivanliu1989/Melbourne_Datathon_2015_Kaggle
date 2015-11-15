@@ -36,6 +36,18 @@ d$BET_OP_COUNTRY <- ifelse(((d$COUNTRY_OF_RESIDENCE_NAME == d$MATCH_COUNTRY_1) |
 d$BET_COUNTRY_ONE <- ifelse(d$SELECTION_NAME == d$MATCH_COUNTRY_1, 1, 0)
 d$BET_COUNTRY_TWO <- ifelse(d$SELECTION_NAME == d$MATCH_COUNTRY_2, 1, 0)
 
-
 dt <- d
+
+### Remove useless features
+dt$BET_ID <- NULL
+dt$BET_TRANS_ID <- NULL
+dt$MATCH_BET_ID <- NULL
+dt$PARENT_EVENT_ID <- NULL
+dt$MATCH <- NULL
+dt$EVENT_NAME <- NULL
+head(dt)
+
+### Add some useful features
+
+
 save(dt, file='../Datathon_Full_Dataset/cleaned_raw_data.RData' )
