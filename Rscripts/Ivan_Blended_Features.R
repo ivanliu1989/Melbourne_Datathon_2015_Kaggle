@@ -72,23 +72,29 @@ dc <- data.table(dc)
     d[,AVG_BET_SIZE:=mean(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
     d[,MAX_BET_SIZE:=max(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
     d[,MIN_BET_SIZE:=min(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
-    d[,STDEV_BET_SIZE:=ifelse(is.na(sd(BET_SIZE, na.rm = T)), 0, sd(BET_SIZE, na.rm = T)), 
-      by = c('ACCOUNT_ID', 'EVENT_ID')] #
+    d[,STDEV_BET_SIZE:=ifelse(is.na(sd(BET_SIZE, na.rm = T)), 0, sd(BET_SIZE, na.rm = T)),by = c('ACCOUNT_ID', 'EVENT_ID')] #
     d[,TOTAL_BET_SIZE:=sum(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
     feat_1 <- d[,.(ACCOUNT_ID, EVENT_ID, TRANSACTION_COUNT, AVG_BET_SIZE, MAX_BET_SIZE, MIN_BET_SIZE, STDEV_BET_SIZE, TOTAL_BET_SIZE)]
     feat_1 <- unique(feat_1)
     
-    dc[,TRANSACTION_COUNT:=length(BET_SIZE), by = c('ACCOUNT_ID', 'EVENT_ID')] #
-    dc[,AVG_BET_SIZE:=mean(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
-    dc[,MAX_BET_SIZE:=max(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
-    dc[,MIN_BET_SIZE:=min(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
-    dc[,STDEV_BET_SIZE:=ifelse(is.na(sd(BET_SIZE, na.rm = T)), 0, sd(BET_SIZE, na.rm = T)), 
-      by = c('ACCOUNT_ID', 'EVENT_ID')] #
-    dc[,TOTAL_BET_SIZE:=sum(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
-    feat_1_c <- dc[,.(ACCOUNT_ID, EVENT_ID, TRANSACTION_COUNT, AVG_BET_SIZE, MAX_BET_SIZE, MIN_BET_SIZE, STDEV_BET_SIZE, TOTAL_BET_SIZE)]
+    dc[,TRANSACTION_COUNT_C:=length(BET_SIZE), by = c('ACCOUNT_ID', 'EVENT_ID')] #
+    dc[,AVG_BET_SIZE_C:=mean(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
+    dc[,MAX_BET_SIZE_C:=max(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
+    dc[,MIN_BET_SIZE_C:=min(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
+    dc[,STDEV_BET_SIZE_C:=ifelse(is.na(sd(BET_SIZE, na.rm = T)), 0, sd(BET_SIZE, na.rm = T)),by = c('ACCOUNT_ID', 'EVENT_ID')] #
+    dc[,TOTAL_BET_SIZE_C:=sum(BET_SIZE, na.rm = T), by = c('ACCOUNT_ID', 'EVENT_ID')] #
+    feat_1_c <- dc[,.(ACCOUNT_ID, EVENT_ID, TRANSACTION_COUNT_C, AVG_BET_SIZE_C, MAX_BET_SIZE_C, MIN_BET_SIZE_C, STDEV_BET_SIZE_C, TOTAL_BET_SIZE_C)]
     feat_1_c <- unique(feat_1_c)
     
+feat_1 <- merge(feat_1, feat_1_c, all.x = T, all.y = F, by = c('ACCOUNT_ID', 'EVENT_ID'))
+
 # 2. Taken time / placed hour
+    d[,SD_PLACED_TAKEN_TIME:=sd(PLACED_TAKEN_TIME, na.rm=T), by = c('ACCOUNT_ID')] 
+    d[,PERC_PLACED_TAKEN_TIME_1:=quantile(PLACED_TAKEN_TIME, probs = 0, na.rm=T), by = c('ACCOUNT_ID')] 
+    d[,PERC_PLACED_TAKEN_TIME_2:=quantile(PLACED_TAKEN_TIME, probs = 0.25, na.rm=T), by = c('ACCOUNT_ID')] 
+    d[,PERC_PLACED_TAKEN_TIME_3:=quantile(PLACED_TAKEN_TIME, probs = 0.5, na.rm=T), by = c('ACCOUNT_ID')] 
+    d[,PERC_PLACED_TAKEN_TIME_4:=quantile(PLACED_TAKEN_TIME, probs = 0.75, na.rm=T), by = c('ACCOUNT_ID')] 
+    d[,PERC_PLACED_TAKEN_TIME_5:=quantile(PLACED_TAKEN_TIME, probs = 1, na.rm=T), by = c('ACCOUNT_ID')] 
     
 # 3. Win hist / profit / margin
     
