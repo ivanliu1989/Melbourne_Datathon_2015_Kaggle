@@ -21,10 +21,10 @@ apply(all_n,2, function(x) mean(is.na(x)))
 feat <- c(3:(ncol(all)-2))
 library(readr); library(Rtsne); library(ggplot2)
 tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
-              perplexity=30, theta=0.5, dims=2)
+              perplexity=30, theta=0.5, dims=3)
 
 embedding <- as.data.frame(tsne$Y)
-embedding$Class <- as.factor(sub("Class_", "", all[,28])) # 27, 60
+embedding$Class <- as.factor(sub("Class_", "", all[,45])) # 27, 60
 
 p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
     geom_point(size=1.25) +
