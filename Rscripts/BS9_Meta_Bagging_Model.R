@@ -13,8 +13,7 @@ train$flag_class <- ifelse(train$flag_class == 1, 1, 0)
 test$flag_class <- ifelse(test$flag_class == 1, 1, 0)
 feat <- colnames(train)[c(3:(ncol(train)-2))] # train
 # feat <- colnames(train)[c(3:(ncol(train)-3), ncol(train))] # test
-
-feat <- feat[!feat %in% c('FREQUENCY','WIN_HIST','BACK_RATIO_BET')]
+# feat <- feat[!feat %in% c('FREQUENCY','WIN_HIST','BACK_RATIO_BET')]
 
 #############################
 ### Raw prediction ##########

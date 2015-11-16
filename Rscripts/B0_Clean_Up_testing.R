@@ -41,6 +41,9 @@ VAR_ALL <- aggregate(VAR ~ ACCOUNT_ID + EVENT_ID + STATUS_ID ,data=test, sum)
 VAR_ALL$VAR <- VAR_ALL$VAR / TRANSACTION_COUNT_ALL$TRANSACTION_COUNT
 VAR_ALL$STDEV_BET_SIZE <- VAR_ALL$VAR ** 0.5
 VAR_ALL$VAR <- NULL
+sd_bet_size <- VAR_ALL[VAR_ALL$STATUS_ID == 'S',]
+sd_bet_size_c <- VAR_ALL[VAR_ALL$STATUS_ID == 'C',]
+save(sd_bet_size, sd_bet_size_c , file='test_sd_bet_size.RData')
 
 # Final Bonus Feature
 test_clean <- test[!duplicated(test[,c(1:4)]),c(1:4)]

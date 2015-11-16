@@ -1,7 +1,7 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc(); library(caret)
-load('data/S_complete_data_clean_up.RData');
-load('data/S_complete_data_clean_up_test.RData');ls()
+# load('data/S9_train_validation_test_20151110_test.RData');
+load('data/9_train_validation_test_20151108.RData');ls()
 
 #################################
 # 0. Test feature complete ######
