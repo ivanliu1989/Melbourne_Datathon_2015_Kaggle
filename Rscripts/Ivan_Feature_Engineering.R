@@ -49,12 +49,14 @@ all_n <- cbind(all_n, tsne_2d)
 # 3. PCA ########
 #################
 library(caret)
+INVEST <- all$TOTAL_BET_SIZE
 prePro <- preProcess(all[,feat], method = c("center", "scale"))
 all[,feat] <- predict(prePro, all[,feat])
+all <- cbind(all, INVEST=INVEST)
 
 prePro <- preProcess(all[,feat], method = c("pca"), thresh = 0.99)
 all_pca <- predict(prePro, all[,feat])
-all_pca <- cbind(all[,1:2], all_pca, all[, 44:45])
+all_pca <- cbind(all[,1:2], all_pca, all[, 44:45], INVEST=INVEST)
 all <- all_pca
 
 ######################
@@ -71,7 +73,7 @@ validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]
 train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398),]
 dim(train); dim(validation)
 
-save(train, validation, total, test, file='data/Ivan_Train_Test_PCA_20151116.RData')
+save(train, validation, total, test, file='../Ivan_Train_Test_Raw_20151116.RData')
 
 # test
 # all_n <- all_n[,c(1:25, 28:30, 26,27)]

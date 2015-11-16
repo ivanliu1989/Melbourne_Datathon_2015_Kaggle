@@ -1,25 +1,25 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-# load('../S9_train_validation_test_20151110.RData');ls()
-# load('data/S9_train_validation_test_20151110_test.RData');ls()
+# load('../Ivan_Train_Test_Scale_Center_20151116.RData');ls()
+# load('../Ivan_Train_Test_PCA_20151116.RData');ls()
+load('../Ivan_Train_Test_Raw_20151116.RData');ls()
 options(scipen=999);set.seed(19890624)
-load('train_20151115.RData')
 # localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 
-test <- train[train$EVENT_ID %in% c(101150834,101153072,101149398),]#validation
-train <- train[!train$EVENT_ID %in% c(101150834,101153072,101149398),]
-train$flag_class <- ifelse(train$flag_class == 1, 1, 0)
-test$flag_class <- ifelse(test$flag_class == 1, 1, 0)
-feat <- colnames(train)[c(3:(ncol(train)-2))] # train
-# feat <- colnames(train)[c(3:(ncol(train)-3), ncol(train))] # test
-# feat <- feat[!feat %in% c('FREQUENCY','WIN_HIST','BACK_RATIO_BET')]
+test <- train[train$EVENT_ID %in% c(101183757,101183885,101184013),]#validation
+train <- train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
+test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
+validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
+feat <- colnames(train)[c(3:(ncol(train)-3))] # train
 
 #############################
 ### Raw prediction ##########
 #############################
 dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
 dtest <- xgb.DMatrix(as.matrix(test[,feat]), label = test$flag_class)
+dvalid <- xgb.DMatrix(as.matrix(validation[,feat]), label = validation$flag_class)
 watchlist <- list(eval = dtest, train = dtrain)
 
 # # Train the model
@@ -32,6 +32,7 @@ watchlist <- list(eval = dtest, train = dtrain)
 
 # # Make prediction
 testPredictions_xb = predict(bst,dtest)
+# testPredictions_xb = predict(bst,dvalid)
 # testPredictions_nn = predict(bst,dtest)
 
 #################################
@@ -123,10 +124,11 @@ testPredictions_xb = testPredictions_xb/(j+1)
 ### Validation ##########
 #########################
 val <- test
+# val <- validation
 val$Y <- testPredictions_xb
-tot_invest <- aggregate(TOTAL_BET_SIZE ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
+tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-val$INVEST_PERCENT <- val$TOTAL_BET_SIZE/val$TOT_INVEST * val$Y
+val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$Y
 pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=val, sum, na.rm=F)
 pred_fin2 <- aggregate(Y ~ ACCOUNT_ID, data=val, mean, na.rm=F)
 val_fin <- aggregate(flag_regr ~ ACCOUNT_ID, data=val, sum, na.rm=F)
