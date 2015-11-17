@@ -40,11 +40,12 @@ p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
           axis.line        = element_blank(),
           panel.border     = element_blank())
 p
-tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_3d_1', 'tsne_3d_2')
+tsne_2d <- embedding[,1:3]; names(tsne_2d) <- c('tsne_3d_1', 'tsne_3d_2','tsne_3d_3')
 
 all <- cbind(all, tsne_2d)
 all_n <- cbind(all_n, tsne_2d)
 
+all <- all[,c(1:43, 46:48, 44:45)]
 #################
 # 3. PCA ########
 #################
