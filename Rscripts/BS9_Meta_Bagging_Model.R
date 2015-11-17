@@ -1,9 +1,9 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-# load('../Ivan_Train_Test_Scale_Center_20151116.RData');ls()
+load('../Ivan_Train_Test_Scale_Center_20151116.RData');ls()
 # load('../Ivan_Train_Test_PCA_20151116.RData');ls()
-load('../Ivan_Train_Test_Raw_20151116.RData');ls()
+# load('../Ivan_Train_Test_Raw_20151116.RData');ls()
 options(scipen=999);set.seed(19890624)
 # localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 
@@ -12,7 +12,7 @@ train <- train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
-feat <- colnames(train)[c(3:(ncol(train)-3))] # train
+feat <- colnames(train)[c(3:(ncol(train)-5), 47,48)] # train
 
 #############################
 ### Raw prediction ##########
@@ -31,8 +31,8 @@ watchlist <- list(eval = dtest, train = dtrain)
             )
 
 # # Make prediction
-testPredictions_xb = predict(bst,dtest)
-# testPredictions_xb = predict(bst,dvalid)
+# testPredictions_xb = predict(bst,dtest)
+testPredictions_xb = predict(bst,dvalid)
 # testPredictions_nn = predict(bst,dtest)
 
 #################################
@@ -123,8 +123,8 @@ testPredictions_xb = testPredictions_xb/(j+1)
 #########################
 ### Validation ##########
 #########################
-val <- test
-# val <- validation
+# val <- test
+val <- validation
 val$Y <- testPredictions_xb
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
