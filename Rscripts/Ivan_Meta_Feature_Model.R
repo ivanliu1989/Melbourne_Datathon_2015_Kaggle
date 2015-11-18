@@ -15,7 +15,7 @@ feat <- feat[!feat %in% c('tsne_3d_1','tsne_3d_2','tsne_3d_3')]
 ########################################
 ### Meta model random forest ###########
 ########################################
-OOBModel = randomForest(x=train[,feat], y=as.factor(train$flag_class), replace=F, ntree=200, do.trace=T, mtry=7)
+OOBModel = randomForest(x=train[,feat], y=as.factor(train$flag_class), replace=F, ntree=100, do.trace=T, mtry=7)
 bagPredictions_rf = predict(OOBModel, train, type="prob")
 bagTestPredictions_rf = predict(OOBModel, test, type="prob")
 bagValidPredictions_rf = predict(OOBModel, validation, type="prob")
@@ -24,26 +24,45 @@ bagValidPredictions_rf = predict(OOBModel, validation, type="prob")
 #########################
 ### Xgboost #############
 #########################
-dtrain <- xgb.DMatrix(as.matrix(cbind(train[,feat],rf_n=bagPredictions_rf[,1],rf_y=bagPredictions_rf[,2])), label = train$flag_class)
-dtest <- xgb.DMatrix(as.matrix(cbind(test[,feat],rf_n=bagTestPredictions_rf[,1],rf_y=bagTestPredictions_rf[,2])),label = test$flag_class)
-dvalid <- xgb.DMatrix(as.matrix(cbind(validation[,feat],rf_n=bagValidPredictions_rf[,1],rf_y=bagValidPredictions_rf[,2])),label = validation$flag_class)
+dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
+dtest <- xgb.DMatrix(as.matrix(test[,feat]),label = test$flag_class)
+dvalid <- xgb.DMatrix(as.matrix(validation[,feat]),label = validation$flag_class)
 watchlist <- list(eval = dtest, train = dtrain)
+# 1. GBM
 bst <-
     xgb.train(
         data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.8,
         nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
         ,watchlist = watchlist
     )
-p = predict(bst,dtest)
-p = predict(bst,dvalid)
+# p_gbm = predict(bst,dtest)
+p_gbm = predict(bst,dvalid)
 
+# 2. RF
+bst <-
+    xgb.train(
+        data = dtrain, max.depth = 9, eta = 0.05, nround = 1, maximize = F, watchlist = watchlist, min_child_weight = 2, colsample_bytree = 0.8,
+        nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1000, gamma = 0.1
+    )
+# p_rf = predict(bst,dtest)
+p_rf = predict(bst,dvalid)
+
+# 3. generalized linear model
+    bst <- xgb.train(
+        data = dtrain, nround = 100, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
+        nthread = 4, alpha = 1e-3, lambda = 1e-6, print.every.n = 10
+    )
+# p_glm = predict(bst,dtest)
+p_glm = predict(bst,dvalid)
+
+p <- (p_gbm + p_rf + p_glm)/3
 
 #########################
 ### Validation ##########
 #########################
 # val <- test
 val <- validation
-val$Y <- bagValidPredictions_rf[,2]
+val$Y <- p
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$Y
