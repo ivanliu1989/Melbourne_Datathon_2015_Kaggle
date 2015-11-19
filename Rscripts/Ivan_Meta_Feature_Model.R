@@ -24,6 +24,11 @@ bagValidPredictions_rf = predict(OOBModel, validation, type="prob")
 #########################
 ### Xgboost #############
 #########################
+# train$flag_margin <- train$flag_regr/train$INVEST
+# test$flag_margin <- test$flag_regr/test$INVEST
+# validation$flag_margin <- validation$flag_regr/validation$INVEST
+# reg:linear
+# binary:logistic
 dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
 dtest <- xgb.DMatrix(as.matrix(test[,feat]),label = test$flag_class)
 dvalid <- xgb.DMatrix(as.matrix(validation[,feat]),label = validation$flag_class)
@@ -31,7 +36,7 @@ watchlist <- list(eval = dtest, train = dtrain)
 # 1. GBM
 bst <-
     xgb.train(
-        data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.8,
+        data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.3,
         nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
         ,watchlist = watchlist
     )
@@ -41,7 +46,7 @@ p_gbm = predict(bst,dvalid)
 # 2. RF
 bst <-
     xgb.train(
-        data = dtrain, max.depth = 9, eta = 0.05, nround = 1, maximize = F, watchlist = watchlist, min_child_weight = 2, colsample_bytree = 0.8,
+        data = dtrain, max.depth = 9, eta = 0.15, nround = 1, maximize = F, watchlist = watchlist, min_child_weight = 2, colsample_bytree = 0.8,
         nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1000, gamma = 0.1
     )
 # p_rf = predict(bst,dtest)
@@ -55,14 +60,15 @@ p_rf = predict(bst,dvalid)
 # p_glm = predict(bst,dtest)
 p_glm = predict(bst,dvalid)
 
-p <- (p_gbm + p_rf + p_glm)/3
+p <- 0.75*p_gbm + 0.25*p_glm
 
 #########################
 ### Validation ##########
 #########################
 # val <- test
 val <- validation
-val$Y <- p
+# p <- ifelse(p_gbm>0.5, 1, 0)
+val$Y <- p_gbm
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$Y
