@@ -7,10 +7,8 @@ Created on Fri Oct 20 23:18:38 2015
 import theano
 import numpy as np
 import pandas as pd
-import lasagne as lg
 from util import float32
 from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import StandardScaler
 from lasagne.layers import DenseLayer
 from lasagne.layers import InputLayer
 from lasagne.layers import DropoutLayer
@@ -21,7 +19,6 @@ from lasagne.updates import nesterov_momentum
 from nolearn.lasagne import NeuralNet
 from adjust_variable import AdjustVariable
 from early_stopping import EarlyStopping
-from sklearn.decomposition import PCA
 
 def load_train_data(path):
     df = pd.read_csv(path)
@@ -84,19 +81,19 @@ for i in range(1,31):
                      
                      dropoutf_p=0.15,
     
-                     dense0_num_units=800,
+                     dense0_num_units=500,
                      dense0_nonlinearity=rectify,
                      #dense0_W=lg.init.Uniform(),
     
                      dropout0_p=0.25,
     
-                     dense1_num_units=500,
+                     dense1_num_units=250,
                      dense1_nonlinearity=rectify,
                      #dense1_W=lg.init.Uniform(),
     
                      dropout1_p=0.25,
                      
-                     dense2_num_units=300,
+                     dense2_num_units=150,
                      dense2_nonlinearity=rectify,
                      #dense2_W=lg.init.Uniform(),
                      
@@ -112,7 +109,7 @@ for i in range(1,31):
                      update_momentum=theano.shared(float32(0.9)),
                      
                      on_epoch_finished=[
-                            AdjustVariable('update_learning_rate', start=0.015, stop=0.001),
+                            AdjustVariable('update_learning_rate', start=0.15, stop=0.001),
                             AdjustVariable('update_momentum', start=0.9, stop=0.999),
                             EarlyStopping(patience=20)
                             ],
@@ -122,18 +119,8 @@ for i in range(1,31):
                      max_epochs=150)
                      
     net0.fit(X, y)
-    # 0.489205 200 0.5 150 0.5 100 0.01
-    # 0.480746 320 0.5 160 0.5 80 0.01
-    # 0.476469 726 0.5 243 0.5 81 0.01 (50)
-    # 0.472083 726 0.5 363 0.5 182 0.01 (47)
-    # 0.467849 726 0.5 243 0.5 81 0.01 (42)(adjustvariable, earlystopping) 
-    # 0.467454 726 0.5 243 0.5 81 0.01 (37)(adjustvariable, earlystopping)
+    # 0.472150 0.15 800 0.25 500 0.25 300 0.25 | 0.015
     
-    # 0.474071 0.15 1000 0.25 500 0.25 (46)
-    # 0.430886 0.15 1000 0.25 500 0.25 (44)
-    # 0.467751 0.15 1000 0.25 500 0.25 (28)
-    # 0.427678 0.15 800 0.25 500 0.25 300 0.25 (62)
-    # 0.423485 0.15 800 0.25 500 0.25 300 0.25 (65) rectify
     
     # Submission 
     make_submission(net0, X_test, ids, encoder, name='lasagne/nnet_3layers2_'+str(i)+'.csv')

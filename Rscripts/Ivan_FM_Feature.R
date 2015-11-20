@@ -13,7 +13,7 @@ options(scipen=999);set.seed(19890624)
 #########################
 ### Validation ##########
 #########################
-p <- read.csv('PythonScripts/lasagne/nnet_3layers2_2.csv', header = F)
+p <- read.csv('PythonScripts/lasagne/nnet_3layers2_5.csv', header = F)
 val <- validation
 val$Y <- p[,2]
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
@@ -38,8 +38,10 @@ rocobj <- roc(val$flag_class, val$Y);print(auc(rocobj))
 print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
 
 
-
-
+p1 <- p
+p2 <- p
+p3 <- p
+p4 <- p
 #########################
 ### Submission ##########
 #########################
