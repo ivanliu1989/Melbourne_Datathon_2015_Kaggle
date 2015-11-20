@@ -5,6 +5,7 @@ Created on Fri Oct 20 23:18:38 2015
 @author: Ivan
 """
 import theano
+import lasagne as lg
 import numpy as np
 import pandas as pd
 from util import float32
@@ -22,35 +23,28 @@ from early_stopping import EarlyStopping
 
 def load_train_data(path):
     df = pd.read_csv(path)
-    #df.ix[:,1:94] = df.ix[:,1:94].apply(np.log1p)
     X = df.values.copy()
     np.random.shuffle(X)
     X, labels = X[:, 2:43].astype(np.float32), X[:, 47]
     encoder = LabelEncoder()
     y = encoder.fit_transform(labels).astype(np.int32)
-    #scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
-    #X = scaler.fit_transform(X)
-    return X, y, encoder#, scaler
+    return X, y, encoder
     
-def load_test_data(path): #,scaler
+def load_test_data(path):
     df = pd.read_csv(path)
-    #df.ix[:,1:94] = df.ix[:,1:94].apply(np.log1p)
     X = df.values.copy()
     X, ids = X[:, 2:43].astype(np.float32), X[:, 0:1].astype(int)
-    #X = scaler.transform(X)
     return X, ids
     
 def make_submission(clf, X_test, ids, encoder, name='lasagne_nnet.csv'):
     y_prob = net0.predict_proba(X_test)
-    #submission = pd.read_csv('../data/sampleSubmission.csv')
-    #submission.set_index('id', inplace=True)
-    #submission[:] = y_prob
     np.savetxt(name, y_prob, delimiter=",")
     print("Wrote submission to file {}.".format(name))
 
 # Load Data    
+np.random.seed(888888)
 X, y, encoder = load_train_data('../../python_train.csv')
-X_test, ids = load_test_data('../../python_validation.csv')
+X_test, ids = load_test_data('../../python_test.csv')
 num_classes = len(encoder.classes_)
 num_features = X.shape[1]
 
@@ -63,8 +57,6 @@ Comb = np.append(X, X_test, axis=0)
 
 # Train
 for i in range(1,31):
-    
-    np.random.seed(8)
     
     layers0 = [('input', InputLayer),
                ('dropoutf', DropoutLayer),
@@ -81,19 +73,19 @@ for i in range(1,31):
                      
                      dropoutf_p=0.15,
     
-                     dense0_num_units=1200,
+                     dense0_num_units=800,
                      dense0_nonlinearity=rectify,
                      #dense0_W=lg.init.Uniform(),
     
                      dropout0_p=0.25,
     
-                     dense1_num_units=800,
+                     dense1_num_units=500,
                      dense1_nonlinearity=rectify,
                      #dense1_W=lg.init.Uniform(),
     
                      dropout1_p=0.25,
                      
-                     dense2_num_units=500,
+                     dense2_num_units=300,
                      dense2_nonlinearity=rectify,
                      #dense2_W=lg.init.Uniform(),
                      
@@ -114,13 +106,15 @@ for i in range(1,31):
                             EarlyStopping(patience=20)
                             ],
                      
-                     eval_size=0.1,
+                     eval_size=0.2,
                      verbose=1,
                      max_epochs=150)
                      
     net0.fit(X, y)
-    # 0.472150 0.15 800 0.25 500 0.25 300 0.25 | 0.015
-    
+    # 0.467144 0.15 800 0.25 500 0.25 300 0.25 | 0.015
+    # 0.474623 0.15 1200 0.25 800 0.25 500 0.25 | 0.015
+    # 0.473870 0.15 800 0.25 500 0.25 300 0.25 | 0. leaky_recify
+    # 0.473185 0.15 800 0.25 500 0.25 300 0.25 | 0. lg.init.uniform()
     
     # Submission 
-    make_submission(net0, X_test, ids, encoder, name='lasagne/nnet_3layers2_'+str(i)+'.csv')
+    make_submission(net0, X_test, ids, encoder, name='lasagne/lasagne_3L_800_500_300_0015'+str(i)+'.csv')

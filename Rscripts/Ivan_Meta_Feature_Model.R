@@ -4,8 +4,8 @@ library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data
 load('data/Ivan_Train_Test_Scale_Center_20151116.RData');ls()
 options(scipen=999);set.seed(19890624)
 
-test <- train[train$EVENT_ID %in% c(101183757,101183885,101184013),]#validation
-train <- train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+test <- validation
+train <- train#[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
@@ -36,7 +36,7 @@ watchlist <- list(eval = dtest, train = dtrain)
 # 1. GBM
 bst <-
     xgb.train(
-        data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.3,
+        data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.5,
         nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
         ,watchlist = watchlist
     )
