@@ -81,19 +81,19 @@ for i in range(1,31):
                      
                      dropoutf_p=0.15,
     
-                     dense0_num_units=500,
+                     dense0_num_units=1200,
                      dense0_nonlinearity=rectify,
                      #dense0_W=lg.init.Uniform(),
     
                      dropout0_p=0.25,
     
-                     dense1_num_units=250,
+                     dense1_num_units=800,
                      dense1_nonlinearity=rectify,
                      #dense1_W=lg.init.Uniform(),
     
                      dropout1_p=0.25,
                      
-                     dense2_num_units=150,
+                     dense2_num_units=500,
                      dense2_nonlinearity=rectify,
                      #dense2_W=lg.init.Uniform(),
                      
@@ -109,12 +109,12 @@ for i in range(1,31):
                      update_momentum=theano.shared(float32(0.9)),
                      
                      on_epoch_finished=[
-                            AdjustVariable('update_learning_rate', start=0.15, stop=0.001),
+                            AdjustVariable('update_learning_rate', start=0.015, stop=0.001),
                             AdjustVariable('update_momentum', start=0.9, stop=0.999),
                             EarlyStopping(patience=20)
                             ],
                      
-                     eval_size=0.2,
+                     eval_size=0.1,
                      verbose=1,
                      max_epochs=150)
                      

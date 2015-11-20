@@ -13,7 +13,7 @@ options(scipen=999);set.seed(19890624)
 #########################
 ### Validation ##########
 #########################
-p <- read.csv('PythonScripts/lasagne/nnet_3layers2_5.csv', header = F)
+p <- read.csv('PythonScripts/lasagne/nnet_3layers2_1.csv', header = F)
 val <- validation
 val$Y <- p[,2]
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
@@ -42,6 +42,8 @@ p1 <- p
 p2 <- p
 p3 <- p
 p4 <- p
+p5 <- p
+p <- (p1+p2+p3+p4+p5)/5
 #########################
 ### Submission ##########
 #########################
