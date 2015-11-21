@@ -1,55 +1,20 @@
 # install.packages("devtools")
 # devtools::install_github("JohnLangford/vowpal_wabbit", subdir = "R/r.vw")
-setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
+setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle/vowpal_wabbit')
 rm(list=ls()); gc()
 library(pROC);require(data.table);library(r.vw)
-# load('data/Ivan_Train_Test_Scale_Center_20151116.RData');ls()
-load('data/Ivan_Train_Test_Scale_Center_20151121.RData');ls()
-options(scipen=999);set.seed(19890624)
-
-# Function used to select variables for each namespace
-get_feature_type <- function(X, threshold = 50, verbose = FALSE) {
-    q_levels <- function (x)
-    {
-        if (data.table::is.data.table(x)) {
-            unlist(x[, lapply(.SD, function(x) length(unique(x)))])
-        }
-        else {
-            apply(x, 2, function(x) length(unique(x)))
-        }
-    }
-    
-    lvs = q_levels(X)
-    fact_vars = names(lvs[lvs < threshold])
-    num_vars = names(lvs[lvs >= threshold])
-    if (verbose) {
-        print(data.frame(lvs))
-    }
-    list(fact_vars = fact_vars, num_vars = num_vars)
-}
+load('../data/Ivan_Train_Test_Scale_Center_20151121.RData');ls()
+source('../Rscripts/Ivan_vowpal_wabbit_func.R')
 
 # setwd where the data would be
-train$flag_class <- ifelse(train$flag_class == 'Y', 1, -1)
-feat <- colnames(total)[c(3:46,48)]
-train_dt = data.table::setDT(train[,feat])
-target = 'flag_class'
-data_types = get_feature_type(train_dt[, setdiff(names(train_dt), target), with=F], threshold = 50)
-namespaces = list(n = list(varName = data_types$num_vars, keepSpace=F),
-                  c = list(varName = data_types$fact_vars, keepSpace=F))
+feat <- names(train)[c(3:45,48)]; target <- 'flag_class'
+train_dt <- to_vw(train, feat, target, 'train_dt.vw') # total
+test_dt <- to_vw(validation, feat, target, 'test_dt.vw') # test
+write.table(test_dt$flag_class, file='test_labels.txt', row.names = F, col.names = F, quote = F)
 
-dt$y = with(dt, ifelse(y < 5.71, 1, -1))
-dt2vw(dt, 'diamonds.vw', namespaces, target=target, weight=NULL)
-system('head -3 diamonds.vw')
-
-# prepare dataset for validation
-system('head -10000 diamonds.vw > X_train.vw ')
-system('tail -43940 diamonds.vw > X_valid.vw ')
-write.table(tail(dt$y,43940), file='valid_labels.txt', row.names = F,
-            col.names = F, quote = F)
-
-training_data='X_train.vw'
-validation_data='X_valid.vw'
-validation_labels = "valid_labels.txt"
+training_data='train_dt.vw'
+test_data='test_dt.vw'
+test_labels = "test_labels.txt"
 out_probs = "out.txt"
 model = "mdl.vw"
 
