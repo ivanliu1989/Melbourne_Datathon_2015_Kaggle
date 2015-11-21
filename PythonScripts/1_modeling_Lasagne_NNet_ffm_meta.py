@@ -11,7 +11,7 @@ from util import float32
 from sklearn.preprocessing import LabelEncoder
 from lasagne.layers import DenseLayer, InputLayer, DropoutLayer
 from lasagne.nonlinearities import softmax, rectify, leaky_rectify
-from lasagne.updates import nesterov_momentum, adagrad, rmsprop, adadelta, adam
+from lasagne.updates import nesterov_momentum, adagrad
 from nolearn.lasagne import NeuralNet
 from adjust_variable import AdjustVariable
 from early_stopping import EarlyStopping
@@ -20,7 +20,7 @@ def load_train_data(path):
     df = pd.read_csv(path)
     X = df.values.copy()
     np.random.shuffle(X)
-    X, labels = X[:, 2:46].astype(np.float32), X[:, 47]
+    X, labels = X[:, 2:45].astype(np.float32), X[:, 47] # 46
     encoder = LabelEncoder()
     y = encoder.fit_transform(labels).astype(np.int32)
     return X, y, encoder
@@ -28,7 +28,7 @@ def load_train_data(path):
 def load_test_data(path):
     df = pd.read_csv(path)
     X = df.values.copy()
-    X, ids = X[:, 2:46].astype(np.float32), X[:, 0:1].astype(int)
+    X, ids = X[:, 2:45].astype(np.float32), X[:, 0:1].astype(int) # 46
     return X, ids
     
 def make_submission(clf, X_test, ids, encoder, name='lasagne_nnet.csv'):
@@ -38,8 +38,8 @@ def make_submission(clf, X_test, ids, encoder, name='lasagne_nnet.csv'):
 
 # Load Data    
 np.random.seed(888888)
-X, y, encoder = load_train_data('../../python_train_ffm_meta.csv')
-X_test, ids = load_test_data('../../python_validation_ffm_meta.csv')
+X, y, encoder = load_train_data('../../python_total_ffm_meta.csv')
+X_test, ids = load_test_data('../../python_test_ffm_meta.csv')
 num_classes = len(encoder.classes_)
 num_features = X.shape[1]
 
@@ -101,12 +101,6 @@ for i in range(1,31):
                      update_learning_rate=theano.shared(float32(0.01)),
                      #update_epsilon=1e-06,
                      
-                     #update=adadelta,
-                     #update_learning_rate=theano.shared(float32(0.01)),
-                     
-                     #update=adam,
-                     #update_learning_rate=theano.shared(float32(0.01)),
-                     
                      on_epoch_finished=[
                             AdjustVariable('update_learning_rate', start=0.015, stop=0.0001),
                             #AdjustVariable('update_momentum', start=0.9, stop=0.999),
@@ -118,9 +112,7 @@ for i in range(1,31):
                      max_epochs=10000)
                      
     net0.fit(X, y)
-    # 0.467144 0.15 800 0.25 500 0.25 300 0.25 | 0.015
-    # 0.471722 0.15 800 0.25 500 0.25 300 0.25 100 0.25
-    # 0.468020 0.15 800 0.25 500 0.25 300 0.25 | 0.015, leaky_rectify, adagrad
+    # 0.467881 0.15 800 0.25 500 0.25 300 0.25 | 0.015 meta+tsne
     
     # Submission 
-    make_submission(net0, X_test, ids, encoder, name='lasagne/lasagne_3L_ffm_meta_'+str(i)+'.csv')
+    make_submission(net0, X_test, ids, encoder, name='lasagne/submit_tsne/lasagne_3L_tsne2_'+str(i)+'.csv')

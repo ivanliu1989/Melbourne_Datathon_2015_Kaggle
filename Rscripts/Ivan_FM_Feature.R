@@ -1,20 +1,20 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-load('data/Ivan_Train_Test_Scale_Center_20151116.RData');ls()
-load('../Ivan_Train_Test_Scale_Center_20151121.RData');ls()
+# load('data/Ivan_Train_Test_Scale_Center_20151116.RData');ls()
+load('data/Ivan_Train_Test_Scale_Center_20151121.RData');ls()
 options(scipen=999);set.seed(19890624)
 # 
-write.csv(test, '../python_test_ffm_meta.csv', row.names = F)
-write.csv(train, '../python_train_ffm_meta.csv', row.names = F)
-write.csv(validation, '../python_validation_ffm_meta.csv', row.names = F)
-write.csv(total, '../python_total_ffm_meta.csv', row.names = F)
-
+# write.csv(test, '../python_test_ffm_meta.csv', row.names = F)
+# write.csv(train, '../python_train_ffm_meta.csv', row.names = F)
+# write.csv(validation, '../python_validation_ffm_meta.csv', row.names = F)
+# write.csv(total, '../python_total_ffm_meta.csv', row.names = F)
+# 
 
 #########################
 ### Validation ##########
 #########################
-p <- read.csv('PythonScripts/lasagne/lasagne_3L_800_500_300_0015_adagrad.csv', header = F);val <- validation; val$Y <- p[,2]
+p <- read.csv('PythonScripts/lasagne/lasagne_3L_tsne2_ffm_1.csv', header = F);val <- validation; val$Y <- p[,2]
 p <- read.csv('libffm/output_file.csv', header = F);val <- validation; val$Y <- p[,1]
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
