@@ -14,7 +14,6 @@ from lasagne.layers import DenseLayer
 from lasagne.layers import InputLayer
 from lasagne.layers import DropoutLayer
 from lasagne.nonlinearities import softmax
-from lasagne.nonlinearities import leaky_rectify#rectify
 from lasagne.nonlinearities import rectify
 from lasagne.updates import nesterov_momentum
 from nolearn.lasagne import NeuralNet
@@ -66,6 +65,8 @@ for i in range(1,31):
                ('dropout1', DropoutLayer),
                ('dense2', DenseLayer),
                ('dropout2', DropoutLayer),
+               ('dense3', DenseLayer),
+               ('dropout3', DropoutLayer),
                ('output', DenseLayer)]
                
     net0 = NeuralNet(layers=layers0,                 
@@ -90,6 +91,12 @@ for i in range(1,31):
                      #dense2_W=lg.init.Uniform(),
                      
                      dropout2_p=0.25,
+                     
+                     dense3_num_units=100,
+                     dense3_nonlinearity=rectify,
+                     #dense3_W=lg.init.Uniform(),
+                     
+                     dropout3_p=0.25,
                      
                      output_num_units=num_classes,
                      output_nonlinearity=softmax,
@@ -117,4 +124,4 @@ for i in range(1,31):
     # 0.473185 0.15 800 0.25 500 0.25 300 0.25 | 0. lg.init.uniform()
     
     # Submission 
-    make_submission(net0, X_test, ids, encoder, name='lasagne/lasagne_3L_800_500_300_0015'+str(i)+'.csv')
+    make_submission(net0, X_test, ids, encoder, name='lasagne/lasagne_4L_800_500_300_0015'+str(i)+'.csv')
