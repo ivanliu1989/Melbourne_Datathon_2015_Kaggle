@@ -14,7 +14,10 @@ from lasagne.layers import DenseLayer
 from lasagne.layers import InputLayer
 from lasagne.layers import DropoutLayer
 from lasagne.nonlinearities import softmax
+from lasagne.nonlinearities import tanh
+from lasagne.nonlinearities import sigmoid
 from lasagne.nonlinearities import rectify
+from lasagne.nonlinearities import leaky_rectify
 from lasagne.updates import nesterov_momentum
 from nolearn.lasagne import NeuralNet
 from adjust_variable import AdjustVariable
@@ -43,12 +46,12 @@ def make_submission(clf, X_test, ids, encoder, name='lasagne_nnet.csv'):
 # Load Data    
 np.random.seed(888888)
 X, y, encoder = load_train_data('../../python_train.csv')
-X_test, ids = load_test_data('../../python_test.csv')
+X_test, ids = load_test_data('../../python_validation.csv')
 num_classes = len(encoder.classes_)
 num_features = X.shape[1]
 
 num_rows = X.shape[0]
-Comb = np.append(X, X_test, axis=0)
+#Comb = np.append(X, X_test, axis=0)
 #pca = PCA()
 #Comb = pca.fit_transform(Comb)
 #X = Comb[:num_rows,:]
@@ -65,8 +68,8 @@ for i in range(1,31):
                ('dropout1', DropoutLayer),
                ('dense2', DenseLayer),
                ('dropout2', DropoutLayer),
-               ('dense3', DenseLayer),
-               ('dropout3', DropoutLayer),
+               #('dense3', DenseLayer),
+               #('dropout3', DropoutLayer),
                ('output', DenseLayer)]
                
     net0 = NeuralNet(layers=layers0,                 
@@ -75,7 +78,7 @@ for i in range(1,31):
                      dropoutf_p=0.15,
     
                      dense0_num_units=800,
-                     dense0_nonlinearity=rectify,
+                     dense0_nonlinearity=rectify, # leaky_rectify, rectify
                      #dense0_W=lg.init.Uniform(),
     
                      dropout0_p=0.25,
@@ -92,14 +95,14 @@ for i in range(1,31):
                      
                      dropout2_p=0.25,
                      
-                     dense3_num_units=100,
-                     dense3_nonlinearity=rectify,
+                     #dense3_num_units=100,
+                     #dense3_nonlinearity=rectify,
                      #dense3_W=lg.init.Uniform(),
                      
-                     dropout3_p=0.25,
+                     #dropout3_p=0.25,
                      
                      output_num_units=num_classes,
-                     output_nonlinearity=softmax,
+                     output_nonlinearity=softmax, # sigmoid, tanh
                      #output_W=lg.init.Uniform(),
     
                      update=nesterov_momentum,
@@ -110,7 +113,7 @@ for i in range(1,31):
                      on_epoch_finished=[
                             AdjustVariable('update_learning_rate', start=0.015, stop=0.001),
                             AdjustVariable('update_momentum', start=0.9, stop=0.999),
-                            EarlyStopping(patience=20)
+                            EarlyStopping(patience=1)
                             ],
                      
                      eval_size=0.2,
@@ -119,9 +122,7 @@ for i in range(1,31):
                      
     net0.fit(X, y)
     # 0.467144 0.15 800 0.25 500 0.25 300 0.25 | 0.015
-    # 0.474623 0.15 1200 0.25 800 0.25 500 0.25 | 0.015
-    # 0.473870 0.15 800 0.25 500 0.25 300 0.25 | 0. leaky_recify
-    # 0.473185 0.15 800 0.25 500 0.25 300 0.25 | 0. lg.init.uniform()
+    # 0.471722 0.15 800 0.25 500 0.25 300 0.25 100 0.25
     
     # Submission 
     make_submission(net0, X_test, ids, encoder, name='lasagne/lasagne_4L_800_500_300_0015'+str(i)+'.csv')
