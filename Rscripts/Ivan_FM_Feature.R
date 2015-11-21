@@ -13,7 +13,7 @@ options(scipen=999);set.seed(19890624)
 #########################
 ### Validation ##########
 #########################
-p <- read.csv('PythonScripts/lasagne/lasagne_4L_800_500_300_00151.csv', header = F);val <- validation; val$Y <- p[,2]
+p <- read.csv('PythonScripts/lasagne/lasagne_3L_800_500_300_0015_adagrad.csv', header = F);val <- validation; val$Y <- p[,2]
 p <- read.csv('libffm/output_file.csv', header = F);val <- validation; val$Y <- p[,1]
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))

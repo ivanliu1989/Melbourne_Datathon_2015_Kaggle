@@ -21,7 +21,7 @@ apply(all_n,2, function(x) mean(is.na(x)))
 feat <- c(3:(ncol(all)-2))
 library(readr); library(Rtsne); library(ggplot2)
 tsne <- Rtsne(as.matrix(all[,feat]), check_duplicates = FALSE, pca = TRUE, 
-              perplexity=30, theta=0.5, dims=3)
+              perplexity=30, theta=0.5, dims=2)
 
 embedding <- as.data.frame(tsne$Y)
 embedding$Class <- as.factor(sub("Class_", "", all$flag_class)) # 27, 60
@@ -40,7 +40,7 @@ p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
           axis.line        = element_blank(),
           panel.border     = element_blank())
 p
-tsne_2d <- embedding[,1:3]; names(tsne_2d) <- c('tsne_3d_1', 'tsne_3d_2','tsne_3d_3')
+tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_3d_1','tsne_3d_2')
 
 all <- cbind(all, tsne_2d)
 all_n <- cbind(all_n, tsne_2d)
@@ -72,10 +72,16 @@ all <- cbind(all, INVEST=INVEST)
 # c(101149870,101150716,101153308)
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]
+
+#############################
+# 5. fm meta feature ########
+#############################
+ffm_feat <- read.csv('ffm_meta_feature.csv')
+ffm_feat_test <- read.csv('ffm_meta_feature_test.csv')
+
 validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]
 train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398),]
 dim(train); dim(validation)
-
 save(train, validation, total, test, file='../Ivan_Train_Test_Scale_Center_20151116.RData')
 
 # test

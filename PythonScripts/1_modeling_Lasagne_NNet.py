@@ -99,10 +99,7 @@ for i in range(1,31):
                                           
                      update=adagrad,
                      update_learning_rate=theano.shared(float32(0.01)),
-                     update_epsilon=1e-06,
-                     
-                     #update=rmsprop,
-                     #update_learning_rate=theano.shared(float32(0.01)),
+                     #update_epsilon=1e-06,
                      
                      #update=adadelta,
                      #update_learning_rate=theano.shared(float32(0.01)),
@@ -113,7 +110,7 @@ for i in range(1,31):
                      on_epoch_finished=[
                             AdjustVariable('update_learning_rate', start=0.015, stop=0.0001),
                             #AdjustVariable('update_momentum', start=0.9, stop=0.999),
-                            EarlyStopping(patience=50)
+                            EarlyStopping(patience=20)
                             ],
                      
                      eval_size=0.2,
@@ -123,6 +120,7 @@ for i in range(1,31):
     net0.fit(X, y)
     # 0.467144 0.15 800 0.25 500 0.25 300 0.25 | 0.015
     # 0.471722 0.15 800 0.25 500 0.25 300 0.25 100 0.25
+    # 0.468020 0.15 800 0.25 500 0.25 300 0.25 | 0.015, leaky_rectify, adagrad
     
     # Submission 
     make_submission(net0, X_test, ids, encoder, name='lasagne/lasagne_3L_800_500_300_0015_'+str(i)+'.csv')
