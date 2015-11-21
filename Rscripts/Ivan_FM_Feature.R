@@ -2,12 +2,13 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
 load('data/Ivan_Train_Test_Scale_Center_20151116.RData');ls()
+load('../Ivan_Train_Test_Scale_Center_20151121.RData');ls()
 options(scipen=999);set.seed(19890624)
 # 
-# write.csv(test, '../python_test.csv', row.names = F)
-# write.csv(train, '../python_train.csv', row.names = F)
-# write.csv(validation, '../python_validation.csv', row.names = F)
-# write.csv(total, '../python_total.csv', row.names = F)
+write.csv(test, '../python_test_ffm_meta.csv', row.names = F)
+write.csv(train, '../python_train_ffm_meta.csv', row.names = F)
+write.csv(validation, '../python_validation_ffm_meta.csv', row.names = F)
+write.csv(total, '../python_total_ffm_meta.csv', row.names = F)
 
 
 #########################

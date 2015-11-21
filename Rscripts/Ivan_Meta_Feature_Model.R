@@ -1,11 +1,11 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-load('data/Ivan_Train_Test_Scale_Center_20151116.RData');ls()
+load('../Ivan_Train_Test_Scale_Center_20151121.RData');ls()
 options(scipen=999);set.seed(19890624)
 
-test <- validation
-train <- train#[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+test <- total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
+train <- total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)

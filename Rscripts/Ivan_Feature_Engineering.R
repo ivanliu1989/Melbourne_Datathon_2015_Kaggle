@@ -45,7 +45,7 @@ tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_3d_1','tsne_3d_2')
 all <- cbind(all, tsne_2d)
 all_n <- cbind(all_n, tsne_2d)
 
-all <- all[,c(1:43, 46:48, 44:45)]
+all <- all[,c(1:43, 46:47, 44:45)]
 #################
 # 3. PCA ########
 #################
@@ -76,13 +76,17 @@ total <- all[all$flag_class != 'M', ]
 #############################
 # 5. fm meta feature ########
 #############################
-ffm_feat <- read.csv('ffm_meta_feature.csv')
-ffm_feat_test <- read.csv('ffm_meta_feature_test.csv')
+ffm_feat <- read.csv('ffm_meta_feature.csv', header = F)
+ffm_feat_test <- read.csv('ffm_meta_feature_test.csv', header = F)
+test <- cbind(test, ffm_meta = ffm_feat_test[,1])
+total <- cbind(total, ffm_meta = ffm_feat[,1])
+test <- test[,c(1:45, 49, 46:48)]
+total <- total[,c(1:45, 49, 46:48)]
 
 validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]
 train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398),]
 dim(train); dim(validation)
-save(train, validation, total, test, file='../Ivan_Train_Test_Scale_Center_20151116.RData')
+save(train, validation, total, test, file='../Ivan_Train_Test_Scale_Center_20151121.RData')
 
 # test
 # all_n <- all_n[,c(1:25, 28:30, 26,27)]
