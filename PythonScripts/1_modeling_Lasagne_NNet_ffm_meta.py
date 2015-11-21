@@ -46,7 +46,7 @@ num_features = X.shape[1]
 num_rows = X.shape[0]
 
 # Train
-for i in range(1,31):
+for i in range(2,31):
     
     layers0 = [('input', InputLayer),
                ('dropoutf', DropoutLayer),
