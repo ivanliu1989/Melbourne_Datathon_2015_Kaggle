@@ -111,14 +111,14 @@ for i in range(1,31):
                      #update_learning_rate=theano.shared(float32(0.01)),
                      
                      on_epoch_finished=[
-                            AdjustVariable('update_learning_rate', start=0.015, stop=0.001),
+                            AdjustVariable('update_learning_rate', start=0.015, stop=0.0001),
                             #AdjustVariable('update_momentum', start=0.9, stop=0.999),
                             EarlyStopping(patience=50)
                             ],
                      
                      eval_size=0.2,
                      verbose=1,
-                     max_epochs=800)
+                     max_epochs=10000)
                      
     net0.fit(X, y)
     # 0.467144 0.15 800 0.25 500 0.25 300 0.25 | 0.015
