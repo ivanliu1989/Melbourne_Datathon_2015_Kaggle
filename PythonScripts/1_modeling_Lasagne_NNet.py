@@ -5,20 +5,13 @@ Created on Fri Oct 20 23:18:38 2015
 @author: Ivan
 """
 import theano
-import lasagne as lg
 import numpy as np
 import pandas as pd
 from util import float32
 from sklearn.preprocessing import LabelEncoder
-from lasagne.layers import DenseLayer
-from lasagne.layers import InputLayer
-from lasagne.layers import DropoutLayer
-from lasagne.nonlinearities import softmax
-from lasagne.nonlinearities import tanh
-from lasagne.nonlinearities import sigmoid
-from lasagne.nonlinearities import rectify
-from lasagne.nonlinearities import leaky_rectify
-from lasagne.updates import nesterov_momentum
+from lasagne.layers import DenseLayer, InputLayer, DropoutLayer
+from lasagne.nonlinearities import softmax, rectify, leaky_rectify
+from lasagne.updates import nesterov_momentum, adagrad, rmsprop, adadelta, adam
 from nolearn.lasagne import NeuralNet
 from adjust_variable import AdjustVariable
 from early_stopping import EarlyStopping
@@ -51,11 +44,6 @@ num_classes = len(encoder.classes_)
 num_features = X.shape[1]
 
 num_rows = X.shape[0]
-#Comb = np.append(X, X_test, axis=0)
-#pca = PCA()
-#Comb = pca.fit_transform(Comb)
-#X = Comb[:num_rows,:]
-#X_test = Comb[num_rows:,:]
 
 # Train
 for i in range(1,31):
@@ -78,19 +66,19 @@ for i in range(1,31):
                      dropoutf_p=0.15,
     
                      dense0_num_units=800,
-                     dense0_nonlinearity=rectify, # leaky_rectify, rectify
+                     dense0_nonlinearity=leaky_rectify, # leaky_rectify, rectify
                      #dense0_W=lg.init.Uniform(),
     
                      dropout0_p=0.25,
     
                      dense1_num_units=500,
-                     dense1_nonlinearity=rectify,
+                     dense1_nonlinearity=leaky_rectify,
                      #dense1_W=lg.init.Uniform(),
     
                      dropout1_p=0.25,
                      
                      dense2_num_units=300,
-                     dense2_nonlinearity=rectify,
+                     dense2_nonlinearity=leaky_rectify,
                      #dense2_W=lg.init.Uniform(),
                      
                      dropout2_p=0.25,
@@ -102,27 +90,39 @@ for i in range(1,31):
                      #dropout3_p=0.25,
                      
                      output_num_units=num_classes,
-                     output_nonlinearity=softmax, # sigmoid, tanh
+                     output_nonlinearity=softmax,
                      #output_W=lg.init.Uniform(),
     
-                     update=nesterov_momentum,
-                     #update=adagrad,
+                     #update=nesterov_momentum,
+                     #update_learning_rate=theano.shared(float32(0.01)),
+                     #update_momentum=theano.shared(float32(0.9)),
+                                          
+                     update=adagrad,
                      update_learning_rate=theano.shared(float32(0.01)),
-                     update_momentum=theano.shared(float32(0.9)),
+                     update_epsilon=1e-06,
+                     
+                     #update=rmsprop,
+                     #update_learning_rate=theano.shared(float32(0.01)),
+                     
+                     #update=adadelta,
+                     #update_learning_rate=theano.shared(float32(0.01)),
+                     
+                     #update=adam,
+                     #update_learning_rate=theano.shared(float32(0.01)),
                      
                      on_epoch_finished=[
                             AdjustVariable('update_learning_rate', start=0.015, stop=0.001),
-                            AdjustVariable('update_momentum', start=0.9, stop=0.999),
-                            EarlyStopping(patience=1)
+                            #AdjustVariable('update_momentum', start=0.9, stop=0.999),
+                            EarlyStopping(patience=50)
                             ],
                      
                      eval_size=0.2,
                      verbose=1,
-                     max_epochs=150)
+                     max_epochs=800)
                      
     net0.fit(X, y)
     # 0.467144 0.15 800 0.25 500 0.25 300 0.25 | 0.015
     # 0.471722 0.15 800 0.25 500 0.25 300 0.25 100 0.25
     
     # Submission 
-    make_submission(net0, X_test, ids, encoder, name='lasagne/lasagne_4L_800_500_300_0015'+str(i)+'.csv')
+    make_submission(net0, X_test, ids, encoder, name='lasagne/lasagne_3L_800_500_300_0015_'+str(i)+'.csv')
