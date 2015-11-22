@@ -3,11 +3,11 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle/vowpal_wabbit')
 rm(list=ls()); gc()
 require(data.table);library(r.vw);library(ggplot2);library(pROC)
-load('../data/Ivan_Train_Test_Scale_Center_20151121.RData');ls()
+load('../data/9_train_validation_test_20151122.RData');ls()
 source('../Rscripts/Ivan_vowpal_wabbit_func.R')
 
 # setwd where the data would be
-feat <- names(train)[c(3:45,48)]; target <- 'flag_class'
+feat <- names(train)[c(3:(ncol(train)-1))]; target <- 'flag_class'
 train_dt <- to_vw(total, feat, target, 'data/train_dt.vw') # total
 test_dt <- to_vw(test, feat, target, 'data/test_dt.vw') # test
 write.table(test_dt$flag_class, file='data/test_labels.txt', row.names = F, col.names = F, quote = F)

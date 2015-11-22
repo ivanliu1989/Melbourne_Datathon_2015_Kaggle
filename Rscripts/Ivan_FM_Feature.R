@@ -2,7 +2,7 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
 # load('data/Ivan_Train_Test_Scale_Center_20151116.RData');ls()
-load('data/Ivan_Train_Test_Scale_Center_20151121.RData');ls()
+load('data/9_train_validation_test_20151122.RData');ls()
 options(scipen=999);set.seed(19890624)
 # 
 # write.csv(test, '../python_test_ffm_meta.csv', row.names = F)

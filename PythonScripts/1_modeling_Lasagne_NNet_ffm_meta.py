@@ -9,26 +9,31 @@ import numpy as np
 import pandas as pd
 from util import float32
 from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
 from lasagne.layers import DenseLayer, InputLayer, DropoutLayer
 from lasagne.nonlinearities import softmax, rectify, leaky_rectify
 from lasagne.updates import nesterov_momentum, adagrad
 from nolearn.lasagne import NeuralNet
 from adjust_variable import AdjustVariable
 from early_stopping import EarlyStopping
+from sklearn.decomposition import PCA
 
 def load_train_data(path):
     df = pd.read_csv(path)
     X = df.values.copy()
     np.random.shuffle(X)
-    X, labels = X[:, 2:45].astype(np.float32), X[:, 47] # 46
+    X, labels = X[:, 2:57].astype(np.float32), X[:, 57] # 46
     encoder = LabelEncoder()
     y = encoder.fit_transform(labels).astype(np.int32)
-    return X, y, encoder
+    scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
+    X = scaler.fit_transform(X)
+    return X, y, encoder, scaler
     
-def load_test_data(path):
+def load_test_data(path, scaler):
     df = pd.read_csv(path)
     X = df.values.copy()
-    X, ids = X[:, 2:45].astype(np.float32), X[:, 0:1].astype(int) # 46
+    X, ids = X[:, 2:57].astype(np.float32), X[:, 0:1].astype(int) # 46
+    X = scaler.transform(X)
     return X, ids
     
 def make_submission(clf, X_test, ids, encoder, name='lasagne_nnet.csv'):
@@ -38,12 +43,18 @@ def make_submission(clf, X_test, ids, encoder, name='lasagne_nnet.csv'):
 
 # Load Data    
 np.random.seed(888888)
-X, y, encoder = load_train_data('../../python_total_ffm_meta.csv')
-X_test, ids = load_test_data('../../python_test_ffm_meta.csv')
+X, y, encoder,scaler = load_train_data('../../python_total_ffm_meta.csv')
+X_test, ids = load_test_data('../../python_test_ffm_meta.csv', scaler)
 num_classes = len(encoder.classes_)
 num_features = X.shape[1]
 
 num_rows = X.shape[0]
+
+Comb = np.append(X, X_test, axis=0)
+pca = PCA()
+Comb = pca.fit_transform(Comb)
+X = Comb[:num_rows,:]
+X_test = Comb[num_rows:,:]
 
 # Train
 for i in range(2,31):

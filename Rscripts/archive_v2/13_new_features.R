@@ -1,8 +1,8 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc(); library(caret)
 # source('Rscripts/12_log_transformation.R')
-load('data/v1/1_complete_data.RData');
-load('data/v1/2_test.RData');ls()
+load('data/1_complete_data.RData');
+load('data/2_test.RData');ls()
 
 
 #################################
@@ -76,37 +76,37 @@ all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANS
 ##########################
 # 5. Kmeans Cluster ######
 ##########################
-feat <- c(3:22,47:56,59)
-names(all[,feat])
-kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
-table(kmean_dt$CLUSTER)
-
-#h2o
-library(h2o)
-localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
-kmeans_df <- as.h2o(localH2O, all[,feat])
-cols <- c(colnames(kmeans_df[,3:(ncol(kmeans_df))]))
-fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
-pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
-all$kmeans <- pred[,1]; table(all$kmeans)
+# feat <- c(3:22,47:56,59)
+# names(all[,feat])
+# kmean_dt <- KmeansClusters(all, k = 6, nstart = 50, feat)
+# table(kmean_dt$CLUSTER)
+# 
+# #h2o
+# library(h2o)
+# localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
+# kmeans_df <- as.h2o(localH2O, all[,feat])
+# cols <- c(colnames(kmeans_df[,3:(ncol(kmeans_df))]))
+# fit <- h2o.kmeans(kmeans_df, centers = 6, cols=cols, iter.max = 100000, normalize = T, init = 'none') #none, plusplus, furthest
+# pred <- as.data.frame(h2o.predict(object = fit, newdata = kmeans_df))
+# all$kmeans <- pred[,1]; table(all$kmeans)
 
 ######################################
 # Class Distance Calculations ########
 ######################################
-library(caret)
-feat <- colnames(all)[c(3:22,47:56,59)]
-dt <- all[,feat]
-centroids <- classDist(dt, as.factor(all$flag_class))
-distances <- predict(centroids, dt)
-distances <- as.data.frame(distances)
-head(distances)
-
-# xyplot(dist.Y ~ dist.N,
-#        data = distances,
-#        groups = as.factor(all$flag_class),
-#        auto.key = list(columns = 2))
-
-all <- cbind(all, distances[,c(2,3)])
+# library(caret)
+# feat <- colnames(all)[c(3:22,47:56,59)]
+# dt <- all[,feat]
+# centroids <- classDist(dt, as.factor(all$flag_class))
+# distances <- predict(centroids, dt)
+# distances <- as.data.frame(distances)
+# head(distances)
+# 
+# # xyplot(dist.Y ~ dist.N,
+# #        data = distances,
+# #        groups = as.factor(all$flag_class),
+# #        auto.key = list(columns = 2))
+# 
+# all <- cbind(all, distances[,c(2,3)])
 
 ##########################
 # 6. GBDT Meta Data ######
@@ -134,11 +134,11 @@ all <- all[,c(1:56,59,58,57)]
 
 test <- all[all$flag_class == 'M', ]
 total <- all[all$flag_class != 'M', ]
-validation <- total[total$EVENT_ID %in% c(101183757,101183885,101184013),]
-train <- total[!total$EVENT_ID %in% c(101183757,101183885,101184013),]
+validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]
+train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398),]
 dim(train); dim(validation)
 
 ###################
 # 8. Output #######
 ###################
-save(train, validation, total, test, file='data/9_train_validation_test_20151108.RData')
+save(train, validation, total, test, file='data/9_train_validation_test_20151122.RData')

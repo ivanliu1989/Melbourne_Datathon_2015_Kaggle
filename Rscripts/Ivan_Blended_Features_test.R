@@ -156,5 +156,5 @@ test <- test[!is.na(test$PAST_LAG_1),]
 apply(test, 2, function(x) mean(is.na(x)))
 apply(test_new, 2, function(x) mean(is.na(x)))
 test[is.na(test)] <- 0
-load('data/train_20151115.RData')
-save(train, test, test_new, file = 'data/Ivan_train_test_20151115.RData')
+load('data/v3/train_20151115.RData')
+save(train, test, test_new, file = 'data/v3/Ivan_train_test_20151115.RData')

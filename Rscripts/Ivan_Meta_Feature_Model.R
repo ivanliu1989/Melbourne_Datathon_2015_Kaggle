@@ -1,7 +1,7 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-load('data/Ivan_Train_Test_Scale_Center_20151121.RData');ls()
+load('data/9_train_validation_test_20151122.RData');ls()
 options(scipen=999);set.seed(19890624)
 
 test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
@@ -9,8 +9,7 @@ train <- total# total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
-feat <- colnames(train)[c(3:(ncol(train)-4))] # train
-# feat <- feat[!feat %in% c('tsne_3d_1','tsne_3d_2','tsne_3d_3')]
+feat <- colnames(train)[c(3:(ncol(train)-2))] # train
 
 ########################################
 ### Meta model random forest ###########
@@ -38,13 +37,14 @@ for (i in 1:30){
     set.seed(19890624*i)
     bst <-
         xgb.train(
-            data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.5,
-            nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
-            ,watchlist = watchlist
+            data = dtrain, max.depth = 6, eta = 0.15, nround = 500, maximize = F, min_child_weight = 1, colsample_bytree = 1,
+            nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', #num_parallel_tree = 1, gamma = 0.1,
+            watchlist = watchlist
         )
     p_gbm = predict(bst,dtest)
     # p_gbm = predict(bst,dvalid)
-    write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost/submission_xgboost_20151122_', i,'.csv'))
+    # write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost/submission_xgboost_20151122_', i,'.csv'))
+    write.csv(p_gbm, paste0('submission_xgboost_20151122.csv'))
 }
 
 # # 2. RF
