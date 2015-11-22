@@ -37,14 +37,14 @@ for (i in 1:30){
     set.seed(19890624*i)
     bst <-
         xgb.train(
-            data = dtrain, max.depth = 6, eta = 0.15, nround = 500, maximize = F, min_child_weight = 1, colsample_bytree = 1,
+            data = dtrain, max.depth = 6, eta = 0.15, nround = 500, maximize = F, min_child_weight = 2, colsample_bytree = 0.7,
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', #num_parallel_tree = 1, gamma = 0.1,
             watchlist = watchlist
         )
     p_gbm = predict(bst,dtest)
     # p_gbm = predict(bst,dvalid)
-    # write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost/submission_xgboost_20151122_', i,'.csv'))
-    write.csv(p_gbm, paste0('submission_xgboost_20151122.csv'))
+    write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost/submission_xgboost_20151122_', i,'.csv'))
+    # write.csv(p_gbm, paste0('submission_xgboost_20151122.csv'))
 }
 
 # # 2. RF

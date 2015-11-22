@@ -15,23 +15,33 @@ write.table(test_dt$flag_class, file='data/test_labels.txt', row.names = F, col.
 training_data='data/train_dt.vw'
 test_data='data/test_dt.vw'
 test_labels = "data/test_labels.txt"
-out_probs = "predictions/submission_vw_nn80_20151122_3.txt"
-model = "models/mdl_20151122.vw"
+out_probs = "predictions/sub.txt"
+model = "models/mdl.vw"
 
 # AUC using perf - Download at: osmot.cs.cornell.edu/kddcup/software.html
 # Shows files in the working directory: /data
 list.files('data/')
-
-auc = vw(training_data, test_data, loss = "logistic",
-         model, b = 30, learning_rate = 0.25, passes = 18,
-         l1 = NULL, l2 = NULL, early_terminate = 2,
-         link_function = "--link=logistic", extra = '--nn 80 --holdout_period 100', 
-         out_probs = out_probs, validation_labels = test_labels, verbose = TRUE, 
-         do_evaluation = F, use_perf=FALSE, plot_roc=F)
-#extra='--decay_learning_rate 0.9 --ksvm --kernel linear -q ::'
-print(auc)
-# [1] 0.7404759
-# 0.7749233 'nn 80'
+grid = expand.grid(eta=c(0.15, 0.25),
+                   extra=c('-q:: --holdout_period 100 --normalized --adaptive --invariant', 
+                           '-q:: --holdout_period 5 --normalized --adaptive --invariant',
+                           '--nn 60 --holdout_period 5 --normalized --adaptive --invariant',
+                           '--nn 60 --holdout_period 100 --normalized --adaptive --invariant',
+                           '--cubic::: --holdout_period 5 --normalized --adaptive --invariant',
+                           '--cubic::: --holdout_period 100 --normalized --adaptive --invariant'))
+for(i in 1:nrow(grid)){
+    out_probs = paste0("predictions/submission_vw_20151122_", i, ".txt")
+    g = grid[i, ]
+    auc = vw(training_data, test_data, loss = "logistic",
+             model, b = 30, learning_rate = g[['eta']], passes = 50,
+             l1=1e-03, l2=3e-05, early_terminate = 5,
+             link_function = "--link=logistic", extra = g[['extra']],
+             out_probs = out_probs, validation_labels = test_labels, verbose = TRUE, 
+             do_evaluation = F, use_perf=FALSE, plot_roc=F)
+    #extra='--decay_learning_rate 0.9 --ksvm --kernel linear -q ::'
+    # print(auc)
+    # [1] 0.7404759
+    # 0.7749233 'nn 80'
+}
 
 # AUC using pROC - Saving plots to disk
 ### create a parameter grid
