@@ -9,13 +9,16 @@ options(scipen=999);set.seed(19890624)
 # write.csv(train, '../python_train_ffm_meta.csv', row.names = F)
 # write.csv(validation, '../python_validation_ffm_meta.csv', row.names = F)
 # write.csv(total, '../python_total_ffm_meta.csv', row.names = F)
-# 
+# write.csv(p_gbm, 'ReadyForBlending/xgboost_1.csv', row.names = F)
 
 #########################
 ### Validation ##########
 #########################
-p <- read.csv('PythonScripts/lasagne/lasagne_3L_tsne2_ffm_1.csv', header = F);val <- validation; val$Y <- p[,2]
+p <- read.csv('PythonScripts/lasagne/V1/lasagne_3L_tsne2_ffm_1.csv', header = F);val <- validation; val$Y <- p[,2]
 p <- read.csv('libffm/output_file.csv', header = F);val <- validation; val$Y <- p[,1]
+p <- read.table('vowpal_wabbit/predictions/out.txt', header = F);val <- validation; val$Y <- p[,1]
+p <- read.csv('ReadyForBlending/xgboost_1.csv', header = T);val <- validation; val$Y <- p[,1]
+
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$Y
@@ -37,11 +40,13 @@ confusionMatrix(as.factor(val_fin$PRED_PROFIT_LOSS_3), prediction)
 rocobj <- roc(val$flag_class, val$Y);print(auc(rocobj)) 
 print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
 
+p_vw <- p[,1]
+p_ffm <- p[,1]
+p_nnet <- p[,2]
+p_gbm <- p[,1]
+p <- 0.05*p_vw + 0.25*p_nnet + 0.7*p_gbm # + 0.05*p_ffm
+val <- validation; val$Y <- p
 
-p1 <- p[,2]
-p2 <- p[,1]
-p3 <- p_gbm
-p <- 0.4*p1+0.6*p3
 #########################
 ### Submission ##########
 #########################

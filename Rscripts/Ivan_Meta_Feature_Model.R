@@ -1,24 +1,24 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-load('../Ivan_Train_Test_Scale_Center_20151121.RData');ls()
+load('data/Ivan_Train_Test_Scale_Center_20151121.RData');ls()
 options(scipen=999);set.seed(19890624)
 
-test <- total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
-train <- total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
+train <- total# total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
-feat <- colnames(train)[c(3:(ncol(train)-3))] # train
-feat <- feat[!feat %in% c('tsne_3d_1','tsne_3d_2','tsne_3d_3')]
+feat <- colnames(train)[c(3:(ncol(train)-4))] # train
+# feat <- feat[!feat %in% c('tsne_3d_1','tsne_3d_2','tsne_3d_3')]
 
 ########################################
 ### Meta model random forest ###########
 ########################################
-OOBModel = randomForest(x=train[,feat], y=as.factor(train$flag_class), replace=F, ntree=100, do.trace=T, mtry=7)
-bagPredictions_rf = predict(OOBModel, train, type="prob")
-bagTestPredictions_rf = predict(OOBModel, test, type="prob")
-bagValidPredictions_rf = predict(OOBModel, validation, type="prob")
+# OOBModel = randomForest(x=train[,feat], y=as.factor(train$flag_class), replace=F, ntree=100, do.trace=T, mtry=7)
+# bagPredictions_rf = predict(OOBModel, train, type="prob")
+# bagTestPredictions_rf = predict(OOBModel, test, type="prob")
+# bagValidPredictions_rf = predict(OOBModel, validation, type="prob")
 
 
 #########################
@@ -32,33 +32,37 @@ bagValidPredictions_rf = predict(OOBModel, validation, type="prob")
 dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
 dtest <- xgb.DMatrix(as.matrix(test[,feat]),label = test$flag_class)
 dvalid <- xgb.DMatrix(as.matrix(validation[,feat]),label = validation$flag_class)
-watchlist <- list(eval = dtest, train = dtrain)
+watchlist <- list(eval = dvalid, train = dtrain)
 # 1. GBM
-bst <-
-    xgb.train(
-        data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.5,
-        nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
-        ,watchlist = watchlist
-    )
-# p_gbm = predict(bst,dtest)
-p_gbm = predict(bst,dvalid)
+for (i in 1:30){
+    set.seed(19890624*i)
+    bst <-
+        xgb.train(
+            data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 2, colsample_bytree = 0.5,
+            nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1, gamma = 0.1
+            ,watchlist = watchlist
+        )
+    p_gbm = predict(bst,dtest)
+    # p_gbm = predict(bst,dvalid)
+    write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost/submission_xgboost_20151122_', i,'.csv'))
+}
 
-# 2. RF
-bst <-
-    xgb.train(
-        data = dtrain, max.depth = 9, eta = 0.15, nround = 1, maximize = F, watchlist = watchlist, min_child_weight = 2, colsample_bytree = 0.8,
-        nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1000, gamma = 0.1
-    )
-# p_rf = predict(bst,dtest)
-p_rf = predict(bst,dvalid)
-
-# 3. generalized linear model
-    bst <- xgb.train(
-        data = dtrain, nround = 100, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
-        nthread = 4, alpha = 1e-3, lambda = 1e-6, print.every.n = 10
-    )
-# p_glm = predict(bst,dtest)
-p_glm = predict(bst,dvalid)
+# # 2. RF
+# bst <-
+#     xgb.train(
+#         data = dtrain, max.depth = 9, eta = 0.15, nround = 1, maximize = F, watchlist = watchlist, min_child_weight = 2, colsample_bytree = 0.8,
+#         nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1000, gamma = 0.1
+#     )
+# # p_rf = predict(bst,dtest)
+# p_rf = predict(bst,dvalid)
+# 
+# # 3. generalized linear model
+#     bst <- xgb.train(
+#         data = dtrain, nround = 100, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
+#         nthread = 4, alpha = 1e-3, lambda = 1e-6, print.every.n = 10
+#     )
+# # p_glm = predict(bst,dtest)
+# p_glm = predict(bst,dvalid)
 
 p <- 0.75*p_gbm + 0.25*p_glm
 

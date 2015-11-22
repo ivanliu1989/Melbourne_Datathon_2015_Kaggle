@@ -2,62 +2,56 @@
 # devtools::install_github("JohnLangford/vowpal_wabbit", subdir = "R/r.vw")
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle/vowpal_wabbit')
 rm(list=ls()); gc()
-library(pROC);require(data.table);library(r.vw)
+require(data.table);library(r.vw);library(ggplot2);library(pROC)
 load('../data/Ivan_Train_Test_Scale_Center_20151121.RData');ls()
 source('../Rscripts/Ivan_vowpal_wabbit_func.R')
 
 # setwd where the data would be
 feat <- names(train)[c(3:45,48)]; target <- 'flag_class'
-train_dt <- to_vw(train, feat, target, 'train_dt.vw') # total
-test_dt <- to_vw(validation, feat, target, 'test_dt.vw') # test
-write.table(test_dt$flag_class, file='test_labels.txt', row.names = F, col.names = F, quote = F)
+train_dt <- to_vw(total, feat, target, 'data/train_dt.vw') # total
+test_dt <- to_vw(test, feat, target, 'data/test_dt.vw') # test
+write.table(test_dt$flag_class, file='data/test_labels.txt', row.names = F, col.names = F, quote = F)
 
-training_data='train_dt.vw'
-test_data='test_dt.vw'
-test_labels = "test_labels.txt"
-out_probs = "out.txt"
-model = "mdl.vw"
+training_data='data/train_dt.vw'
+test_data='data/test_dt.vw'
+test_labels = "data/test_labels.txt"
+out_probs = "predictions/submission_vw_nn80_20151122_3.txt"
+model = "models/mdl_20151122.vw"
 
 # AUC using perf - Download at: osmot.cs.cornell.edu/kddcup/software.html
-# It may not work, so a dependency of an R library has been added. See below.
-# Commented as could not work.
-# auc = vw(training_data, validation_data, loss = "logistic",
-#        model, b = 25, learning_rate = 0.5, passes = 1,
-#        l1 = NULL, l2 = NULL, early_terminate = NULL,
-#        link_function = "--link=logistic", extra = NULL, out_probs = "out.txt",
-#        validation_labels = validation_labels, verbose = TRUE, do_evaluation = TRUE)
-
 # Shows files in the working directory: /data
-list.files()
+list.files('data/')
 
-auc = vw(training_data, validation_data, loss = "logistic",
-         model, b = 25, learning_rate = 0.5, passes = 1,
-         l1 = NULL, l2 = NULL, early_terminate = NULL,
-         link_function = "--link=logistic", extra = NULL, out_probs = "out.txt",
-         validation_labels = validation_labels, verbose = TRUE, do_evaluation = TRUE,
-         use_perf=FALSE, plot_roc=TRUE)
-
+auc = vw(training_data, test_data, loss = "logistic",
+         model, b = 30, learning_rate = 0.25, passes = 18,
+         l1 = NULL, l2 = NULL, early_terminate = 2,
+         link_function = "--link=logistic", extra = '--nn 80 --holdout_period 100', 
+         out_probs = out_probs, validation_labels = test_labels, verbose = TRUE, 
+         do_evaluation = F, use_perf=FALSE, plot_roc=F)
+#extra='--decay_learning_rate 0.9 --ksvm --kernel linear -q ::'
 print(auc)
-# [1] 0.9944229
+# [1] 0.7404759
+# 0.7749233 'nn 80'
 
 # AUC using pROC - Saving plots to disk
 ### create a parameter grid
-grid = expand.grid(l1=c(1e-07, 1e-08),
-                   l2=c(1e-07, 1e-08),
-                   eta=c(0.1, 0.05),
-                   extra=c('--nn 10', ''))
+grid = expand.grid(l1=c(1e-06),
+                   l2=c(1e-06),
+                   eta=c(0.1, 0.2),
+                   ps=c(12,18),
+                   extra=c('--nn 120', '--nn 80'))
 
 
 cat('Running grid search\n')
-pdf('ROCs.pdf')
+pdf('output/ROCs.pdf')
 aucs <- lapply(1:nrow(grid), function(i){
     g = grid[i, ]
     auc = vw(training_data=training_data, # files relative paths
-             validation_data=validation_data,
-             validation_labels=validation_labels, model=model,
+             validation_data=test_data,
+             validation_labels=test_labels, model=model,
              # grid options
-             loss='logistic', b=25, learning_rate=g[['eta']],
-             passes=2, l1=g[['l1']], l2=g[['l2']],
+             loss='logistic', b=30, learning_rate=g[['eta']],
+             passes=g[['ps']], l1=g[['l1']], l2=g[['l2']],
              early_terminate=2, extra=g[['extra']],
              # ROC-AUC related options
              use_perf=FALSE, plot_roc=TRUE,
@@ -69,23 +63,24 @@ dev.off()
 
 results = cbind(iter=1:nrow(grid), grid, auc=do.call(rbind, aucs))
 print(results)
-# l1    l2  eta   extra     auc
-# 1  1e-07 1e-07 0.10 --nn 10 0.9964736
-# 2  1e-08 1e-07 0.10 --nn 10 0.9964945
-# 3  1e-07 1e-08 0.10 --nn 10 0.9964736
-# 4  1e-08 1e-08 0.10 --nn 10 0.9964946
-# 5  1e-07 1e-07 0.05 --nn 10 0.9956487
-# 6  1e-08 1e-07 0.05 --nn 10 0.9956629
-# 7  1e-07 1e-08 0.05 --nn 10 0.9956487
-# 8  1e-08 1e-08 0.05 --nn 10 0.9956629
-# 9  1e-07 1e-07 0.10         0.9878654
-# 10 1e-08 1e-07 0.10         0.9919489
-# 11 1e-07 1e-08 0.10         0.9878646
-# 12 1e-08 1e-08 0.10         0.9919487
-# 13 1e-07 1e-07 0.05         0.9883343
-# 14 1e-08 1e-07 0.05         0.9915172
-# 15 1e-07 1e-08 0.05         0.9883339
-# 16 1e-08 1e-08 0.05         0.9915170
+# iter    l1    l2  eta ps   extra       auc
+# 1    1 1e-06 1e-06 0.05  6 --nn 30 0.7403335
+# 2    2 1e-06 1e-06 0.15  6 --nn 30 0.7604067
+# 3    3 1e-06 1e-06 0.05 12 --nn 30 0.7403335
+# 4    4 1e-06 1e-06 0.15 12 --nn 30 0.7654396
+# 5    5 1e-06 1e-06 0.05  6 --nn 80 0.7403404
+# 6    6 1e-06 1e-06 0.15  6 --nn 80 0.7652404
+# 7    7 1e-06 1e-06 0.05 12 --nn 80 0.7403404
+# 8    8 1e-06 1e-06 0.15 12 --nn 80 0.7702607
+
+# 1    1 1e-06 1e-06 0.1 12 --nn 120 0.7661254
+# 2    2 1e-06 1e-06 0.2 12 --nn 120 0.7736231
+# 3    3 1e-06 1e-06 0.1 18 --nn 120 0.7695463
+# 4    4 1e-06 1e-06 0.2 18 --nn 120 0.7747579
+# 5    5 1e-06 1e-06 0.1 12  --nn 80 0.7645808
+# 6    6 1e-06 1e-06 0.2 12  --nn 80 0.7728860
+# 7    7 1e-06 1e-06 0.1 18  --nn 80 0.7678433
+# 8    8 1e-06 1e-06 0.2 18  --nn 80 0.7741317
 
 p = ggplot(results, aes(iter, auc, color=extra)) +
     geom_point(size=3) +
@@ -94,4 +89,4 @@ p = ggplot(results, aes(iter, auc, color=extra)) +
               title='Logistic regression results'))
 
 print(p)
-ggsave('results_plot.png', plot=p)
+ggsave('output/results_plot.png', plot=p)
