@@ -113,9 +113,9 @@ for i in range(2,31):
                      #update_epsilon=1e-06,
                      
                      on_epoch_finished=[
-                            AdjustVariable('update_learning_rate', start=0.05, stop=0.0001),
+                            AdjustVariable('update_learning_rate', start=0.03, stop=0.0001),
                             #AdjustVariable('update_momentum', start=0.9, stop=0.999),
-                            EarlyStopping(patience=30)
+                            EarlyStopping(patience=100)
                             ],
                      
                      eval_size=0.2,
@@ -127,4 +127,4 @@ for i in range(2,31):
     # 0.53851
     
     # Submission 
-    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_'+str(i)+'.csv')
+    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_151123_'+str(i)+'.csv')

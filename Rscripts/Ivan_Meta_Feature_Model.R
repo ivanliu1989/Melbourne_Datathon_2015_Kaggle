@@ -1,7 +1,8 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-load('data/9_train_validation_test_20151122.RData');ls()
+# load('data/9_train_validation_test_20151122.RData');ls()
+load('data/v3/Ivan_train_test_20151115.RData');
 options(scipen=999);set.seed(19890624)
 
 test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
@@ -9,7 +10,7 @@ train <- total# total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
-feat <- colnames(train)[c(3:(ncol(train)-2))] # train
+feat <- colnames(train)[c(3:(ncol(train)-3))] # train
 
 ########################################
 ### Meta model random forest ###########

@@ -1,6 +1,7 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc(); library(caret)
-load('data/Ivan_train_test_20151116.RData');ls()
+# load('data/Ivan_train_test_20151116.RData');ls()
+load('data/v3/Ivan_train_test_20151115.RData');
 
 #################################
 # 1. Combine Total & Test #######
