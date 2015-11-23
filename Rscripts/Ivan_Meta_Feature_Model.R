@@ -1,12 +1,12 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-# load('data/9_train_validation_test_20151122.RData');ls()
-load('data/v3/Ivan_train_test_20151115.RData');
+load('data/9_train_validation_test_20151122.RData');ls()
+# load('data/Ivan_Train_Test_Scale_Center_20151123.RData');
 options(scipen=999);set.seed(19890624)
 
 test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
-train <- total# total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+train <- total#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
@@ -70,8 +70,8 @@ p <- 0.75*p_gbm + 0.25*p_glm
 #########################
 ### Validation ##########
 #########################
-# val <- test
-val <- validation
+val <- test
+# val <- validation
 # p <- ifelse(p_gbm>0.5, 1, 0)
 val$Y <- p_gbm
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')

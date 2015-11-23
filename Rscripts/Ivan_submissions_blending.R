@@ -32,9 +32,9 @@ pred_all <- 0.3*pred_vw[,1] + 0.3*pred_lasagne[,2] + 0.4*pred_xgb[,2]; head(pred
 #########################
 t <- test
 t$Y <- p_gbm
-tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=t, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
+tot_invest <- aggregate(TOTAL_BET_SIZE ~ ACCOUNT_ID,data=t, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 t <- merge(t, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
-t$INVEST_PERCENT <- t$INVEST/t$TOT_INVEST * t$Y
+t$INVEST_PERCENT <- t$TOTAL_BET_SIZE/t$TOT_INVEST * t$Y
 pred_fin <- aggregate(INVEST_PERCENT ~ ACCOUNT_ID, data=t, sum, na.rm=F)
 # pred_fin <- aggregate(Y ~ ACCOUNT_ID, data=t, mean, na.rm=F)
 names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')

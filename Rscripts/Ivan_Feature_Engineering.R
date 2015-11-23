@@ -41,7 +41,7 @@ p <- ggplot(embedding, aes(x=V1, y=V2, color=Class)) +
           axis.line        = element_blank(),
           panel.border     = element_blank())
 p
-tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_3d_1','tsne_3d_2')
+tsne_2d <- embedding[,1:2]; names(tsne_2d) <- c('tsne_2d_1','tsne_2d_2')
 
 all <- cbind(all, tsne_2d)
 all_n <- cbind(all_n, tsne_2d)
@@ -87,7 +87,7 @@ total <- total[,c(1:45, 49, 46:48)]
 validation <- total[total$EVENT_ID %in% c(101150834,101153072,101149398),]
 train <- total[!total$EVENT_ID %in% c(101150834,101153072,101149398),]
 dim(train); dim(validation)
-save(train, validation, total, test, file='../Ivan_Train_Test_Scale_Center_20151121.RData')
+save(train, validation, total, test, file='../Ivan_Train_Test_Scale_Center_20151123_test.RData')
 
 # test
 # all_n <- all_n[,c(1:25, 28:30, 26,27)]
