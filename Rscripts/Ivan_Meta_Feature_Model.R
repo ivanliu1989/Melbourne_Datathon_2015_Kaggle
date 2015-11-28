@@ -2,15 +2,8 @@ setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Ka
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
 load('data/9_train_validation_test_20151122.RData');ls()
-# load('data/Ivan_Train_Test_Scale_Center_20151123.RData');
+# load('data/v5/Ivan_Train_Test_Scale_Center_20151123.RData');
 options(scipen=999);set.seed(19890624)
-
-test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
-train <- total#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
-train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
-test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
-validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
-feat <- colnames(train)[c(3:(ncol(train)-3))] # train
 
 ########################################
 ### Meta model random forest ###########
@@ -29,22 +22,34 @@ feat <- colnames(train)[c(3:(ncol(train)-3))] # train
 # validation$flag_margin <- validation$flag_regr/validation$INVEST
 # reg:linear
 # binary:logistic
-dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
-dtest <- xgb.DMatrix(as.matrix(test[,feat]),label = test$flag_class)
-dvalid <- xgb.DMatrix(as.matrix(validation[,feat]),label = validation$flag_class)
-watchlist <- list(eval = dvalid, train = dtrain)
+
 # 1. GBM
-for (i in 1:30){
-    set.seed(19890624*i)
+for (i in 1:250){
+    set.seed(8*i)
+    
+    inTraining <- createDataPartition(total$flag_class, p = .35, list = FALSE)
+    test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
+    train <- total[-inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+    validation <- total[inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+    train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
+    test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
+    validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
+    feat <- colnames(train)[c(3:(ncol(train)-7))] # train
+    
+    dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
+    dtest <- xgb.DMatrix(as.matrix(test[,feat]),label = test$flag_class)
+    dvalid <- xgb.DMatrix(as.matrix(validation[,feat]),label = validation$flag_class)
+    watchlist <- list(eval = dvalid, train = dtrain)
+    
     bst <-
         xgb.train(
-            data = dtrain, max.depth = 6, eta = 0.15, nround = 500, maximize = F, min_child_weight = 2, colsample_bytree = 0.7,
+            data = dtrain, max.depth = 6, eta = 0.02, nround = 1500, maximize = F, min_child_weight = 2, colsample_bytree = 0.7, #early.stop.round = 100,
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', #num_parallel_tree = 1, gamma = 0.1,
             watchlist = watchlist
         )
     p_gbm = predict(bst,dtest)
     # p_gbm = predict(bst,dvalid)
-    write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost/submission_xgboost_20151122_', i,'.csv'))
+    write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost/submission_xgboost_20151126_', i,'.csv'))
     # write.csv(p_gbm, paste0('submission_xgboost_20151122.csv'))
 }
 

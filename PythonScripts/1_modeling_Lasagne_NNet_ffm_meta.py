@@ -57,7 +57,7 @@ X = Comb[:num_rows,:]
 X_test = Comb[num_rows:,:]
 
 # Train
-for i in range(2,31):
+for i in range(1,51):
     
     layers0 = [('input', InputLayer),
                ('dropoutf', DropoutLayer),
@@ -65,8 +65,8 @@ for i in range(2,31):
                ('dropout0', DropoutLayer),
                ('dense1', DenseLayer),
                ('dropout1', DropoutLayer),
-               ('dense2', DenseLayer),
-               ('dropout2', DropoutLayer),
+               #('dense2', DenseLayer),
+              # ('dropout2', DropoutLayer),
                #('dense3', DenseLayer),
                #('dropout3', DropoutLayer),
                ('output', DenseLayer)]
@@ -76,23 +76,23 @@ for i in range(2,31):
                      
                      dropoutf_p=0.15,
     
-                     dense0_num_units=300,
+                     dense0_num_units=800,
                      dense0_nonlinearity=leaky_rectify, # leaky_rectify, rectify
                      #dense0_W=lg.init.Uniform(),
     
                      dropout0_p=0.25,
     
-                     dense1_num_units=150,
+                     dense1_num_units=400,
                      dense1_nonlinearity=leaky_rectify,
                      #dense1_W=lg.init.Uniform(),
     
                      dropout1_p=0.25,
                      
-                     dense2_num_units=75,
-                     dense2_nonlinearity=leaky_rectify,
+                     #dense2_num_units=300,
+                     #dense2_nonlinearity=leaky_rectify,
                      #dense2_W=lg.init.Uniform(),
                      
-                     dropout2_p=0.25,
+                     #dropout2_p=0.25,
                      
                      #dense3_num_units=100,
                      #dense3_nonlinearity=rectify,
@@ -105,20 +105,20 @@ for i in range(2,31):
                      #output_W=lg.init.Uniform(),
     
                      #update=nesterov_momentum,
-                     #update_learning_rate=theano.shared(float32(0.01)),
-                     #update_momentum=theano.shared(float32(0.9)),
-                                          
-                     update=adagrad,
                      update_learning_rate=theano.shared(float32(0.01)),
+                     update_momentum=theano.shared(float32(0.9)),
+                                          
+                     #update=adagrad,
+                     #update_learning_rate=theano.shared(float32(0.01)),
                      #update_epsilon=1e-06,
                      
                      on_epoch_finished=[
-                            AdjustVariable('update_learning_rate', start=0.03, stop=0.0001),
+                            AdjustVariable('update_learning_rate', start=0.05, stop=0.0001),
                             #AdjustVariable('update_momentum', start=0.9, stop=0.999),
-                            EarlyStopping(patience=100)
+                            EarlyStopping(patience=50)
                             ],
                      
-                     eval_size=0.2,
+                     eval_size=0.5,
                      verbose=1,
                      max_epochs=10000)
                      
@@ -127,4 +127,4 @@ for i in range(2,31):
     # 0.53851
     
     # Submission 
-    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_151123_'+str(i)+'.csv')
+    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_2L_151126_'+str(i)+'.csv')
