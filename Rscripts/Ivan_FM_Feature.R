@@ -18,6 +18,8 @@ p <- read.csv('PythonScripts/lasagne/V1/lasagne_3L_tsne2_ffm_1.csv', header = F)
 p <- read.csv('libffm/output_file.csv', header = F);val <- validation; val$Y <- p[,1]
 p <- read.table('vowpal_wabbit/predictions/out.txt', header = F);val <- validation; val$Y <- p[,1]
 p <- read.csv('ReadyForBlending/xgboost_1.csv', header = T);val <- validation; val$Y <- p[,1]
+p <- read.csv('libffm/output_libsvm.csv', header = F);val <- validation; val$Y <- p[,1]
+
 
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))

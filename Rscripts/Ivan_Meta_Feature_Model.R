@@ -1,6 +1,6 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
-library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
+library(xgboost);library(pROC);require(randomForest);library(caret);
 load('data/9_train_validation_test_20151122.RData');ls()
 # load('data/v5/Ivan_Train_Test_Scale_Center_20151123.RData');
 options(scipen=999);set.seed(19890624)
@@ -24,7 +24,7 @@ options(scipen=999);set.seed(19890624)
 # binary:logistic
 
 # 1. GBM
-for (i in 1:250){
+for (i in 16:250){
     set.seed(8*i)
     
     inTraining <- createDataPartition(total$flag_class, p = .2, list = FALSE)
@@ -62,23 +62,23 @@ for (i in 1:250){
 # # p_rf = predict(bst,dtest)
 # p_rf = predict(bst,dvalid)
 # 
-# # 3. generalized linear model
-#     bst <- xgb.train(
-#         data = dtrain, nround = 100, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
-#         nthread = 4, alpha = 1e-3, lambda = 1e-6, print.every.n = 10
-#     )
-# # p_glm = predict(bst,dtest)
-# p_glm = predict(bst,dvalid)
+# 3. generalized linear model
+    bst <- xgb.train(
+        data = dtrain, nround = 100, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
+        nthread = 4, alpha = 1e-3, lambda = 1e-6, print.every.n = 10
+    )
+# p_glm = predict(bst,dtest)
+p_glm = predict(bst,dvalid)
 
 p <- 0.75*p_gbm + 0.25*p_glm
 
 #########################
 ### Validation ##########
 #########################
-val <- test
-# val <- validation
+# val <- test
+val <- validation
 # p <- ifelse(p_gbm>0.5, 1, 0)
-val$Y <- p_gbm
+val$Y <- p_glm
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$Y
