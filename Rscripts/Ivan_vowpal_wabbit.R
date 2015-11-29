@@ -21,23 +21,19 @@ model = "models/mdl.vw"
 # AUC using perf - Download at: osmot.cs.cornell.edu/kddcup/software.html
 # Shows files in the working directory: /data
 list.files('data/')
-grid = expand.grid(eta=c(0.15, 0.25, 0.5),
-                   extra=c(#'--holdout_period 2 --normalized --adaptive --invariant', 
-                           #'--holdout_period 5 --normalized --adaptive --invariant', 
-                           '--holdout_period 10 --normalized --adaptive --invariant', 
-                           #'--nn 60 --holdout_period 2 --normalized --adaptive --invariant', 
-                           #'--nn 60 --holdout_period 5 --normalized --adaptive --invariant',
-                           '--nn 60 --holdout_period 10 --normalized --adaptive --invariant',
-                           '-q:: --holdout_period 5 --normalized --adaptive --invariant',
-                           '-q:: --holdout_period 10 --normalized --adaptive --invariant',
-                           '-q:: --holdout_period 2 --normalized --adaptive --invariant'))
+grid = expand.grid(eta=c(1),
+                   extra=c('--holdout_period 10000 --normalized --adaptive --invariant', 
+                           '--nn 80 --holdout_period 10000 --normalized --adaptive --invariant',
+                           '-q:: --holdout_period 10000 --normalized --adaptive --invariant'))
 for(i in 1:nrow(grid)){
     g = grid[i, ]
-    out_probs = paste0("predictions/submission_vw_20151126_", g[['eta']], "_", i,".txt")
+    out_probs = paste0("predictions/submission_vw_20151126_NoReg_", g[['eta']], "_", i,".txt")
+    model = paste0("models/mdl",i,".vw")
+    # out_probs = paste0("predictions/submission_vw_20151126_0.25_1.txt")
     auc = vw(training_data, test_data, loss = "logistic",
-             model, b = 30, learning_rate = 0.5,#g[['eta']], 
-             passes = 50, l1=NULL, l2=NULL, early_terminate = 10,
-             link_function = "--link=logistic", extra = '--ksvm --kernel linear',#g[['extra']],
+             model, b = 30, learning_rate = g[['eta']], 
+             passes = 10, l1=NULL, l2=NULL, early_terminate = 2,
+             link_function = "--link=logistic", extra = g[['extra']],
              out_probs = out_probs, validation_labels = test_labels, verbose = TRUE, 
              do_evaluation = F, use_perf=FALSE, plot_roc=F)
     #extra='--decay_learning_rate 0.9 --ksvm --kernel linear -q ::'

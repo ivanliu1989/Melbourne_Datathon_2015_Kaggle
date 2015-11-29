@@ -27,9 +27,9 @@ options(scipen=999);set.seed(19890624)
 for (i in 16:250){
     set.seed(8*i)
     
-    inTraining <- createDataPartition(total$flag_class, p = .2, list = FALSE)
+    inTraining <- createDataPartition(total$flag_class, p = .3, list = FALSE)
     test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
-    train <- total[-inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+    train <- total#[-inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
     validation <- total[inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
     train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
@@ -49,8 +49,18 @@ for (i in 16:250){
         )
     p_gbm = predict(bst,dtest)
     # p_gbm = predict(bst,dvalid)
-    write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost/submission_xgboost_20151128_', i,'.csv'))
+    write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost/submission_xgboost_gbm_20151128_', i,'.csv'))
     # write.csv(p_gbm, paste0('submission_xgboost_20151122.csv'))
+    
+    # 3. generalized linear model
+    bst <- xgb.train(
+        data = dtrain, nround = 350, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
+        nthread = 4, alpha = 1e-3, lambda = 1e-6, print.every.n = 10
+    )
+    p_glm = predict(bst,dtest)
+    # p_glm = predict(bst,dvalid)
+    write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost_glm/submission_xgboost_glm_20151128_', i,'.csv'))
+    
 }
 
 # # 2. RF
@@ -62,13 +72,6 @@ for (i in 16:250){
 # # p_rf = predict(bst,dtest)
 # p_rf = predict(bst,dvalid)
 # 
-# 3. generalized linear model
-    bst <- xgb.train(
-        data = dtrain, nround = 100, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
-        nthread = 4, alpha = 1e-3, lambda = 1e-6, print.every.n = 10
-    )
-# p_glm = predict(bst,dtest)
-p_glm = predict(bst,dvalid)
 
 p <- 0.75*p_gbm + 0.25*p_glm
 
@@ -78,7 +81,7 @@ p <- 0.75*p_gbm + 0.25*p_glm
 # val <- test
 val <- validation
 # p <- ifelse(p_gbm>0.5, 1, 0)
-val$Y <- p_glm
+val$Y <- p_gbm
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$Y

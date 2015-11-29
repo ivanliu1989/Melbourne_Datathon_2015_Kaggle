@@ -1,13 +1,14 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-load('data/Ivan_Train_Test_Scale_Center_20151116.RData');ls()
+load('data/9_train_validation_test_20151122.RData');ls()
 options(scipen=999);set.seed(19890624)
 library(h2o)
 localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 
-test <- train[train$EVENT_ID %in% c(101183757,101183885,101184013),]#validation
-train <- train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+
+test <- test#train[train$EVENT_ID %in% c(101183757,101183885,101184013),]#validation
+train <- train#train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
@@ -17,57 +18,55 @@ validation$flag_class <- as.factor(validation$flag_class)
 train_df <- as.h2o(localH2O, train) # train
 test_df <- as.h2o(localH2O, test) # test
 valid_df <- as.h2o(localH2O, validation) # test
-independent <- colnames(train)[c(3:(ncol(train)-3))]
-independent <- independent[!independent %in% c('tsne_3d_1','tsne_3d_2','tsne_3d_3')]
+independent <- colnames(train)[c(3:(ncol(train)-2))]
 dependent <- "flag_class"
 
 # gbm
-fit <- h2o.gbm(
-    y = dependent, x = independent, data = train_df, #train_df | total_df
-    n.trees = 1000, interaction.depth = 8, n.minobsinnode = 1,
-    shrinkage = 0.05, distribution = "bernoulli", n.bins = 20,  #AUTO
-    importance = F
-)
-p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
-p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
+# fit <- h2o.gbm(
+#     y = dependent, x = independent, training_frame = train_df, #train_df | total_df
+#     ntrees = 1000, max_depth = 8, min_rows = 2,
+#     learn_rate = 0.15, distribution = "bernoulli", nbins_cats = 20,  #AUTO
+#     importance = F
+# )
+# # p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+# p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
 
 # deeplearning
 fit <-
     h2o.deeplearning(
-        y = dependent, x = independent, data = train_df, classification = T,
-        activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout" nfolds = 5, 
-        hidden = c(64,32), adaptive_rate = T, rho = 0.99, 
-        epsilon = 1e-4, rate = 0.01, rate_decay = 0.9, # rate_annealing = , 
-        momentum_start = 0.5, momentum_stable = 0.99, # momentum_ramp
-        nesterov_accelerated_gradient = F, input_dropout_ratio = 0.5, hidden_dropout_ratios = c(0.5,0.5), 
-        l2 = 3e-6, max_w2 = 2, #Rect
-        loss = 'CrossEntropy', classification_stop = -1,
-        diagnostics = T, variable_importances = F, ignore_const_cols = T,
-        force_load_balance = T, replicate_training_data = T, shuffle_training_data = T,
-        sparse = F, epochs = 100 #, reproducible, score_validation_sampling seed = 8, 
+        y = dependent, x = independent, training_frame = train_df, overwrite_with_best_model = T, #autoencoder
+        use_all_factor_levels = T, activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout"
+        hidden = c(800,500,300), epochs = 50, train_samples_per_iteration = -2, adaptive_rate = T, rho = 0.99, 
+        epsilon = 1e-6, rate = 0.02, rate_decay = 0.9, momentum_start = 0.9, momentum_stable = 0.99,
+        nesterov_accelerated_gradient = T, input_dropout_ratio = 0.25, hidden_dropout_ratios = c(0.15,0.15,0.15), 
+        l1 = NULL, l2 = NULL, loss = 'CrossEntropy', classification_stop = 0.001,
+        diagnostics = T, variable_importances = F, fast_mode = F, ignore_const_cols = T,
+        force_load_balance = T, replicate_training_data = T, shuffle_training_data = T
     )
-p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+# p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
 p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
 
 # random forest
 fit <-
     h2o.randomForest(
-        y = dependent, x = independent, data = train_df, #train_df | total_df #validation_frame
-        ntree = 2000, depth = 10, mtries = 7, sample.rate = 0.6, nbins = 16, importance = F
+        y = dependent, x = independent, training_frame = train_df, mtries = -1, 
+        ntrees = 2000, max_depth = 10, sample.rate = 0.6, min_rows = 4, 
+        nbins = 16, nbins_cats = 50, binomial_double_trees = T
     )
-p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+# p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
 p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
 
 # glm   
 fit <-
     h2o.glm(
-        y = dependent, x = independent, data = train_df, #train_df | total_df
-        family = 'binomial', link = 'logit',alpha = 0.5, # 1 lasso 0 ridge
-        lambda = 1e-01, lambda_search = T, nlambda = 55, lambda.min.ratio = 1e-08,
-        strong_rules = T, standardize = T, intercept = T, use_all_factor_levels = T,
-        epsilon = 1e-4, iter.max = 900, higher_accuracy = T, disable_line_search = F
+        y = dependent, x = independent, training_frame = train_df, #train_df | total_df
+        max_iterations = 100, beta_epsilon = 1e-4, solver = "L_BFGS", #IRLSM  L_BFGS
+        standardize = T, family = 'binomial', link = 'logit', alpha = 0.5, # 1 lasso 0 ridge
+        lambda = 0, lambda_search = T, nlambda = 55, #lambda_min_ratio = 1e-08,
+        intercept = T
+        #higher_accuracy = T, disable_line_search = F, use_all_factor_levels = T,strong_rules = T
     )
-p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+# p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
 p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
 
 
@@ -94,6 +93,3 @@ print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.corr
 prediction <- as.factor(ifelse(pred_fin[,2] >=0.5, 1, 0))
 confusionMatrix(as.factor(val_fin$PRED_PROFIT_LOSS_3), prediction)
 
-### New Calc
-rocobj <- roc(val$flag_class, val$Y);print(auc(rocobj)) 
-print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
