@@ -36,10 +36,10 @@ fit <-
     h2o.deeplearning(
         y = dependent, x = independent, training_frame = train_df, overwrite_with_best_model = T, #autoencoder
         use_all_factor_levels = T, activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout"
-        hidden = c(800,500,300), epochs = 50, train_samples_per_iteration = -2, adaptive_rate = T, rho = 0.99, 
+        hidden = c(300,150,75), epochs = 12, train_samples_per_iteration = -2, adaptive_rate = T, rho = 0.99, 
         epsilon = 1e-6, rate = 0.02, rate_decay = 0.9, momentum_start = 0.9, momentum_stable = 0.99,
         nesterov_accelerated_gradient = T, input_dropout_ratio = 0.25, hidden_dropout_ratios = c(0.15,0.15,0.15), 
-        l1 = NULL, l2 = NULL, loss = 'CrossEntropy', classification_stop = 0.001,
+        l1 = NULL, l2 = NULL, loss = 'CrossEntropy', classification_stop = 0.01,
         diagnostics = T, variable_importances = F, fast_mode = F, ignore_const_cols = T,
         force_load_balance = T, replicate_training_data = T, shuffle_training_data = T
     )
@@ -50,8 +50,8 @@ p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
 fit <-
     h2o.randomForest(
         y = dependent, x = independent, training_frame = train_df, mtries = -1, 
-        ntrees = 2000, max_depth = 10, sample.rate = 0.6, min_rows = 4, 
-        nbins = 16, nbins_cats = 50, binomial_double_trees = T
+        ntrees = 800, max_depth = 16, sample.rate = 0.632, min_rows = 1, 
+        nbins = 20, nbins_cats = 1024, binomial_double_trees = T
     )
 # p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
 p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
@@ -68,7 +68,6 @@ fit <-
     )
 # p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
 p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-
 
 #########################
 ### Validation ##########
@@ -93,3 +92,5 @@ print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.corr
 prediction <- as.factor(ifelse(pred_fin[,2] >=0.5, 1, 0))
 confusionMatrix(as.factor(val_fin$PRED_PROFIT_LOSS_3), prediction)
 
+### Submission
+write.csv(p, paste0('ReadyForBlending/submission/h2o_glm/submission_h2o_glm_20151128_.csv'))
