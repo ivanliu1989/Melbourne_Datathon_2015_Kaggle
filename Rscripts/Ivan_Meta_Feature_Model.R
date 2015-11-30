@@ -42,14 +42,14 @@ for (i in 16:250){
     watchlist <- list(eval = dvalid, train = dtrain)
     
     bst <-
-        xgb.train(
-            data = dtrain, max.depth = 6, eta = 0.02, nround = 1500, maximize = F, min_child_weight = 2, colsample_bytree = 1, #early.stop.round = 100,
+        xgb.train( # max.depth = 6, eta = 0.02, nround = 1200,
+            data = dtrain, max.depth = 4, eta = 0.15, nround = 500, maximize = F, min_child_weight = 1, colsample_bytree = 1, #early.stop.round = 100,
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', #num_parallel_tree = 1, gamma = 0.1,
             watchlist = watchlist
         )
     p_gbm = predict(bst,dtest)
     # p_gbm = predict(bst,dvalid)
-    write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost/submission_xgboost_gbm_20151128_', i,'.csv'))
+    write.csv(p_gbm, paste0('ReadyForBlending/submission/test_n/xgboost_gbm/submission_xgboost_gbm_20151128_test_n.csv'))
     # write.csv(p_gbm, paste0('submission_xgboost_20151122.csv'))
     
     # 3. generalized linear model
@@ -59,7 +59,7 @@ for (i in 16:250){
     )
     p_glm = predict(bst,dtest)
     # p_glm = predict(bst,dvalid)
-    write.csv(p_gbm, paste0('ReadyForBlending/submission/xgboost_glm/submission_xgboost_glm_20151128_', i,'.csv'))
+    write.csv(p_glm, paste0('ReadyForBlending/submission/test/xgboost_glm/submission_xgboost_glm_20151128_test.csv'))
     
 }
 
@@ -81,7 +81,7 @@ p <- 0.75*p_gbm + 0.25*p_glm
 # val <- test
 val <- validation
 # p <- ifelse(p_gbm>0.5, 1, 0)
-val$Y <- p_gbm
+val$Y <- p_glm
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$Y

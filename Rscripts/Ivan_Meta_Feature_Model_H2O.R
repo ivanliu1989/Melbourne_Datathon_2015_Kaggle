@@ -8,7 +8,7 @@ localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 
 
 test <- test#train[train$EVENT_ID %in% c(101183757,101183885,101184013),]#validation
-train <- train#train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+train <- total#train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
@@ -32,19 +32,25 @@ dependent <- "flag_class"
 # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
 
 # deeplearning
-fit <-
-    h2o.deeplearning(
-        y = dependent, x = independent, training_frame = train_df, overwrite_with_best_model = T, #autoencoder
-        use_all_factor_levels = T, activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout"
-        hidden = c(300,150,75), epochs = 12, train_samples_per_iteration = -2, adaptive_rate = T, rho = 0.99, 
-        epsilon = 1e-6, rate = 0.02, rate_decay = 0.9, momentum_start = 0.9, momentum_stable = 0.99,
-        nesterov_accelerated_gradient = T, input_dropout_ratio = 0.25, hidden_dropout_ratios = c(0.15,0.15,0.15), 
-        l1 = NULL, l2 = NULL, loss = 'CrossEntropy', classification_stop = 0.01,
-        diagnostics = T, variable_importances = F, fast_mode = F, ignore_const_cols = T,
-        force_load_balance = T, replicate_training_data = T, shuffle_training_data = T
-    )
-# p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
-p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
+for(i in 1:50){
+    set.seed(i*8)
+    fit <-
+        h2o.deeplearning(
+            y = dependent, x = independent, training_frame = train_df, overwrite_with_best_model = T, #autoencoder
+            use_all_factor_levels = T, activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout"
+            hidden = c(300,150,75), epochs = 12, train_samples_per_iteration = -2, adaptive_rate = T, rho = 0.99, 
+            epsilon = 1e-6, rate = 0.02, rate_decay = 0.9, momentum_start = 0.9, momentum_stable = 0.99,
+            nesterov_accelerated_gradient = T, input_dropout_ratio = 0.25, hidden_dropout_ratios = c(0.15,0.15,0.15), 
+            l1 = NULL, l2 = NULL, loss = 'CrossEntropy', classification_stop = 0.01,
+            diagnostics = T, variable_importances = F, fast_mode = F, ignore_const_cols = T,
+            force_load_balance = T, replicate_training_data = T, shuffle_training_data = T
+        )
+    p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+    # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
+    write.csv(p, paste0('ReadyForBlending/submission/h2o_nnet/submission_h2o_nnet_20151128_',i,'.csv'))
+    
+}
+
 
 # random forest
 fit <-
@@ -93,4 +99,4 @@ prediction <- as.factor(ifelse(pred_fin[,2] >=0.5, 1, 0))
 confusionMatrix(as.factor(val_fin$PRED_PROFIT_LOSS_3), prediction)
 
 ### Submission
-write.csv(p, paste0('ReadyForBlending/submission/h2o_glm/submission_h2o_glm_20151128_.csv'))
+write.csv(p, paste0('ReadyForBlending/submission/h2o_rf/submission_h2o_rf_20151128_.csv'))

@@ -1,8 +1,8 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc(); library(caret)
 # source('Rscripts/12_log_transformation.R')
-load('data/1_complete_data.RData');
-load('data/2_test.RData');ls()
+load('data/v1/1_complete_data.RData');
+load('data/v1/2_test.RData');ls()
 
 
 #################################
@@ -58,13 +58,14 @@ all$BL_RATIO[is.na(all$BL_RATIO)] <- median(all$BL_RATIO, na.rm=T)
 all$AVG_TAKEN_HOUR_INPLAY[is.na(all$AVG_TAKEN_HOUR_INPLAY)] <- median(all$AVG_TAKEN_HOUR_INPLAY, na.rm=T)
 all$AVG_TAKEN_HOUR_OUTPLAY[is.na(all$AVG_TAKEN_HOUR_OUTPLAY)] <- median(all$AVG_TAKEN_HOUR_OUTPLAY, na.rm=T)
 
-# apply(all,2, function(x) mean(is.na(x)))
+apply(test,2, function(x) mean(is.na(x)))==0
+all <- test[is.na(test$AVG_PLACED_TAKEN_TIME_INPLAY),apply(test,2, function(x) mean(is.na(x)))==0]
 
 ##########################
 # 3. Invest feature ######
 ##########################
 all$INVEST <- all$TRANSACTION_COUNT_INPLAY * all$AVG_BET_SIZE_INPLAY + all$TRANSACTION_COUNT_OUTPLAY * all$AVG_BET_SIZE_OUTPLAY
-
+test_n <- all[,c(1:34, 37, 35:36)]
 ##############################
 # 4. Log transformation ######
 ##############################
@@ -142,3 +143,5 @@ dim(train); dim(validation)
 # 8. Output #######
 ###################
 save(train, validation, total, test, file='data/9_train_validation_test_20151122.RData')
+
+save(test_n, file='data/9_test_n_20151122.RData')
