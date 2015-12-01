@@ -4,11 +4,15 @@ library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data
 # load('data/Ivan_Train_Test_Scale_Center_20151116.RData');ls()
 load('data/9_train_validation_test_20151122.RData');ls()
 options(scipen=999);set.seed(19890624)
+
 # 
 # write.csv(test, '../python_test_ffm_meta.csv', row.names = F)
 # write.csv(train, '../python_train_ffm_meta.csv', row.names = F)
 # write.csv(validation, '../python_validation_ffm_meta.csv', row.names = F)
 # write.csv(total, '../python_total_ffm_meta.csv', row.names = F)
+# write.csv(validation, '../python_validation_ffm_meta.csv', row.names = F)
+# write.csv(total_n, '../python_total_n_ffm_meta.csv', row.names = F)
+# write.csv(test_n, '../python_test_n_ffm_meta.csv', row.names = F)
 # write.csv(p_gbm, 'ReadyForBlending/xgboost_1.csv', row.names = F)
 
 #########################
@@ -18,7 +22,7 @@ p <- read.csv('PythonScripts/lasagne/V1/lasagne_3L_tsne2_ffm_1.csv', header = F)
 p <- read.csv('libffm/output_file.csv', header = F);val <- validation; val$Y <- p[,1]
 p <- read.table('vowpal_wabbit/predictions/out.txt', header = F);val <- validation; val$Y <- p[,1]
 p <- read.csv('ReadyForBlending/xgboost_1.csv', header = T);val <- validation; val$Y <- p[,1]
-p <- read.csv('libffm/output_file.csv', header = T, sep = " ");val <- validation; val$Y <- p[,3]
+p <- read.csv('libffm/output_file_c100.csv', header = T, sep = " ");val <- validation; val$Y <- p[,3]
 
 
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')

@@ -22,7 +22,7 @@ get_feature_type <- function(X, threshold = 50, verbose = FALSE) {
 to_vw <- function(dt, feat, target, path){
     dt[,target] = ifelse(dt[,target] == 'Y', 1, -1)
     dt = data.table::setDT(dt[,feat])
-    data_types = get_feature_type(dt[, setdiff(names(dt), target), with=F], threshold = 30)
+    data_types = get_feature_type(dt[, setdiff(names(dt), target), with=F], threshold = 50)
     print(data_types)
     namespaces = list(n = list(varName = data_types$num_vars, keepSpace=F),
                       c = list(varName = data_types$fact_vars, keepSpace=F))

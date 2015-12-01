@@ -22,7 +22,7 @@ def load_train_data(path):
     df = pd.read_csv(path)
     X = df.values.copy()
     np.random.shuffle(X)
-    X, labels = X[:, 2:57].astype(np.float32), X[:, 57] # 46
+    X, labels = X[:, 2:35].astype(np.float32), X[:, 36] # 46 2:35 37  2:57  57
     encoder = LabelEncoder()
     y = encoder.fit_transform(labels).astype(np.int32)
     scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
@@ -32,7 +32,7 @@ def load_train_data(path):
 def load_test_data(path, scaler):
     df = pd.read_csv(path)
     X = df.values.copy()
-    X, ids = X[:, 2:57].astype(np.float32), X[:, 0:1].astype(int) # 46
+    X, ids = X[:, 2:35].astype(np.float32), X[:, 0:1].astype(int) # 46
     X = scaler.transform(X)
     return X, ids
     
@@ -43,8 +43,8 @@ def make_submission(clf, X_test, ids, encoder, name='lasagne_nnet.csv'):
 
 # Load Data    
 np.random.seed(888888)
-X, y, encoder,scaler = load_train_data('../../python_total_ffm_meta.csv')
-X_test, ids = load_test_data('../../python_test_ffm_meta.csv', scaler)
+X, y, encoder,scaler = load_train_data('../../python_total_n_ffm_meta.csv')
+X_test, ids = load_test_data('../../python_test_n_ffm_meta.csv', scaler)
 num_classes = len(encoder.classes_)
 num_features = X.shape[1]
 
@@ -65,8 +65,8 @@ for i in range(1,51):
                ('dropout0', DropoutLayer),
                ('dense1', DenseLayer),
                ('dropout1', DropoutLayer),
-               #('dense2', DenseLayer),
-              # ('dropout2', DropoutLayer),
+               ('dense2', DenseLayer),
+               ('dropout2', DropoutLayer),
                #('dense3', DenseLayer),
                #('dropout3', DropoutLayer),
                ('output', DenseLayer)]
@@ -82,17 +82,17 @@ for i in range(1,51):
     
                      dropout0_p=0.25,
     
-                     dense1_num_units=400,
+                     dense1_num_units=500,
                      dense1_nonlinearity=leaky_rectify,
                      #dense1_W=lg.init.Uniform(),
     
                      dropout1_p=0.25,
                      
-                     #dense2_num_units=300,
-                     #dense2_nonlinearity=leaky_rectify,
+                     dense2_num_units=300,
+                     dense2_nonlinearity=leaky_rectify,
                      #dense2_W=lg.init.Uniform(),
                      
-                     #dropout2_p=0.25,
+                     dropout2_p=0.25,
                      
                      #dense3_num_units=100,
                      #dense3_nonlinearity=rectify,
@@ -127,4 +127,4 @@ for i in range(1,51):
     # 0.53851
     
     # Submission 
-    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_2L_151126_'+str(i)+'.csv')
+    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_n_151126_'+str(i)+'.csv')

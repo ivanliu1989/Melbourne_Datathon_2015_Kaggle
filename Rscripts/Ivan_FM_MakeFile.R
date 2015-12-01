@@ -7,7 +7,8 @@ options(scipen=999);set.seed(19890624)
 head(train)
 
 ffmlib_convert <- function(dt){
-    dt <- dt[,c(58, 3:57)]
+    # dt <- dt[,c(58, 3:57)]
+    dt <- dt[,c(37, 3:35)]
     dt$flag_class <- ifelse(dt$flag_class == 'Y', 1, 0)
     for(i in 2:ncol(dt)){
         print(i)
@@ -24,15 +25,20 @@ train_ffm <- ffmlib_convert(train)
 total_ffm <- ffmlib_convert(total)
 test_ffm <- ffmlib_convert(test)
 valid_ffm <- ffmlib_convert(validation)
+test_n_ffm <- ffmlib_convert(test_n)
+total_n_ffm <- ffmlib_convert(total_n)
 
 write.table(train_ffm, file='../train_ffm.txt', quote = F, row.names = F, col.names = F)
 write.table(total_ffm, file='../total_ffm.txt', quote = F, row.names = F, col.names = F)
 write.table(test_ffm, file='../test_ffm.txt', quote = F, row.names = F, col.names = F)
 write.table(valid_ffm, file='../valid_ffm.txt', quote = F, row.names = F, col.names = F)
+write.table(test_n_ffm, file='../test_n_ffm.txt', quote = F, row.names = F, col.names = F)
+write.table(total_n_ffm, file='../total_n_ffm.txt', quote = F, row.names = F, col.names = F)
 
 
 svmlib_convert <- function(dt){
-    dt <- dt[,c(58, 3:57)]
+    # dt <- dt[,c(58, 3:57)]
+    dt <- dt[,c(37, 3:35)]
     dt$flag_class <- ifelse(dt$flag_class == 'Y', 1, 0)
     for(i in 2:ncol(dt)){
         print(i)
@@ -49,8 +55,12 @@ train_svm <- svmlib_convert(train)
 total_svm <- svmlib_convert(total)
 test_svm <- svmlib_convert(test)
 valid_svm <- svmlib_convert(validation)
+test_n_svm <- svmlib_convert(test_n)
+total_n_svm <- svmlib_convert(total_n)
 
 write.table(train_svm, file='../train_svm.txt', quote = F, row.names = F, col.names = F)
 write.table(total_svm, file='../total_svm.txt', quote = F, row.names = F, col.names = F)
 write.table(test_svm, file='../test_svm.txt', quote = F, row.names = F, col.names = F)
 write.table(valid_svm, file='../valid_svm.txt', quote = F, row.names = F, col.names = F)
+write.table(test_n_svm, file='../test_n_svm.txt', quote = F, row.names = F, col.names = F)
+write.table(total_n_svm, file='../total_n_svm.txt', quote = F, row.names = F, col.names = F)
