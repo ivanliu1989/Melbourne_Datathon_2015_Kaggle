@@ -47,7 +47,7 @@ for(i in 1:50){
         )
     # p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
     p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-    write.csv(p, paste0('ReadyForBlending/submission/test/h2o_nnet/submission_h2o_nnet_20151129_',i,'.csv'))
+    write.csv(p, paste0('ReadyForBlending/submission/test_n/h2o_nnet/submission_h2o_nnet_n_20151129_',i,'.csv'))
     
 }
 
@@ -99,4 +99,4 @@ prediction <- as.factor(ifelse(pred_fin[,2] >=0.5, 1, 0))
 confusionMatrix(as.factor(val_fin$PRED_PROFIT_LOSS_3), prediction)
 
 ### Submission
-write.csv(p, paste0('ReadyForBlending/submission/test_n/h2o_glm/submission_h2o_glm_n_20151128_.csv'))
+write.csv(p, paste0('ReadyForBlending/submission/test_n/h2o_rf/submission_h2o_rf_n_20151128_.csv'))
