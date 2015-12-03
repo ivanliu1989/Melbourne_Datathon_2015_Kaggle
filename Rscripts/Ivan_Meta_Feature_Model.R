@@ -1,7 +1,7 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(caret);
-load('data/9_train_validation_test_20151122.RData');ls()
+load('data/9_train_validation_test_20151202.RData');ls()
 # load('data/v5/Ivan_Train_Test_Scale_Center_20151123.RData');
 options(scipen=999);set.seed(19890624)
 
@@ -43,23 +43,23 @@ for (i in 16:250){
     
     bst <-
         xgb.train( # max.depth = 6, eta = 0.02, nround = 1200,
-            data = dtrain, max.depth = 4, eta = 0.15, nround = 500, maximize = F, min_child_weight = 1, colsample_bytree = 1, #early.stop.round = 100,
+            data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 1, colsample_bytree = 1, #early.stop.round = 100,
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', #num_parallel_tree = 1, gamma = 0.1,
             watchlist = watchlist
         )
     p_gbm = predict(bst,dtest)
     # p_gbm = predict(bst,dvalid)
-    write.csv(p_gbm, paste0('ReadyForBlending/submission/test_n/xgboost_gbm/submission_xgboost_gbm_20151128_test_n.csv'))
+    write.csv(p_gbm, paste0('ReadyForBlending/submission/test/xgboost_gbm/submission_xgboost_gbm_20151203.csv'))
     # write.csv(p_gbm, paste0('submission_xgboost_20151122.csv'))
     
     # 3. generalized linear model
     bst <- xgb.train(
-        data = dtrain, nround = 350, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
+        data = dtrain, nround = 550, watchlist = watchlist, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
         nthread = 4, alpha = 1e-3, lambda = 1e-6, print.every.n = 10
     )
     p_glm = predict(bst,dtest)
     # p_glm = predict(bst,dvalid)
-    write.csv(p_glm, paste0('ReadyForBlending/submission/test/xgboost_glm/submission_xgboost_glm_20151128_test.csv'))
+    write.csv(p_glm, paste0('ReadyForBlending/submission/test/xgboost_glm/submission_xgboost_glm_20151202_test.csv'))
     
 }
 
@@ -81,7 +81,7 @@ p <- 0.75*p_gbm + 0.25*p_glm
 # val <- test
 val <- validation
 # p <- ifelse(p_gbm>0.5, 1, 0)
-val$Y <- p_glm
+val$Y <- p_gbm
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 val$INVEST_PERCENT <- val$INVEST/val$TOT_INVEST * val$Y

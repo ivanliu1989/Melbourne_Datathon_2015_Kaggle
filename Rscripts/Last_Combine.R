@@ -16,16 +16,14 @@ total_23$identifier <- paste0(total_23$ACCOUNT_ID, total_23$EVENT_ID)
 total_22 <- total_22[total_22$identifier %in% total_23$identifier, ]
 
 
-total <- merge(total_22[,1:59],total_23[,c('ACCOUNT_ID','EVENT_ID','EXPERIENCE', 'WIN_HIST', 'MARGIN', 'SD_MARGIN_EVENT', 'AVG_MARGIN_EVENT', 'WIN_RATE', 'FREQUENCY', 'BACK_RATIO',
-                                    'BACK_RATIO_BET', 'AVG_COUNTRY_RATIO', 'SD_COUNTRY_RATIO', 'CANCEL_TRANS_RATIO', 'CANCEL_AMOUNTS_RATIO', 'PNT_BET_SIZE', 'PNT_BET_COUNT', 'PAST_LAG_1', 'PAST_LAG_2')]
+total <- merge(total_22[,1:59],total_23[,c('ACCOUNT_ID','EVENT_ID', 'PAST_LAG_1')]
                ,all.x = T, all.y = T, by = c('ACCOUNT_ID','EVENT_ID'))
 dim(total)
-total <- total[,c(1:56,60:76,57:59)]
+total <- total[,c(1:56,60,57:59)]
 
-test <- merge(test_22[,1:59],test_23[,c('ACCOUNT_ID','EVENT_ID','EXPERIENCE', 'WIN_HIST', 'MARGIN', 'SD_MARGIN_EVENT', 'AVG_MARGIN_EVENT', 'WIN_RATE', 'FREQUENCY', 'BACK_RATIO',
-                                           'BACK_RATIO_BET', 'AVG_COUNTRY_RATIO', 'SD_COUNTRY_RATIO', 'CANCEL_TRANS_RATIO', 'CANCEL_AMOUNTS_RATIO', 'PNT_BET_SIZE', 'PNT_BET_COUNT', 'PAST_LAG_1', 'PAST_LAG_2')]
+test <- merge(test_22[,1:59],test_23[,c('ACCOUNT_ID','EVENT_ID', 'PAST_LAG_1')]
                ,all.x = F, all.y = T, by = c('ACCOUNT_ID','EVENT_ID'))
-test <- test[,c(1:56,60:76,57:59)]
+test <- test[,c(1:56,60,57:59)]
 
 total_final <- total
 test_final <- test

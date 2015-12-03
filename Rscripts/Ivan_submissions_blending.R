@@ -1,6 +1,6 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
-load('data/9_train_validation_test_20151122.RData');ls()
+load('data/9_train_validation_test_20151202.RData');ls()
 
 submit_xgb_gbm <- list.files('ReadyForBlending/submission/test/xgboost_gbm/', full.names = T)
 submit_vw <- list.files('ReadyForBlending/submission/test/vw/', full.names = T)
@@ -59,7 +59,7 @@ head(pred_all); length(pred_all)
 ### Submission ##########
 #########################
 t <- test
-t$Y <- pred_all
+t$Y <- pred_xgb_gbm[,2]
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=t, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 t <- merge(t, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 t$INVEST_PERCENT <- t$INVEST/t$TOT_INVEST * t$Y
@@ -70,9 +70,9 @@ names(pred_fin) <- c('Account_ID', 'PRED_PROFIT_LOSS')
 submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE,na.strings = "")
 submit <- merge(submit,pred_fin,all.x = TRUE,all.y = FALSE)
 table(is.na(submit$PRED_PROFIT_LOSS))
-submit[submit$Account_ID %in% test_n$ACCOUNT_ID, 3] <- submit_n$Prediction * 0.4367089*2
+submit[submit$Account_ID %in% test_n$ACCOUNT_ID, 3] <- 0.4367089#submit_n$Prediction * 0.4367089*2
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-write.csv(submit,'pred/submission_20151202_test_bl.csv',quote = FALSE,row.names = FALSE)
+write.csv(submit,'pred/submission_20151203.csv',quote = FALSE,row.names = FALSE)
 

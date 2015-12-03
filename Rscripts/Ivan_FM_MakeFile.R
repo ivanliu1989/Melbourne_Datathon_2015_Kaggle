@@ -1,14 +1,14 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-load('data/9_train_validation_test_20151122.RData');ls()
+load('data/9_train_validation_test_20151202.RData');ls()
 options(scipen=999);set.seed(19890624)
 
 head(train)
 
 ffmlib_convert <- function(dt){
-    # dt <- dt[,c(58, 3:57)]
-    dt <- dt[,c(37, 3:35)]
+    dt <- dt[,c(75, 3:74)]
+    # dt <- dt[,c(37, 3:35)]
     dt$flag_class <- ifelse(dt$flag_class == 'Y', 1, 0)
     for(i in 2:ncol(dt)){
         print(i)
@@ -37,8 +37,8 @@ write.table(total_n_ffm, file='../total_n_ffm.txt', quote = F, row.names = F, co
 
 
 svmlib_convert <- function(dt){
-    # dt <- dt[,c(58, 3:57)]
-    dt <- dt[,c(37, 3:35)]
+    dt <- dt[,c(75, 3:74)]
+    # dt <- dt[,c(37, 3:35)]
     dt$flag_class <- ifelse(dt$flag_class == 'Y', 1, 0)
     for(i in 2:ncol(dt)){
         print(i)

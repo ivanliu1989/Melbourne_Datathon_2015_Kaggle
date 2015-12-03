@@ -22,7 +22,7 @@ def load_train_data(path):
     df = pd.read_csv(path)
     X = df.values.copy()
     np.random.shuffle(X)
-    X, labels = X[:, 2:35].astype(np.float32), X[:, 36] # 46 2:35 37  2:57  57
+    X, labels = X[:, 2:74].astype(np.float32), X[:, 74] # 46 2:35 37  2:57  57
     encoder = LabelEncoder()
     y = encoder.fit_transform(labels).astype(np.int32)
     scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
@@ -32,7 +32,7 @@ def load_train_data(path):
 def load_test_data(path, scaler):
     df = pd.read_csv(path)
     X = df.values.copy()
-    X, ids = X[:, 2:35].astype(np.float32), X[:, 0:1].astype(int) # 46
+    X, ids = X[:, 2:74].astype(np.float32), X[:, 0:1].astype(int) # 46
     X = scaler.transform(X)
     return X, ids
     
@@ -43,8 +43,8 @@ def make_submission(clf, X_test, ids, encoder, name='lasagne_nnet.csv'):
 
 # Load Data    
 np.random.seed(888888)
-X, y, encoder,scaler = load_train_data('../../python_total_n_ffm_meta.csv')
-X_test, ids = load_test_data('../../python_test_n_ffm_meta.csv', scaler)
+X, y, encoder,scaler = load_train_data('../../python_total_ffm_meta.csv')
+X_test, ids = load_test_data('../../python_test_ffm_meta.csv', scaler)
 num_classes = len(encoder.classes_)
 num_features = X.shape[1]
 
@@ -113,9 +113,9 @@ for i in range(1,51):
                      #update_epsilon=1e-06,
                      
                      on_epoch_finished=[
-                            AdjustVariable('update_learning_rate', start=0.05, stop=0.0001),
+                            AdjustVariable('update_learning_rate', start=0.015, stop=0.0001),
                             #AdjustVariable('update_momentum', start=0.9, stop=0.999),
-                            EarlyStopping(patience=50)
+                            EarlyStopping(patience=20)
                             ],
                      
                      eval_size=0.5,
@@ -127,4 +127,4 @@ for i in range(1,51):
     # 0.53851
     
     # Submission 
-    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_n_151126_'+str(i)+'.csv')
+    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_151202_'+str(i)+'.csv')

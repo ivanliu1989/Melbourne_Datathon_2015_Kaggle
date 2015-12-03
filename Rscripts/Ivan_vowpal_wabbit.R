@@ -3,13 +3,13 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle/vowpal_wabbit')
 rm(list=ls()); gc()
 require(data.table);library(r.vw);library(ggplot2);library(pROC)
-load('../data/9_train_validation_test_20151122.RData');ls()
+load('../data/9_train_validation_test_20151202.RData');ls()
 source('../Rscripts/Ivan_vowpal_wabbit_func.R')
 
 # setwd where the data would be
-feat <- names(total_n)[c(3:(ncol(total_n)-2), ncol(total_n))]; target <- 'flag_class'
-train_dt <- to_vw(total_n, feat, target, 'data/train_dt.vw') # total
-test_dt <- to_vw(test_n, feat, target, 'data/test_dt.vw') # test
+feat <- names(total)[c(3:(ncol(total)-1))]; target <- 'flag_class'
+train_dt <- to_vw(total, feat, target, 'data/train_dt.vw') # total
+test_dt <- to_vw(test, feat, target, 'data/test_dt.vw') # test
 write.table(test_dt$flag_class, file='data/test_labels.txt', row.names = F, col.names = F, quote = F)
 
 training_data='data/train_dt.vw'
@@ -21,18 +21,18 @@ model = "models/mdl.vw"
 # AUC using perf - Download at: osmot.cs.cornell.edu/kddcup/software.html
 # Shows files in the working directory: /data
 list.files('data/')
-grid = expand.grid(eta=c(0.5),
+grid = expand.grid(eta=c(0.5, 1),
                    extra=c('--holdout_period 10000 --normalized --adaptive --invariant', 
                            '--nn 30 --holdout_period 10000 --normalized --adaptive --invariant',
                            '-q:: --holdout_period 10000 --normalized --adaptive --invariant'))
 for(i in 1:nrow(grid)){
     g = grid[i, ]
-    out_probs = paste0("predictions/submission_vw_20151126_NoReg_test_n_", g[['eta']], "_", i,".txt")
+    out_probs = paste0("predictions/submission_vw_20151202_NoReg_", g[['eta']], "_", i,".txt")
     model = paste0("models/mdl",i,".vw")
     # out_probs = paste0("predictions/submission_vw_20151126_0.25_1.txt")
     auc = vw(training_data, test_data, loss = "logistic",
              model, b = 30, learning_rate = g[['eta']], 
-             passes = 10, l1=NULL, l2=NULL, early_terminate = 2,
+             passes = 20, l1=NULL, l2=NULL, early_terminate = 2,
              link_function = "--link=logistic", extra = g[['extra']],
              out_probs = out_probs, validation_labels = test_labels, verbose = TRUE, 
              do_evaluation = F, use_perf=FALSE, plot_roc=F)

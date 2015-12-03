@@ -1,14 +1,14 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-load('data/9_train_validation_test_20151122.RData');ls()
+load('data/9_train_validation_test_20151202.RData');ls()
 options(scipen=999);set.seed(19890624)
 library(h2o)
 localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 
 
-test <- test_n#train[train$EVENT_ID %in% c(101183757,101183885,101184013),]#validation
-train <- total_n#train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+test <- test#train[train$EVENT_ID %in% c(101183757,101183885,101184013),]#validation
+train <- total#train[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
 validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
@@ -47,7 +47,7 @@ for(i in 1:50){
         )
     # p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
     p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-    write.csv(p, paste0('ReadyForBlending/submission/test_n/h2o_nnet/submission_h2o_nnet_n_20151129_',i,'.csv'))
+    write.csv(p, paste0('ReadyForBlending/submission/test/h2o_nnet/submission_h2o_nnet_20151202_',i,'.csv'))
     
 }
 
