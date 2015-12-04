@@ -45,34 +45,47 @@ names(pred_all) <- c('xgb_gbm','xgb_glm', 'h2o_lg', 'vw', 'lasagne', 'h2o_nnet',
 head(pred_all); dim(pred_all)
 save(pred_all, file='pred_all.RData')
 
+rocobj <- roc(ifelse(total$flag_class == 'Y', 1, 0), pred_xgb_gbm[,2]);print(auc(rocobj)) 
+print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
+
+
 ### Model
 load('pred_all.RData')
-library(xgboost);
-train <- pred_all
+library(xgboost);library(caret);library(pROC);
+inTraining <- createDataPartition(pred_all$flag_class, p = .3, list = FALSE)
+train <- pred_all#[-inTraining,]
+validation <- pred_all[inTraining,]
 train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
+validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
 feat <- colnames(train)[c(1:(ncol(train)-1))] # train
 train[,feat] <- apply(train[,feat], 2, as.numeric)
+validation[,feat] <- apply(validation[,feat], 2, as.numeric)
 dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
-watchlist <- list(eval = dtrain, train = dtrain)
+dvalid <- xgb.DMatrix(as.matrix(validation[,feat]), label = validation$flag_class)
+watchlist <- list(eval = dvalid, train = dtrain)
 
 blend_gbm <-
     xgb.train( # max.depth = 6, eta = 0.02, nround = 1200,
-        data = dtrain, max.depth = 4, eta = 0.01, nround = 500, maximize = F, min_child_weight = 1, colsample_bytree = 1, 
+        data = dtrain, max.depth = 6, eta = 0.3, nround = 60, maximize = F, min_child_weight = 1, colsample_bytree = 1, 
         nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', watchlist = watchlist
     )
-pred = predict(blend_gbm,dtrain)
+pred = predict(blend_gbm,dvalid)
 
 blend_glm <- xgb.train(
-    data = dtrain, nround = 550, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
+    data = dtrain, nround = 1500, objective = "binary:logistic", booster = "gblinear", eta = 0.3,
     nthread = 4, alpha = 1e-3, lambda = 1e-6, print.every.n = 10,watchlist = watchlist
 )
-p_glm = predict(bst,dtest)
+pred = predict(blend_glm,dvalid)
 
 blend_rf <-
     xgb.train(
-        data = dtrain, max.depth = 8, eta = 0.01, nround = 1, maximize = F, min_child_weight = 2, colsample_bytree = 1,watchlist = watchlist,
-        nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 1000, gamma = 0.01
+        data = dtrain, max.depth = 10, eta = 0.01, nround = 1, maximize = F, min_child_weight = 2, colsample_bytree = 1,watchlist = watchlist,
+        nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', num_parallel_tree = 100, gamma = 0.01
     )
-pred = predict(bst,dtrain)
+pred = predict(blend_rf,dvalid)
 
-save(blend_gbm,blend_glm,blend_rf, file='blending_algorithm.RData')
+
+rocobj <- roc(validation$flag_class, pred);print(auc(rocobj)) 
+print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
+
+save(blend_gbm,blend_glm,blend_rf, file='data/blending_algorithm.RData')

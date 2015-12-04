@@ -55,11 +55,27 @@ pred_all <- (0.3*pred_xgb_gbm[,2] +  #30
                  )
 head(pred_all); length(pred_all)
 
+### Pred
+load('data/blending_algorithm.RData')
+library(xgboost);
+pred_all <- as.data.frame(cbind(pred_xgb_gbm[,2],pred_xgb_glm[,2],pred_h2o_lg[,4],pred_vw[,1],pred_lasagne[,2],pred_h2o_nnet[,4]
+                                ,pred_fm[,1],pred_svm[,3],pred_h2o_rf[,4],test$flag_class))
+names(pred_all) <- c('xgb_gbm','xgb_glm', 'h2o_lg', 'vw', 'lasagne', 'h2o_nnet', 'fm', 'svm', 'h2o_rf', 'flag_class')
+head(pred_all); dim(pred_all)
+
+train <- pred_all
+train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
+feat <- colnames(train)[c(1:(ncol(train)-1))] # train
+train[,feat] <- apply(train[,feat], 2, as.numeric)
+dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
+pred = predict(blend_gbm,dtrain)
+
+
 #########################
 ### Submission ##########
 #########################
 t <- test
-t$Y <- pred_xgb_gbm[,2]
+t$Y <- pred
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=t, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 t <- merge(t, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 t$INVEST_PERCENT <- t$INVEST/t$TOT_INVEST * t$Y
@@ -74,5 +90,5 @@ submit[submit$Account_ID %in% test_n$ACCOUNT_ID, 3] <- 0.4367089#submit_n$Predic
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-write.csv(submit,'pred/submission_20151203.csv',quote = FALSE,row.names = FALSE)
+write.csv(submit,'pred/submission_20151204_blending_algorithm_gbm.csv',quote = FALSE,row.names = FALSE)
 
