@@ -14,7 +14,7 @@ dim(total_23); dim(total_22)
 total_22$identifier <- paste0(total_22$ACCOUNT_ID, total_22$EVENT_ID)
 total_23$identifier <- paste0(total_23$ACCOUNT_ID, total_23$EVENT_ID)
 total_22 <- total_22[total_22$identifier %in% total_23$identifier, ]
-
+total_22$identifier <- NULL
 
 total <- merge(total_22[,1:59],total_23[,c('ACCOUNT_ID','EVENT_ID', 'PAST_LAG_1')]
                ,all.x = T, all.y = T, by = c('ACCOUNT_ID','EVENT_ID'))

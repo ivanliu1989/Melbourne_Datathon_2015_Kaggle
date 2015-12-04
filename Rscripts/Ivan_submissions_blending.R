@@ -1,6 +1,6 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
-load('data/9_train_validation_test_20151202.RData');ls()
+load('data/9_train_validation_test_20151122.RData');ls()
 
 submit_xgb_gbm <- list.files('ReadyForBlending/submission/test/xgboost_gbm/', full.names = T)
 submit_vw <- list.files('ReadyForBlending/submission/test/vw/', full.names = T)

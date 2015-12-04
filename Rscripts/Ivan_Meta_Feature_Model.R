@@ -1,8 +1,8 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(caret);
-load('data/9_train_validation_test_20151202.RData');ls()
-# load('data/v5/Ivan_Train_Test_Scale_Center_20151123.RData');
+# load('data/9_train_validation_test_20151202.RData');ls()
+load('data/9_train_validation_test_20151122.RData');
 options(scipen=999);set.seed(19890624)
 
 ########################################

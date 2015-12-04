@@ -1,7 +1,7 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data.table);library(caret);library(RSofia);library(h2o)
-load('data/9_train_validation_test_20151202.RData');ls()
+load('data/9_train_validation_test_20151122.RData');ls()
 options(scipen=999);set.seed(19890624)
 library(h2o)
 localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
@@ -45,9 +45,9 @@ for(i in 1:50){
             diagnostics = T, variable_importances = F, fast_mode = F, ignore_const_cols = T,
             force_load_balance = T, replicate_training_data = T, shuffle_training_data = T
         )
-    # p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
-    p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-    write.csv(p, paste0('ReadyForBlending/submission/test/h2o_nnet/submission_h2o_nnet_20151202_',i,'.csv'))
+    p <- as.data.frame(h2o.predict(object = fit, newdata = train_df))
+    # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
+    write.csv(p, paste0('ReadyForBlending/submission/train/h2o_nnet/submission_h2o_nnet_20151202_',i,'.csv'))
     
 }
 
@@ -99,4 +99,4 @@ prediction <- as.factor(ifelse(pred_fin[,2] >=0.5, 1, 0))
 confusionMatrix(as.factor(val_fin$PRED_PROFIT_LOSS_3), prediction)
 
 ### Submission
-write.csv(p, paste0('ReadyForBlending/submission/test_n/h2o_rf/submission_h2o_rf_n_20151128_.csv'))
+write.csv(p, paste0('ReadyForBlending/submission/test/h2o_glm/submission_h2o_glm_201511203.csv'))

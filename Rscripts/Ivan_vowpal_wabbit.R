@@ -3,7 +3,7 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle/vowpal_wabbit')
 rm(list=ls()); gc()
 require(data.table);library(r.vw);library(ggplot2);library(pROC)
-load('../data/9_train_validation_test_20151202.RData');ls()
+load('../data/9_train_validation_test_20151122.RData');ls()
 source('../Rscripts/Ivan_vowpal_wabbit_func.R')
 
 # setwd where the data would be
@@ -30,7 +30,7 @@ for(i in 1:nrow(grid)){
     out_probs = paste0("predictions/submission_vw_20151202_NoReg_", g[['eta']], "_", i,".txt")
     model = paste0("models/mdl",i,".vw")
     # out_probs = paste0("predictions/submission_vw_20151126_0.25_1.txt")
-    auc = vw(training_data, test_data, loss = "logistic",
+    auc = vw(training_data, training_data, loss = "logistic",
              model, b = 30, learning_rate = g[['eta']], 
              passes = 20, l1=NULL, l2=NULL, early_terminate = 2,
              link_function = "--link=logistic", extra = g[['extra']],

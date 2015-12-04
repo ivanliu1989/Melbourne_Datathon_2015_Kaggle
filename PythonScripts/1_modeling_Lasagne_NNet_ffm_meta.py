@@ -22,7 +22,7 @@ def load_train_data(path):
     df = pd.read_csv(path)
     X = df.values.copy()
     np.random.shuffle(X)
-    X, labels = X[:, 2:74].astype(np.float32), X[:, 74] # 46 2:35 37  2:57  57
+    X, labels = X[:, 2:57].astype(np.float32), X[:, 57] # 46 2:35 37  2:57  57
     encoder = LabelEncoder()
     y = encoder.fit_transform(labels).astype(np.int32)
     scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
@@ -32,7 +32,7 @@ def load_train_data(path):
 def load_test_data(path, scaler):
     df = pd.read_csv(path)
     X = df.values.copy()
-    X, ids = X[:, 2:74].astype(np.float32), X[:, 0:1].astype(int) # 46
+    X, ids = X[:, 2:57].astype(np.float32), X[:, 0:1].astype(int) # 46
     X = scaler.transform(X)
     return X, ids
     
@@ -50,11 +50,11 @@ num_features = X.shape[1]
 
 num_rows = X.shape[0]
 
-Comb = np.append(X, X_test, axis=0)
-pca = PCA()
-Comb = pca.fit_transform(Comb)
-X = Comb[:num_rows,:]
-X_test = Comb[num_rows:,:]
+#Comb = np.append(X, X_test, axis=0)
+#pca = PCA()
+#Comb = pca.fit_transform(Comb)
+#X = Comb[:num_rows,:]
+#X_test = Comb[num_rows:,:]
 
 # Train
 for i in range(1,51):
@@ -114,11 +114,11 @@ for i in range(1,51):
                      
                      on_epoch_finished=[
                             AdjustVariable('update_learning_rate', start=0.015, stop=0.0001),
-                            #AdjustVariable('update_momentum', start=0.9, stop=0.999),
+                            AdjustVariable('update_momentum', start=0.9, stop=0.999),
                             EarlyStopping(patience=20)
                             ],
                      
-                     eval_size=0.5,
+                     eval_size=0.2,
                      verbose=1,
                      max_epochs=10000)
                      
@@ -127,4 +127,5 @@ for i in range(1,51):
     # 0.53851
     
     # Submission 
-    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_151202_'+str(i)+'.csv')
+    #make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_151202_'+str(i)+'.csv')
+    make_submission(net0, X, ids, encoder, name='lasagne/submit/lasagne_3L_151203_'+str(i)+'.csv')
