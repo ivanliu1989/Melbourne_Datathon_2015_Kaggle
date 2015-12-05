@@ -127,5 +127,5 @@ for i in range(1,51):
     # 0.53851
     
     # Submission 
-    #make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_151202_'+str(i)+'.csv')
-    make_submission(net0, X, ids, encoder, name='lasagne/submit/lasagne_3L_151203_'+str(i)+'.csv')
+    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_151204_'+str(i)+'.csv')
+    #make_submission(net0, X, ids, encoder, name='lasagne/submit/lasagne_3L_151203_'+str(i)+'.csv')

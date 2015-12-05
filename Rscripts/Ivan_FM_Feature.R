@@ -23,7 +23,7 @@ p <- read.csv('libffm/output_file.csv', header = F);val <- validation; val$Y <- 
 p <- read.table('vowpal_wabbit/predictions/out.txt', header = F);val <- validation; val$Y <- p[,1]
 p <- read.csv('ReadyForBlending/xgboost_1.csv', header = T);val <- validation; val$Y <- p[,1]
 p <- read.csv('libffm/output_file_c100.csv', header = T, sep = " ");val <- validation; val$Y <- p[,3]
-
+p <- read.csv('submission_20151205_libsvm_0_0_c1.csv', header = T, sep = " ");val <- validation; val$Y <- p[,3]
 
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
