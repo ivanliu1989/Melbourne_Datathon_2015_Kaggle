@@ -6,13 +6,13 @@ load('data/9_train_validation_test_20151122.RData');ls()
 options(scipen=999);set.seed(19890624)
 
 # 
-write.csv(test, '../python_test_ffm_meta.csv', row.names = F)
-write.csv(train, '../python_train_ffm_meta.csv', row.names = F)
-write.csv(validation, '../python_validation_ffm_meta.csv', row.names = F)
-write.csv(total, '../python_total_ffm_meta.csv', row.names = F)
+# write.csv(test, '../python_test_ffm_meta.csv', row.names = F)
+# write.csv(train, '../python_train_ffm_meta.csv', row.names = F)
+# write.csv(validation, '../python_validation_ffm_meta.csv', row.names = F)
+# write.csv(total, '../python_total_ffm_meta.csv', row.names = F)
 # write.csv(validation, '../python_validation_ffm_meta.csv', row.names = F)
 # write.csv(total_n, '../python_total_n_ffm_meta.csv', row.names = F)
-write.csv(test_n, '../python_test_n_ffm_meta.csv', row.names = F)
+# write.csv(test_n, '../python_test_n_ffm_meta.csv', row.names = F)
 # write.csv(p_gbm, 'ReadyForBlending/xgboost_1.csv', row.names = F)
 
 #########################
@@ -23,7 +23,7 @@ p <- read.csv('libffm/output_file.csv', header = F);val <- validation; val$Y <- 
 p <- read.table('vowpal_wabbit/predictions/out.txt', header = F);val <- validation; val$Y <- p[,1]
 p <- read.csv('ReadyForBlending/xgboost_1.csv', header = T);val <- validation; val$Y <- p[,1]
 p <- read.csv('libffm/output_file_c100.csv', header = T, sep = " ");val <- validation; val$Y <- p[,3]
-p <- read.csv('submission_20151205_libsvm_0_0_c1.csv', header = T, sep = " ");val <- validation; val$Y <- p[,3]
+p <- read.csv('submission_20151206_libsvm_0_0_c10.csv', header = T, sep = " ");val <- validation; val$Y <- p[,3]
 
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=val, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 val <- merge(val, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
