@@ -13,6 +13,16 @@ options(scipen=999);set.seed(19890624)
 # bagTestPredictions_rf = predict(OOBModel, test, type="prob")
 # bagValidPredictions_rf = predict(OOBModel, validation, type="prob")
 
+### Create Noise
+Nosify <- function(dt, noise_l = -0.00001, noise_u = 0.00001) {
+    dt_noise <- dt
+    dt_noise[,3:(ncol(dt)-2)]<-dt_noise[,3:(ncol(dt)-2)] + matrix(runif(prod(dim(dt[,3:(ncol(dt)-2)])), noise_l, noise_u), dim(dt[,3:(ncol(dt)-2)])[1])
+    head(dt_noise)
+    dt_noise <- rbind(dt_noise, dt); dim(dt_noise)
+    dt_noise <- dt_noise[sample(1:nrow(dt_noise),size = nrow(dt_noise)),]; dim(dt_noise)
+    return(dt_noise)
+}
+
 
 #########################
 ### Xgboost #############
@@ -29,26 +39,29 @@ for (i in 16:250){
     
     inTraining <- createDataPartition(total$flag_class, p = .3, list = FALSE)
     test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
-    train <- total#[-inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+    train <- total[-inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+    train_noise <- Nosify(train,-0.01,0.01)
     validation <- total[inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
     train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
+    train_noise$flag_class <- ifelse(train_noise$flag_class == 'Y', 1, 0)
     validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
     feat <- colnames(train)[c(3:(ncol(train)-2))] # train
     
     dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
     dtest <- xgb.DMatrix(as.matrix(test[,feat]),label = test$flag_class)
     dvalid <- xgb.DMatrix(as.matrix(validation[,feat]),label = validation$flag_class)
-    watchlist <- list(eval = dvalid, train = dtrain)
+    dtrain_noise <- xgb.DMatrix(as.matrix(train_noise[,feat]), label = train_noise$flag_class)
+    watchlist <- list(eval = dvalid, train = dtrain_noise)
     
     bst <-
         xgb.train( # max.depth = 6, eta = 0.02, nround = 1200,
-            data = dtrain, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 1, colsample_bytree = 1, #early.stop.round = 100,
+            data = dtrain_noise, max.depth = 6, eta = 0.02, nround = 1200, maximize = F, min_child_weight = 1, colsample_bytree = 1, #early.stop.round = 100,
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', #num_parallel_tree = 1, gamma = 0.1,
             watchlist = watchlist
         )
-    p_gbm = predict(bst,dtest)
-    # p_gbm = predict(bst,dvalid)
+    # p_gbm = predict(bst,dtest)
+    p_gbm = predict(bst,dvalid)
     write.csv(p_gbm, paste0('ReadyForBlending/submission/test/xgboost_gbm/submission_xgboost_gbm_20151203.csv'))
     # write.csv(p_gbm, paste0('submission_xgboost_20151122.csv'))
     
@@ -102,3 +115,17 @@ confusionMatrix(as.factor(val_fin$PRED_PROFIT_LOSS_3), prediction)
 ### New Calc
 rocobj <- roc(val$flag_class, val$Y);print(auc(rocobj)) 
 print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
+
+# 0.8297 0.7236
+# 0.8202 0.7145
+# 0.7337
+# 0.8006 0.7025
+
+
+### Plot & feature importance ###
+# Get the feature real names
+names <- dimnames(as.matrix(train[,feat]))[[2]]
+# Compute feature importance matrix
+importance_matrix <- xgb.importance(names, model = bst)
+# Nice graph
+xgb.plot.importance(importance_matrix)
