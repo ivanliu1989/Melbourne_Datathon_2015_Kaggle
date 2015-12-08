@@ -14,26 +14,26 @@ options(scipen=999);set.seed(19890624)
 # bagValidPredictions_rf = predict(OOBModel, validation, type="prob")
 
 ### Create Noise
-Nosify <- function(dt, noise_l = -0.00001, noise_u = 0.00001) {
-    dt_noise <- dt
-    dt_noise[,3:(ncol(dt)-2)]<-dt_noise[,3:(ncol(dt)-2)] + matrix(runif(prod(dim(dt[,3:(ncol(dt)-2)])), noise_l, noise_u), dim(dt[,3:(ncol(dt)-2)])[1])
-    head(dt_noise)
-    dt_noise <- rbind(dt_noise, dt); dim(dt_noise)
-    dt_noise <- dt_noise[sample(1:nrow(dt_noise),size = nrow(dt_noise)),]; dim(dt_noise)
-    return(dt_noise)
-}
-
-# Nosify <- function(dt, noise_l = -0.00001, noise_u = 0.00001, feat = c(7:41,57)) {
+# Nosify <- function(dt, noise_l = -0.00001, noise_u = 0.00001) {
 #     dt_noise <- dt
-#     dt_noise[,feat]<-dt_noise[,feat] + 
-#         apply(dt[,feat], 2, 
-#               function(x){
-#                   runif(length(x), noise_l*diff(range(x)), noise_u*diff(range(x)))
-#                   })
+#     dt_noise[,3:(ncol(dt)-2)]<-dt_noise[,3:(ncol(dt)-2)] + matrix(runif(prod(dim(dt[,3:(ncol(dt)-2)])), noise_l, noise_u), dim(dt[,3:(ncol(dt)-2)])[1])
+#     head(dt_noise)
 #     dt_noise <- rbind(dt_noise, dt); dim(dt_noise)
-#     dt_noise <- dt_noise[sample(1:nrow(dt_noise),size = nrow(dt_noise)),]
+#     dt_noise <- dt_noise[sample(1:nrow(dt_noise),size = nrow(dt_noise)),]; dim(dt_noise)
 #     return(dt_noise)
 # }
+
+Nosify <- function(dt, noise_l = -0.00001, noise_u = 0.00001, feat = c(7:41,57)) {
+    dt_noise <- dt
+    dt_noise[,feat]<-dt_noise[,feat] + 
+        apply(dt[,feat], 2, 
+              function(x){
+                  runif(length(x), noise_l*diff(range(x)), noise_u*diff(range(x)))
+                  })
+    dt_noise <- rbind(dt_noise, dt); dim(dt_noise)
+    dt_noise <- dt_noise[sample(1:nrow(dt_noise),size = nrow(dt_noise)),]
+    return(dt_noise)
+}
 
 
 #########################
@@ -52,8 +52,8 @@ for (i in 1:20){
     inTraining <- createDataPartition(total$flag_class, p = .3, list = FALSE)
     test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
     train <- total#[-inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
-    # train_noise <- Nosify(train,0,0.001,c(3:57))
-    train_noise <- Nosify(train,0,0.0001)
+    train_noise <- Nosify(train,0,0.0003,c(3:57))
+    # train_noise <- Nosify(train,0,0.0001)
     validation <- total[inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
     train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)

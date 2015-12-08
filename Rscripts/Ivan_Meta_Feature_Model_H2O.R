@@ -63,7 +63,7 @@ for(i in 1:50){
         )
     p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
     # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-    write.csv(p, paste0('ReadyForBlending/submission/test/h2o_nnet/submission_h2o_nnet_noise_20151207_',i,'.csv'))
+    write.csv(p, paste0('ReadyForBlending/submission/test_noise/h2o_nnet/submission_h2o_nnet_noise_20151207_',i,'.csv'))
     
     # random forest
     fit <-
@@ -74,21 +74,21 @@ for(i in 1:50){
         )
     p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
     # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-    write.csv(p, paste0('ReadyForBlending/submission/test/h2o_rf/submission_h2o_rf_noise_20151207_',i,'.csv'))
+    write.csv(p, paste0('ReadyForBlending/submission/test_noise/h2o_rf/submission_h2o_rf_noise_20151207_',i,'.csv'))
     
     # glm   
-    fit <-
-        h2o.glm(
-            y = dependent, x = independent, training_frame = train_df, #train_df | total_df
-            max_iterations = 100, beta_epsilon = 1e-4, solver = "L_BFGS", #IRLSM  L_BFGS
-            standardize = T, family = 'binomial', link = 'logit', alpha = 0.5, # 1 lasso 0 ridge
-            lambda = 0, lambda_search = T, nlambda = 55, #lambda_min_ratio = 1e-08,
-            intercept = T
-            #higher_accuracy = T, disable_line_search = F, use_all_factor_levels = T,strong_rules = T
-        )
-    p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
-    # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-    write.csv(p, paste0('ReadyForBlending/submission/test/h2o_glm/submission_h2o_glm_noise_20151207_',i,'.csv'))
+#     fit <-
+#         h2o.glm(
+#             y = dependent, x = independent, training_frame = train_df, #train_df | total_df
+#             max_iterations = 100, beta_epsilon = 1e-4, solver = "L_BFGS", #IRLSM  L_BFGS
+#             standardize = T, family = 'binomial', link = 'logit', alpha = 0.5, # 1 lasso 0 ridge
+#             lambda = 0, lambda_search = T, nlambda = 55, #lambda_min_ratio = 1e-08,
+#             intercept = T
+#             #higher_accuracy = T, disable_line_search = F, use_all_factor_levels = T,strong_rules = T
+#         )
+#     p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+#     # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
+#     write.csv(p, paste0('ReadyForBlending/submission/test/h2o_glm/submission_h2o_glm_noise_20151207_',i,'.csv'))
 }
 
 

@@ -73,12 +73,12 @@ train[,feat] <- apply(train[,feat], 2, as.numeric)
 dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
 pred = predict(blend_gbm,dtrain)
 
-# pred_all <- read.csv('submission_xgboost_20151206.csv', stringsAsFactors=FALSE,na.strings = "")
+pred_all <- read.csv('submission_xgboost_20151206.csv', stringsAsFactors=FALSE,na.strings = "")
 #########################
 ### Submission ##########
 #########################
 t <- test
-t$Y <- pred_all
+t$Y <- pred_all[,2]
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=t, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 t <- merge(t, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 t$INVEST_PERCENT <- t$INVEST/t$TOT_INVEST * t$Y
@@ -94,5 +94,5 @@ submit[submit$Account_ID %in% test_n$ACCOUNT_ID, 3] <- submit_n[submit_n$Account
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-write.csv(submit,'pred/submission_20151208_add_noise_0.01_gbm_nnet.csv',quote = FALSE,row.names = FALSE)
+write.csv(submit,'pred/submission_20151208_noise_0.0003_pct_gbm.csv',quote = FALSE,row.names = FALSE)
 
