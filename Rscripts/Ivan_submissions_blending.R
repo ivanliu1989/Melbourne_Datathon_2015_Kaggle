@@ -73,7 +73,7 @@ train[,feat] <- apply(train[,feat], 2, as.numeric)
 dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
 pred = predict(blend_gbm,dtrain)
 
-pred_all <- read.csv('submission_xgboost_gbm_20151128_16.csv', stringsAsFactors=FALSE,na.strings = "")
+# pred_all <- read.csv('submission_xgboost_20151206.csv', stringsAsFactors=FALSE,na.strings = "")
 #########################
 ### Submission ##########
 #########################
@@ -94,5 +94,5 @@ submit[submit$Account_ID %in% test_n$ACCOUNT_ID, 3] <- submit_n[submit_n$Account
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-write.csv(submit,'pred/submission_20151208_add_noise_gbm_othermodels.csv',quote = FALSE,row.names = FALSE)
+write.csv(submit,'pred/submission_20151208_add_noise_0.01_gbm_nnet.csv',quote = FALSE,row.names = FALSE)
 

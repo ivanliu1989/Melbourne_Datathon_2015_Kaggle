@@ -23,6 +23,18 @@ Nosify <- function(dt, noise_l = -0.00001, noise_u = 0.00001) {
     return(dt_noise)
 }
 
+# Nosify <- function(dt, noise_l = -0.00001, noise_u = 0.00001, feat = c(7:41,57)) {
+#     dt_noise <- dt
+#     dt_noise[,feat]<-dt_noise[,feat] + 
+#         apply(dt[,feat], 2, 
+#               function(x){
+#                   runif(length(x), noise_l*diff(range(x)), noise_u*diff(range(x)))
+#                   })
+#     dt_noise <- rbind(dt_noise, dt); dim(dt_noise)
+#     dt_noise <- dt_noise[sample(1:nrow(dt_noise),size = nrow(dt_noise)),]
+#     return(dt_noise)
+# }
+
 
 #########################
 ### Xgboost #############
@@ -40,8 +52,8 @@ for (i in 1:20){
     inTraining <- createDataPartition(total$flag_class, p = .3, list = FALSE)
     test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
     train <- total#[-inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
-    train_noise <- Nosify(train,-0.01,0.01)
-    # train_noise <- Nosify(train_noise,-0.01,0.01)
+    # train_noise <- Nosify(train,0,0.001,c(3:57))
+    train_noise <- Nosify(train,0,0.0001)
     validation <- total[inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
     train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
@@ -63,7 +75,7 @@ for (i in 1:20){
         )
     p_gbm = predict(bst,dtest)
     # p_gbm = predict(bst,dvalid)
-    write.csv(p_gbm, paste0('ReadyForBlending/submission/test/xgboost_gbm/submission_xgboost_gbm_20151206_noise',i,'.csv'))
+    write.csv(p_gbm, paste0('ReadyForBlending/submission/test/xgboost_gbm/submission_xgboost_gbm_20151208_noise_1pct',i,'.csv'))
     # write.csv(p_gbm, paste0('submission_xgboost_20151206.csv'))
     
     # 3. generalized linear model
