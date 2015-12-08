@@ -54,27 +54,27 @@ for(i in 1:50){
         h2o.deeplearning(
             y = dependent, x = independent, training_frame = train_df, overwrite_with_best_model = T, #autoencoder
             use_all_factor_levels = T, activation = "RectifierWithDropout",#TanhWithDropout "RectifierWithDropout"
-            hidden = c(256,128), epochs = 9, train_samples_per_iteration = -2, adaptive_rate = T, rho = 0.99,  #c(300,150,75)
+            hidden = c(300,150,75), epochs = 9, train_samples_per_iteration = -2, adaptive_rate = T, rho = 0.99,  #c(300,150,75)
             epsilon = 1e-6, rate = 0.01, rate_decay = 0.9, momentum_start = 0.9, momentum_stable = 0.99,
-            nesterov_accelerated_gradient = T, input_dropout_ratio = 0.25, hidden_dropout_ratios = c(0.25,0.25), 
+            nesterov_accelerated_gradient = T, input_dropout_ratio = 0.25, hidden_dropout_ratios = c(0.25,0.25,0.25), 
             l1 = NULL, l2 = 3e-5, loss = 'CrossEntropy', classification_stop = 0.01,
             diagnostics = T, variable_importances = F, fast_mode = F, ignore_const_cols = T,
             force_load_balance = T, replicate_training_data = T, shuffle_training_data = T
         )
     p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
     # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-    write.csv(p, paste0('ReadyForBlending/submission/test_noise/h2o_nnet/submission_h2o_nnet_noise_20151207_',i,'.csv'))
+    write.csv(p, paste0('ReadyForBlending/submission/test_noise/h2o_nnet/submission_h2o_nnet_noise_20151209_',i,'.csv'))
     
     # random forest
-    fit <-
-        h2o.randomForest(
-            y = dependent, x = independent, training_frame = train_df, mtries = -1, 
-            ntrees = 800, max_depth = 16, sample.rate = 0.632, min_rows = 1, 
-            nbins = 20, nbins_cats = 1024, binomial_double_trees = T
-        )
-    p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
-    # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-    write.csv(p, paste0('ReadyForBlending/submission/test_noise/h2o_rf/submission_h2o_rf_noise_20151207_',i,'.csv'))
+#     fit <-
+#         h2o.randomForest(
+#             y = dependent, x = independent, training_frame = train_df, mtries = -1, 
+#             ntrees = 800, max_depth = 16, sample.rate = 0.632, min_rows = 1, 
+#             nbins = 20, nbins_cats = 1024, binomial_double_trees = T
+#         )
+#     p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+#     # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
+#     write.csv(p, paste0('ReadyForBlending/submission/test_noise/h2o_rf/submission_h2o_rf_noise_20151207_',i,'.csv'))
     
     # glm   
 #     fit <-
