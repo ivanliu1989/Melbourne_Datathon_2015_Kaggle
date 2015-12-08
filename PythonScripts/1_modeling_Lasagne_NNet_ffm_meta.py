@@ -43,7 +43,7 @@ def make_submission(clf, X_test, ids, encoder, name='lasagne_nnet.csv'):
 
 # Load Data    
 np.random.seed(888888)
-X, y, encoder,scaler = load_train_data('../../python_total_ffm_meta.csv')
+X, y, encoder,scaler = load_train_data('../../python_total_noise_ffm_meta.csv')
 X_test, ids = load_test_data('../../python_test_ffm_meta.csv', scaler)
 num_classes = len(encoder.classes_)
 num_features = X.shape[1]
@@ -127,5 +127,5 @@ for i in range(1,51):
     # 0.53851
     
     # Submission 
-    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_151204_'+str(i)+'.csv')
+    make_submission(net0, X_test, ids, encoder, name='lasagne/submit/lasagne_3L_noise_151207_'+str(i)+'.csv')
     #make_submission(net0, X, ids, encoder, name='lasagne/submit/lasagne_3L_151203_'+str(i)+'.csv')

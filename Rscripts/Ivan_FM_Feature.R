@@ -5,6 +5,8 @@ library(xgboost);library(pROC);require(randomForest);library(Rtsne);require(data
 load('data/9_train_validation_test_20151122.RData');ls()
 options(scipen=999);set.seed(19890624)
 
+total_noise <- Nosify(total,-0.01,0.01)
+
 # 
 # write.csv(test, '../python_test_ffm_meta.csv', row.names = F)
 # write.csv(train, '../python_train_ffm_meta.csv', row.names = F)
@@ -13,7 +15,7 @@ options(scipen=999);set.seed(19890624)
 # write.csv(validation, '../python_validation_ffm_meta.csv', row.names = F)
 # write.csv(total_n, '../python_total_n_ffm_meta.csv', row.names = F)
 # write.csv(test_n, '../python_test_n_ffm_meta.csv', row.names = F)
-# write.csv(p_gbm, 'ReadyForBlending/xgboost_1.csv', row.names = F)
+write.csv(total_noise, '../python_total_noise_ffm_meta.csv', row.names = F)
 
 #########################
 ### Validation ##########

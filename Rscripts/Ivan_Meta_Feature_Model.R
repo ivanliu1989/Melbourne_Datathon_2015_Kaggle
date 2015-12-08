@@ -34,13 +34,14 @@ Nosify <- function(dt, noise_l = -0.00001, noise_u = 0.00001) {
 # binary:logistic
 
 # 1. GBM
-for (i in 16:250){
+for (i in 1:20){
     set.seed(8*i)
     
     inTraining <- createDataPartition(total$flag_class, p = .3, list = FALSE)
     test <- test#total[train$EVENT_ID %in% c(101183757,101183885,101184013),]
-    train <- total[-inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
+    train <- total#[-inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
     train_noise <- Nosify(train,-0.01,0.01)
+    # train_noise <- Nosify(train_noise,-0.01,0.01)
     validation <- total[inTraining,]#total[!train$EVENT_ID %in% c(101183757,101183885,101184013),]
     train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
     test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
@@ -60,10 +61,10 @@ for (i in 16:250){
             nthread = 4, objective = "binary:logistic", verbose = 1, print.every.n = 10, metrics = 'auc', #num_parallel_tree = 1, gamma = 0.1,
             watchlist = watchlist
         )
-    # p_gbm = predict(bst,dtest)
-    p_gbm = predict(bst,dvalid)
-    write.csv(p_gbm, paste0('ReadyForBlending/submission/test/xgboost_gbm/submission_xgboost_gbm_20151203.csv'))
-    # write.csv(p_gbm, paste0('submission_xgboost_20151122.csv'))
+    p_gbm = predict(bst,dtest)
+    # p_gbm = predict(bst,dvalid)
+    write.csv(p_gbm, paste0('ReadyForBlending/submission/test/xgboost_gbm/submission_xgboost_gbm_20151206_noise',i,'.csv'))
+    # write.csv(p_gbm, paste0('submission_xgboost_20151206.csv'))
     
     # 3. generalized linear model
     bst <- xgb.train(
@@ -72,8 +73,7 @@ for (i in 16:250){
     )
     p_glm = predict(bst,dtest)
     # p_glm = predict(bst,dvalid)
-    write.csv(p_glm, paste0('ReadyForBlending/submission/test/xgboost_glm/submission_xgboost_glm_20151202_test.csv'))
-    
+    write.csv(p_glm, paste0('ReadyForBlending/submission/test/xgboost_glm/submission_xgboost_glm_20151206_noise',i,'.csv'))
 }
 
 # # 2. RF
@@ -116,6 +116,7 @@ confusionMatrix(as.factor(val_fin$PRED_PROFIT_LOSS_3), prediction)
 rocobj <- roc(val$flag_class, val$Y);print(auc(rocobj)) 
 print(auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE))
 
+# 0.281524
 # 0.8297 0.7236
 # 0.8202 0.7145
 # 0.7337

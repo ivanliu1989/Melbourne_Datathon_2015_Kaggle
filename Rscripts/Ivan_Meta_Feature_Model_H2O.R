@@ -6,18 +6,28 @@ options(scipen=999);set.seed(19890624)
 library(h2o)
 localH2O <- h2o.init(ip = 'localhost', port = 54321, max_mem_size = '12g')
 
+### Create Noise
+Nosify <- function(dt, noise_l = -0.00001, noise_u = 0.00001) {
+    dt_noise <- dt
+    dt_noise[,3:(ncol(dt)-2)]<-dt_noise[,3:(ncol(dt)-2)] + matrix(runif(prod(dim(dt[,3:(ncol(dt)-2)])), noise_l, noise_u), dim(dt[,3:(ncol(dt)-2)])[1])
+    head(dt_noise)
+    dt_noise <- rbind(dt_noise, dt); dim(dt_noise)
+    dt_noise <- dt_noise[sample(1:nrow(dt_noise),size = nrow(dt_noise)),]; dim(dt_noise)
+    return(dt_noise)
+}
 
-test <- test
-train <- train #total
-train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
+
+# test <- test
+# train <- train #total
+# train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
 test$flag_class <- ifelse(test$flag_class == 'Y', 1, 0)
-validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
-train$flag_class <- as.factor(train$flag_class)
+# validation$flag_class <- ifelse(validation$flag_class == 'Y', 1, 0)
+# train$flag_class <- as.factor(train$flag_class)
 test$flag_class <- as.factor(test$flag_class)
-validation$flag_class <- as.factor(validation$flag_class)
-train_df <- as.h2o(localH2O, train) # train
+# validation$flag_class <- as.factor(validation$flag_class)
+# train_df <- as.h2o(localH2O, train) # train
 test_df <- as.h2o(localH2O, test) # test
-valid_df <- as.h2o(localH2O, validation) # test
+# valid_df <- as.h2o(localH2O, validation) # test
 independent <- colnames(train)[c(3:(ncol(train)-2))]
 dependent <- "flag_class"
 
@@ -34,6 +44,12 @@ dependent <- "flag_class"
 # deeplearning
 for(i in 1:50){
     set.seed(i*8)
+    
+    train_noise <- Nosify(train,-0.01,0.01)
+    train_noise$flag_class <- ifelse(train_noise$flag_class == 'Y', 1, 0)
+    train_noise$flag_class <- as.factor(train_noise$flag_class)
+    train_df <- as.h2o(localH2O, train_noise) # train
+    
     fit <-
         h2o.deeplearning(
             y = dependent, x = independent, training_frame = train_df, overwrite_with_best_model = T, #autoencoder
@@ -45,35 +61,37 @@ for(i in 1:50){
             diagnostics = T, variable_importances = F, fast_mode = F, ignore_const_cols = T,
             force_load_balance = T, replicate_training_data = T, shuffle_training_data = T
         )
-    # p <- as.data.frame(h2o.predict(object = fit, newdata = train_df))
-    p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-    # write.csv(p, paste0('ReadyForBlending/submission/train/h2o_nnet/submission_h2o_nnet_20151202_',i,'.csv'))
+    p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+    # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
+    write.csv(p, paste0('ReadyForBlending/submission/test/h2o_nnet/submission_h2o_nnet_noise_20151207_',i,'.csv'))
     
+    # random forest
+    fit <-
+        h2o.randomForest(
+            y = dependent, x = independent, training_frame = train_df, mtries = -1, 
+            ntrees = 800, max_depth = 16, sample.rate = 0.632, min_rows = 1, 
+            nbins = 20, nbins_cats = 1024, binomial_double_trees = T
+        )
+    p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+    # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
+    write.csv(p, paste0('ReadyForBlending/submission/test/h2o_rf/submission_h2o_rf_noise_20151207_',i,'.csv'))
+    
+    # glm   
+    fit <-
+        h2o.glm(
+            y = dependent, x = independent, training_frame = train_df, #train_df | total_df
+            max_iterations = 100, beta_epsilon = 1e-4, solver = "L_BFGS", #IRLSM  L_BFGS
+            standardize = T, family = 'binomial', link = 'logit', alpha = 0.5, # 1 lasso 0 ridge
+            lambda = 0, lambda_search = T, nlambda = 55, #lambda_min_ratio = 1e-08,
+            intercept = T
+            #higher_accuracy = T, disable_line_search = F, use_all_factor_levels = T,strong_rules = T
+        )
+    p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
+    # p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
+    write.csv(p, paste0('ReadyForBlending/submission/test/h2o_glm/submission_h2o_glm_noise_20151207_',i,'.csv'))
 }
 
 
-# random forest
-fit <-
-    h2o.randomForest(
-        y = dependent, x = independent, training_frame = train_df, mtries = -1, 
-        ntrees = 800, max_depth = 16, sample.rate = 0.632, min_rows = 1, 
-        nbins = 20, nbins_cats = 1024, binomial_double_trees = T
-    )
-p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
-# p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
-
-# glm   
-fit <-
-    h2o.glm(
-        y = dependent, x = independent, training_frame = train_df, #train_df | total_df
-        max_iterations = 100, beta_epsilon = 1e-4, solver = "L_BFGS", #IRLSM  L_BFGS
-        standardize = T, family = 'binomial', link = 'logit', alpha = 0.5, # 1 lasso 0 ridge
-        lambda = 0, lambda_search = T, nlambda = 55, #lambda_min_ratio = 1e-08,
-        intercept = T
-        #higher_accuracy = T, disable_line_search = F, use_all_factor_levels = T,strong_rules = T
-    )
-p <- as.data.frame(h2o.predict(object = fit, newdata = test_df))
-# p <- as.data.frame(h2o.predict(object = fit, newdata = valid_df))
 
 #########################
 ### Validation ##########

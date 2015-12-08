@@ -21,12 +21,15 @@ ffmlib_convert <- function(dt){
     return(dt$ffm)
 }
 
+total_noise <- Nosify(total,-0.01,0.01)
+
 train_ffm <- ffmlib_convert(train)
 total_ffm <- ffmlib_convert(total)
 test_ffm <- ffmlib_convert(test)
 valid_ffm <- ffmlib_convert(validation)
 test_n_ffm <- ffmlib_convert(test_n)
 total_n_ffm <- ffmlib_convert(total_n)
+total_noise_ffm <- ffmlib_convert(total_noise)
 
 write.table(train_ffm, file='../train_ffm.txt', quote = F, row.names = F, col.names = F)
 write.table(total_ffm, file='../total_ffm.txt', quote = F, row.names = F, col.names = F)
@@ -34,6 +37,7 @@ write.table(test_ffm, file='../test_ffm.txt', quote = F, row.names = F, col.name
 write.table(valid_ffm, file='../valid_ffm.txt', quote = F, row.names = F, col.names = F)
 write.table(test_n_ffm, file='../test_n_ffm.txt', quote = F, row.names = F, col.names = F)
 write.table(total_n_ffm, file='../total_n_ffm.txt', quote = F, row.names = F, col.names = F)
+write.table(total_noise_ffm, file='../total_noise_ffm.txt', quote = F, row.names = F, col.names = F)
 
 
 svmlib_convert <- function(dt){
@@ -57,6 +61,7 @@ test_svm <- svmlib_convert(test)
 valid_svm <- svmlib_convert(validation)
 test_n_svm <- svmlib_convert(test_n)
 total_n_svm <- svmlib_convert(total_n)
+total_noise_svm <- svmlib_convert(total_noise)
 
 write.table(train_svm, file='../train_svm.txt', quote = F, row.names = F, col.names = F)
 write.table(total_svm, file='../total_svm.txt', quote = F, row.names = F, col.names = F)
@@ -64,3 +69,4 @@ write.table(test_svm, file='../test_svm.txt', quote = F, row.names = F, col.name
 write.table(valid_svm, file='../valid_svm.txt', quote = F, row.names = F, col.names = F)
 write.table(test_n_svm, file='../test_n_svm.txt', quote = F, row.names = F, col.names = F)
 write.table(total_n_svm, file='../total_n_svm.txt', quote = F, row.names = F, col.names = F)
+write.table(total_noise_svm, file='../total_noise_svm.txt', quote = F, row.names = F, col.names = F)
