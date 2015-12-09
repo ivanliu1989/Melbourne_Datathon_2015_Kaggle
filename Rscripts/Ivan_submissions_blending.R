@@ -102,7 +102,7 @@ submit[submit$Account_ID %in% test_n$ACCOUNT_ID, 3] <- submit_n[submit_n$Account
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-submit$Prediction <- 0.7*submit$Prediction + 0.3*dt.test.ensemble$pred.bagging
+submit$Prediction <- 0.6*submit$Prediction + 0.4*dt.test.ensemble$pred.bagging
 
-write.csv(submit,'pred/submission_20151209_noise_blending_5.csv',quote = FALSE,row.names = FALSE)
+write.csv(submit,'pred/submission_20151209_noise_blending_9.csv',quote = FALSE,row.names = FALSE)
 
