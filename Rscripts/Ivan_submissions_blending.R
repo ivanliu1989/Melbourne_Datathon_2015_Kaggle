@@ -1,6 +1,14 @@
 setwd('/Users/ivanliu/Google Drive/Melbourne Datathon/Melbourne_Datathon_2015_Kaggle')
 rm(list=ls()); gc()
 load('data/9_train_validation_test_20151122.RData');ls()
+load('data/dtTestEnsemble.RData');ls()
+dt.test.ensemble$pred.bagging <- (dt.test.ensemble$rf * 0.1
+                 + dt.test.ensemble$nnet * 0.3
+                 + dt.test.ensemble$lasso * 0.05
+                 + dt.test.ensemble$lr * 0.05
+                 + dt.test.ensemble$xgb.gbtree * 0.35
+                 + dt.test.ensemble$xgb.gblinear * 0.15)
+
 
 submit_xgb_gbm <- list.files('ReadyForBlending/submission/test/xgboost_gbm/', full.names = T)
 submit_vw <- list.files('ReadyForBlending/submission/test/vw/', full.names = T)
@@ -47,38 +55,38 @@ pred_all <- (0.3*pred_xgb_gbm[,2] +  #30
                  0.07*pred_h2o_lg[,4] + 
                  0.07*pred_vw[,1] + 
                  
-                 0.15*pred_lasagne[,2] +  #25
-                 0.1*pred_h2o_nnet[,4] +
+                 0.25*pred_lasagne[,2] +  #25
+                 # 0.1*pred_h2o_nnet[,4] +
              
                  # 0.1*pred_fm[,1] + #10
-                 0.1*pred_svm_linear[,3] + #10
-                 0.1*pred_svm_radial[,3] + #10
+                 0.2*pred_svm_linear[,3] + #10
+                 # 0.1*pred_svm_radial[,3] + #10
                  
                  0.05*pred_h2o_rf[,4] #5
                  )
 head(pred_all); length(pred_all)
 
 ### Pred
-load('data/blending_algorithm.RData')
-library(xgboost);
-pred_all <- as.data.frame(cbind(pred_xgb_gbm[,2],pred_xgb_glm[,2],pred_h2o_lg[,4],pred_vw[,1],pred_lasagne[,2],pred_h2o_nnet[,4]
-                                ,pred_fm[,1],pred_svm[,3],pred_h2o_rf[,4],test$flag_class))
-names(pred_all) <- c('xgb_gbm','xgb_glm', 'h2o_lg', 'vw', 'lasagne', 'h2o_nnet', 'fm', 'svm', 'h2o_rf', 'flag_class')
-head(pred_all); dim(pred_all)
-
-train <- pred_all
-train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
-feat <- colnames(train)[c(1:(ncol(train)-1))] # train
-train[,feat] <- apply(train[,feat], 2, as.numeric)
-dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
-pred = predict(blend_gbm,dtrain)
-
-pred_all <- read.csv('submission_xgboost_20151206.csv', stringsAsFactors=FALSE,na.strings = "")
+# load('data/blending_algorithm.RData')
+# library(xgboost);
+# pred_all <- as.data.frame(cbind(pred_xgb_gbm[,2],pred_xgb_glm[,2],pred_h2o_lg[,4],pred_vw[,1],pred_lasagne[,2],pred_h2o_nnet[,4]
+#                                 ,pred_fm[,1],pred_svm[,3],pred_h2o_rf[,4],test$flag_class))
+# names(pred_all) <- c('xgb_gbm','xgb_glm', 'h2o_lg', 'vw', 'lasagne', 'h2o_nnet', 'fm', 'svm', 'h2o_rf', 'flag_class')
+# head(pred_all); dim(pred_all)
+# 
+# train <- pred_all
+# train$flag_class <- ifelse(train$flag_class == 'Y', 1, 0)
+# feat <- colnames(train)[c(1:(ncol(train)-1))] # train
+# train[,feat] <- apply(train[,feat], 2, as.numeric)
+# dtrain <- xgb.DMatrix(as.matrix(train[,feat]), label = train$flag_class)
+# pred = predict(blend_gbm,dtrain)
+# 
+# pred_all <- read.csv('submission_xgboost_20151206.csv', stringsAsFactors=FALSE,na.strings = "")
 #########################
 ### Submission ##########
 #########################
 t <- test
-t$Y <- pred_all[,2]
+t$Y <- pred_all
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=t, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 t <- merge(t, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 t$INVEST_PERCENT <- t$INVEST/t$TOT_INVEST * t$Y
@@ -94,5 +102,7 @@ submit[submit$Account_ID %in% test_n$ACCOUNT_ID, 3] <- submit_n[submit_n$Account
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
 
-write.csv(submit,'pred/submission_20151208_noise_0.0003_pct_gbm.csv',quote = FALSE,row.names = FALSE)
+submit$Prediction <- 0.7*submit$Prediction + 0.3*dt.test.ensemble$pred.bagging
+
+write.csv(submit,'pred/submission_20151209_noise_blending_5.csv',quote = FALSE,row.names = FALSE)
 
