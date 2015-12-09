@@ -86,7 +86,7 @@ head(pred_all); length(pred_all)
 ### Submission ##########
 #########################
 t <- test
-t$Y <- pred_all
+t$Y <- pred_h2o_rf[,4]
 tot_invest <- aggregate(INVEST ~ ACCOUNT_ID,data=t, sum, na.rm=T); names(tot_invest) <- c('ACCOUNT_ID', 'TOT_INVEST')
 t <- merge(t, tot_invest, all.x = TRUE, all.y = FALSE, by = c('ACCOUNT_ID'))
 t$INVEST_PERCENT <- t$INVEST/t$TOT_INVEST * t$Y
@@ -98,11 +98,35 @@ submit <- read.csv('data/sample_submission_bet_size.csv', stringsAsFactors=FALSE
 submit <- merge(submit,pred_fin,all.x = TRUE,all.y = FALSE)
 table(is.na(submit$PRED_PROFIT_LOSS))
 submit_n <- read.csv('submission_20151202_test_bl.csv', stringsAsFactors=FALSE,na.strings = "")
-submit[submit$Account_ID %in% test_n$ACCOUNT_ID, 3] <- submit_n[submit_n$Account_ID %in% test_n$ACCOUNT_ID,2]# * 0.4367089*2
+submit[submit$Account_ID %in% test_n$ACCOUNT_ID, 3] <- submit[submit$Account_ID %in% test_n$ACCOUNT_ID, 3] * 0.4367089*2
 submit$Prediction <- submit$PRED_PROFIT_LOSS
 submit$PRED_PROFIT_LOSS <- NULL
+
 
 submit$Prediction <- 0.6*submit$Prediction + 0.4*dt.test.ensemble$pred.bagging
 
 write.csv(submit,'pred/submission_20151209_noise_blending_9.csv',quote = FALSE,row.names = FALSE)
 
+pred_xgb_gbm <- submit
+pred_xgb_glm <- submit
+pred_h2o_lg <- submit
+pred_vw <- submit
+pred_lasagne <- submit
+pred_svm_linear <- submit
+pred_h2o_rf <- submit
+
+ensemble.pred <- cbind(pred_xgb_gbm, pred_xgb_glm[,2], pred_h2o_lg[,2], pred_vw[,2], pred_lasagne[,2], pred_svm_linear[,2],
+                       pred_h2o_rf[,2])
+names(ensemble.pred) <- c('Account_ID','pred_xgb_gbm', 'pred_xgb_glm', 'pred_h2o_lg', 'pred_vw', 'pred_lasagne', 'pred_svm_linear','pred_h2o_rf')
+head(ensemble.pred)
+
+save(ensemble.pred, file = 'IVAN_ENSEMBLE_DATA.Rdata')
+
+pred_all <- (ensemble.pred$pred_xgb_gbm * .3
+             + ensemble.pred$pred_xgb_glm * .06
+             + ensemble.pred$pred_h2o_lg * .07
+             + ensemble.pred$pred_vw * .07
+             + ensemble.pred$pred_lasagne * .25
+             + ensemble.pred$pred_svm_linear * .2
+             + ensemble.pred$pred_h2o_rf * .05
+)
